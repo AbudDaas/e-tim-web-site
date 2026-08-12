@@ -37,14 +37,16 @@ a{color:inherit}
 /* --- üst çubuk --- */
 .top{position:sticky;top:0;z-index:40;padding:12px 0;backdrop-filter:blur(14px);background:linear-gradient(to bottom,rgba(244,245,252,.9),rgba(244,245,252,.55))}
 .bar{display:flex;align-items:center;gap:14px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto;min-width:0}
 .logo .beads{display:flex;gap:3px}
 .logo .beads i{width:7px;height:7px;border-radius:50%;display:block}
 .logo b{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em}
 .logo span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gece-2)}
-nav{margin-inline-start:auto;display:flex;gap:4px;background:var(--cam);border:1px solid var(--cam-kenar);border-radius:999px;padding:5px;box-shadow:var(--golge-yumusak);overflow-x:auto;scrollbar-width:none}
+nav{margin-inline-start:auto;display:flex;gap:2px;flex:0 0 auto;background:var(--cam);border:1px solid var(--cam-kenar);
+  border-radius:999px;padding:4px;box-shadow:var(--golge-yumusak)}
 nav::-webkit-scrollbar{display:none}
-nav a{font-family:var(--disp);font-weight:700;font-size:13.5px;text-decoration:none;color:var(--gece-2);padding:8px 14px;border-radius:999px;white-space:nowrap;transition:color .18s,background .18s}
+nav a{font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;color:var(--gece-2);
+  padding:8px 12px;border-radius:999px;white-space:nowrap;transition:color .18s,background .18s}
 nav a:hover{color:var(--gece)}
 nav a[aria-current="page"]{color:#fff;background:linear-gradient(100deg,var(--murekkep),var(--menekse))}
 .cta-top{flex:0 0 auto}
@@ -175,7 +177,7 @@ section.page{padding:34px 0 70px;animation:in .34s ease both}
 footer.site{padding:30px 0 40px;border-top:1px solid rgba(20,26,51,.08);margin-top:20px}
 .foot{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--gece-2)}
 
-.bar{position:relative}
+.bar{position:relative;min-height:46px}
 .top.kayar{box-shadow:0 12px 30px -26px rgba(20,26,51,.85)}
 .menu{display:none;flex:0 0 auto;width:42px;height:42px;border-radius:14px;cursor:pointer;
   border:1px solid var(--cam-kenar);background:var(--cam);color:var(--gece);align-items:center;justify-content:center}
@@ -185,13 +187,19 @@ footer.site{padding:30px 0 40px;border-top:1px solid rgba(20,26,51,.08);margin-t
 .menu[aria-expanded="true"] span{transform:rotate(45deg)}
 .menu[aria-expanded="true"] span::before{top:0;transform:rotate(90deg)}
 .menu[aria-expanded="true"] span::after{top:0;opacity:0}
-@media(max-width:980px){
-  .menu{display:flex;margin-inline-start:auto}
+
+
+/* menü: yatayda sığmıyorsa hamburgere düşer (ölçüm app.js'te) */
+body.menu-dar .menu{display:flex;margin-inline-start:auto}
+body.menu-dar nav{position:absolute;top:calc(100% + 10px);inset-inline:0;margin:0;flex-direction:column;gap:2px;padding:10px;
+  border-radius:18px;display:none;box-shadow:var(--golge);background:rgba(255,255,255,.97);z-index:45}
+body.menu-dar nav.acik{display:flex}
+body.menu-dar nav a{padding:12px 14px;font-size:15px}
+body.menu-dar .cta-top{margin-inline-start:10px}
+@media(max-width:520px){
   .cta-top{display:none}
-  nav{position:absolute;top:56px;inset-inline:0;margin:0;flex-direction:column;gap:2px;padding:10px;
-    border-radius:18px;display:none;box-shadow:var(--golge);background:rgba(255,255,255,.96);z-index:45}
-  nav.acik{display:flex}
-  nav a{padding:12px 14px;font-size:15px}
+  .logo b{font-size:16px}
+  .logo span span{font-size:9px}
 }
 
 /* ===== sınav modülü ===== */
@@ -288,11 +296,8 @@ footer.site{padding:30px 0 40px;border-top:1px solid rgba(20,26,51,.08);margin-t
 
 .skip{position:absolute;left:-9999px;top:8px;background:var(--gece);color:#fff;padding:10px 16px;border-radius:10px;z-index:99}
 .skip:focus{left:16px}
-.burger{display:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--cam-kenar);background:var(--cam);
-  cursor:pointer;font-size:17px;line-height:1;color:var(--gece);box-shadow:var(--golge-yumusak)}
 @media(max-width:960px){
-  .burger{display:grid;place-items:center;margin-inline-start:auto}
-  nav{display:none;position:absolute;inset-inline:16px;top:70px;flex-direction:column;padding:10px;border-radius:18px;
+    nav{display:none;position:absolute;inset-inline:16px;top:70px;flex-direction:column;padding:10px;border-radius:18px;
      background:rgba(255,255,255,.96);box-shadow:var(--golge);overflow:visible}
   nav.on{display:flex}
   nav a{padding:12px 14px;font-size:15px}
