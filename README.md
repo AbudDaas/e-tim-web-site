@@ -50,9 +50,28 @@ Ayrıntılı adımlar `YAYIN-KONTROL-LISTESI.md` dosyasında.
 
 | Kim | Nasıl girer | Ne yapar |
 |-----|-------------|----------|
-| Öğrenci | hesap yok, sınav kodu | sınavı çözer, sonucu öğretmene gider |
-| Öğretmen | e-posta + şifre, yönetici onayı gerekir | sınav oluşturur, sonuçları görür |
-| Yönetici | `ADMIN_EMAIL` adresiyle kayıt | hesapları onaylar, askıya alır, siler |
+| Misafir öğrenci | hesapsız, sadece sınav kodu | sınavı çözer, sonuç öğretmene düşer, geçmiş tutulmaz |
+| Kayıtlı öğrenci | e-posta + şifre, onay gerekmez | sınav geçmişi, ödevler, sertifikalar, kurs ilerlemesi |
+| Öğretmen | e-posta + şifre, **yönetici onayı gerekir** | sınav hazırlar, öğrenci takibi yapar, ödev ve sertifika verir |
+| Yönetici | `ADMIN_EMAIL` adresiyle kayıt | öğretmen hesaplarını onaylar, askıya alır, siler |
+
+### Sınıf kodu
+
+Her öğretmen hesabı açılırken altı haneli bir **sınıf kodu** üretilir (panelde Öğrencilerim
+sekmesinde görünür). Öğrenci kayıt olurken bu kodu girince hesabı o öğretmene bağlanır.
+Kodu sonradan da girebilir (profilindeki "Öğretmenine bağlan" alanı).
+
+### Veri şeması
+
+```
+users/{uid}                       hesap: ad, mail, rol, durum, ogretmen, sinifKodu, sonGiris
+classes/{kod}                     sınıf kodu → öğretmen eşlemesi
+exams/{kod}                       sınav ve soruları
+exams/{kod}/results/{id}          sınavın tüm sonuçları (öğretmen görür)
+students/{uid}/results/{id}       öğrencinin kendi sınav geçmişi
+students/{uid}/tasks/{id}         ödevler
+students/{uid}/certs/{id}         sertifikalar
+```
 
 ## Sonraki adım: React'e taşımak
 
