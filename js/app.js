@@ -131,7 +131,10 @@ KV.init();
   try{
     const u=await API.oturumTazele();
     if(u){ SX.user=u;
-      if(u.durum==="onayli"){ SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); }
+      if(u.durum==="onayli"){
+        if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+        else { SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); await ogrencileriYukle(); }
+      }
     }
   }catch(e){}
   const m=location.hash.match(/^#k=([A-Z0-9]{4,8})$/i);

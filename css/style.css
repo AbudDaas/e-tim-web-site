@@ -168,7 +168,7 @@ section.page{padding:34px 0 70px;animation:in .34s ease both}
   font-family:var(--disp);font-weight:800;color:#fff;background:linear-gradient(140deg,var(--murekkep),var(--menekse))}
 .faq{border-bottom:1px solid rgba(20,26,51,.08)}
 .faq:last-child{border-bottom:0}
-.faq button{width:100%;text-align:start;background:none;border:0;padding:16px 18px;cursor:pointer;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gece);display:flex;gap:12px}
+.faq summary{width:100%;text-align:start;background:none;border:0;padding:16px 18px;cursor:pointer;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gece);display:flex;gap:12px}
 .faq button::after{content:"+";margin-inline-start:auto;color:var(--murekkep);font-size:19px;line-height:1}
 .faq[open] button::after{content:"–"}
 .faq .ans{padding:0 18px 18px;color:var(--gece-2);font-size:14.5px}
@@ -308,3 +308,47 @@ footer.site{padding:30px 0 40px;border-top:1px solid rgba(20,26,51,.08);margin-t
 .legal p{margin-bottom:10px;color:var(--gece-2);font-size:14.5px;line-height:1.7}
 :focus-visible{outline:2px solid var(--menekse);outline-offset:3px;border-radius:6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* --- SSS (details/summary) --- */
+.faq summary{list-style:none;cursor:pointer;padding:16px 18px;font-family:var(--disp);font-weight:700;font-size:15px;
+  display:flex;align-items:center;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";margin-inline-start:auto;color:var(--murekkep);font-size:20px;line-height:1}
+.faq[open] summary::after{content:"–"}
+.faq summary:hover{color:var(--murekkep)}
+
+/* --- zaman çizelgesi --- */
+.zaman{position:relative;padding-inline-start:6px}
+.zaman-sat{display:flex;gap:12px;padding:10px 0;align-items:flex-start}
+.zaman-sat b{font-family:var(--body);font-weight:600;font-size:14.5px}
+.zaman-sat .s{font-family:var(--mono);font-size:11.5px;color:var(--gece-2);margin-top:3px}
+.zaman-nokta{width:9px;height:9px;border-radius:50%;background:var(--gece-2);margin-top:6px;flex:0 0 auto;
+  box-shadow:0 0 0 4px rgba(20,26,51,.06)}
+.zaman-nokta.s{background:var(--murekkep);box-shadow:0 0 0 4px rgba(67,56,202,.15)}
+.zaman-nokta.b{background:var(--kehribar);box-shadow:0 0 0 4px rgba(224,160,32,.18)}
+
+/* --- sertifika --- */
+.sertifika{position:relative;border:1px solid rgba(67,56,202,.25);border-radius:16px;padding:24px 20px;text-align:center;
+  background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(244,245,252,.9));box-shadow:var(--golge-yumusak)}
+.sertifika::before{content:"";position:absolute;inset:8px;border:1px solid rgba(67,56,202,.14);border-radius:11px;pointer-events:none}
+.ser-ust{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--murekkep)}
+.ser-baslik{font-family:var(--disp);font-weight:800;font-size:17px;margin-top:10px;letter-spacing:-.01em}
+.ser-ad{font-family:var(--disp);font-weight:800;font-size:24px;margin:14px 0 8px;
+  background:linear-gradient(100deg,var(--murekkep),var(--menekse));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ser-metin{font-size:14px;color:var(--gece-2)}
+.ser-not{font-size:13px;color:var(--gece-2);margin-top:8px;font-style:italic}
+.ser-alt{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--gece-2);margin-top:18px}
+.ser-yazdir{margin-top:14px}
+select.sx-in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gece-2) 50%),linear-gradient(135deg,var(--gece-2) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px;background-repeat:no-repeat}
+input[type="date"].sx-in{font-family:var(--body)}
+
+/* --- yazdırma --- */
+@media print{
+  body{background:#fff}
+  .top,footer.site,.player,.toast,.ser-yazdir,.btn,nav{display:none!important}
+  body.yazdir-modu .page>*{display:none}
+  body.yazdir-modu .sertifika{display:none}
+  body.yazdir-modu .sertifika.yazdirilacak{display:block;position:fixed;inset:0;margin:auto;width:80%;height:fit-content;
+    border:2px solid var(--murekkep);box-shadow:none;background:#fff}
+}

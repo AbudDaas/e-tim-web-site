@@ -173,7 +173,7 @@ function vHakkinda(){
         <a class="btn sm" style="margin-top:16px" href="https://wa.me/${esc(i.telefon.replace(/[^0-9]/g,""))}">WhatsApp'tan yaz</a>
       </div>
       <div class="card">
-        ${h.sss.map(f=>`<details class="faq"><summary style="list-style:none"><button type="button">${esc(f.s)}</button></summary>
+        ${h.sss.map(f=>`<details class="faq"><summary>${esc(f.s)}</summary>
           <div class="ans">${esc(f.c)}</div></details>`).join("")}
       </div>
     </div>

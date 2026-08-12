@@ -79,7 +79,18 @@ async function bitir(){
     try{
       await API.sonucYaz(SX.exam.kod,{ ad:SX.ogrenci, dogru:SX._dogru, toplam:SX.qs.length,
         cevaplanan:SX._cevap, sure:SX._sure, at:Date.now(), sureBitti:SX.sureBitti, sahip:SX.exam.sahip||"",
+        ogrenciUid:(SX.user&&SX.user.rol==="ogrenci")?SX.user.uid:"",
         dokum:SX.qs.map((q,i)=>({q:q.t.map(v=>sayiYaz(v,SX.exam.eksiSag)).join(" "),a:SX.answers[i],c:q.c})) });
+      const oturumluOgrenci = SX.user && SX.user.rol==="ogrenci";
+      if(oturumluOgrenci){
+        await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:SX.exam.kod, sinavAd:SX.exam.ad,
+          dogru:SX._dogru, toplam:SX.qs.length, sure:SX._sure, at:Date.now(),
+          ogretmenAd:SX.exam.sahipAd||"" });
+        const odev=(SX.ogrOdev||[]).find(x=>x.sinavKodu===SX.exam.kod&&x.durum!=="tamamlandi");
+        if(odev){ odev.durum="tamamlandi"; odev.tamamlandiAt=Date.now();
+          try{ await API.odevYaz(SX.user.uid,odev) }catch(err){} }
+        await ogrenciVerileriYukle(SX.user.uid);
+      }
       SX._kaydedildi=true;
     }catch(e){ SX._kaydedildi=false; }
   }
@@ -100,6 +111,62 @@ document.addEventListener("click",async e=>{
       SX.exam={ad:"Serbest alıştırma",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
         geriBildirim:d.geriBildirim,gosterYanlis:true,ses:d.ses};
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
+    },
+    rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    ogrenciYenile:async()=>{ await ogrencileriYukle(); ciz(); toast("Liste güncellendi."); },
+    ogrenciAc:async()=>{
+      const o=(SX.ogrenciler||[]).find(x=>x.uid===v); if(!o) return;
+      SX.acikOgrenci=o; SX.pekran="ogrenci"; ciz();
+      const [s,od,c]=await Promise.all([API.ogrenciSonuclari(v),API.odevler(v),API.sertifikalar(v)]);
+      SX.ogrSonuc=s; SX.ogrOdev=od; SX.ogrSertifika=c; ciz();
+    },
+    odevVer:async()=>{
+      const o=SX.acikOgrenci; if(!o) return;
+      const baslik=($("odBaslik").value||"").trim();
+      if(!baslik){ toast("Ödev başlığı gerekli."); return; }
+      const odev={ baslik, aciklama:($("odAciklama").value||"").trim(),
+        sinavKodu:($("odKod").value||"").trim().toUpperCase(),
+        sonTarih:$("odTarih").value||"", durum:"verildi", at:Date.now(),
+        veren:SX.user.uid, verenAd:SX.user.ad };
+      try{ await API.odevYaz(o.uid,odev); }catch(err){ toast("Kaydedilemedi."); return; }
+      SX.ogrOdev=await API.odevler(o.uid); ciz(); toast("Ödev gönderildi.");
+    },
+    odevKaldir:async()=>{
+      const o=SX.acikOgrenci; if(!o||!confirm("Ödev silinsin mi?")) return;
+      await API.odevSil(o.uid,v); SX.ogrOdev=await API.odevler(o.uid); ciz();
+    },
+    sertVer:async()=>{
+      const o=SX.acikOgrenci; if(!o) return;
+      const s={ kurs:$("sertKurs").value, not:($("sertNot").value||"").trim(),
+        at:Date.now(), veren:SX.user.uid, verenAd:SX.user.ad };
+      try{ await API.sertifikaYaz(o.uid,s); }catch(err){ toast("Kaydedilemedi."); return; }
+      SX.ogrSertifika=await API.sertifikalar(o.uid); ciz(); toast("Sertifika verildi.");
+    },
+    sertKaldir:async()=>{
+      const o=SX.acikOgrenci; if(!o||!confirm("Sertifika silinsin mi?")) return;
+      await API.sertifikaSil(o.uid,v); SX.ogrSertifika=await API.sertifikalar(o.uid); ciz();
+    },
+    odevTamam:async()=>{
+      const x=(SX.ogrOdev||[]).find(o=>o.id===v); if(!x) return;
+      x.durum="tamamlandi"; x.tamamlandiAt=Date.now();
+      await API.odevYaz(SX.user.uid,x); await ogrenciVerileriYukle(SX.user.uid); ciz(); toast("Ödev tamamlandı olarak işaretlendi.");
+    },
+    odevSinava:()=>{ SX.ekran="giris"; location.hash="#/sinav";
+      setTimeout(()=>{ const k=$("sxKod"); if(k){ k.value=v; kodGir(); } },120); },
+    ogretmeneBaglan:async()=>{
+      const kod=($("sxBagKod").value||"").trim().toUpperCase();
+      const n=$("sxBagNot");
+      if(kod.length<4){ n.innerHTML=`<span class="sx-warn">Kodu eksiksiz yaz.</span>`; return; }
+      const sinif=await API.sinifAl(kod);
+      if(!sinif){ n.innerHTML=`<span class="sx-warn">Bu kodla öğretmen bulunamadı.</span>`; return; }
+      SX.user.ogretmen=sinif.ogretmen; SX.user.ogretmenAd=sinif.ogretmenAd;
+      await API.hesapYaz(SX.user); ciz(); toast("Öğretmenine bağlandın.");
+    },
+    sertYazdir:()=>{
+      const el=document.getElementById("sert-"+v); if(!el) return;
+      document.body.classList.add("yazdir-modu");
+      document.querySelectorAll(".sertifika").forEach(x=>x.classList.toggle("yazdirilacak",x===el));
+      setTimeout(()=>{ window.print(); document.body.classList.remove("yazdir-modu"); },60);
     },
     kodGir:kodGir, basla:isimOnayla, kontrol:cevapla, bitir:()=>bitir(),
     tekrar:()=>{ SX.sureBitti=false; cozBasla(sinavListesi()); },
@@ -138,7 +205,7 @@ document.addEventListener("click",async e=>{
     sonucAcKapa:()=>{ SX.acikSonuc=(SX.acikSonuc===v?null:v); sonucBoya(); },
     sonucSil:async()=>{ if(!confirm("Sonuç silinsin mi?"))return;
       await API.sonucSil(v); SX.acikSonuc=null; await sonuclariYukle(); },
-    csv:csvIndir, panel:()=>{ SX.pekran="panel"; ciz(); },
+    csv:csvIndir, panel:()=>{ SX.acikOgrenci=null; SX.pekran="panel"; ciz(); },
     kopyala:()=>kopyala($("sxPay").value,b),
     whatsapp:()=>window.open("https://wa.me/?text="+encodeURIComponent($("sxPay").value),"_blank")
   }[a];
@@ -177,7 +244,9 @@ async function kodGir(){
   mesgul(b,false);
   if(!x){ $("sxKodNot").innerHTML=`<span class="sx-warn">Bu kodla sınav bulunamadı. Kodu öğretmeninle bir daha kontrol et.</span>`; return; }
   if(x.acik===false){ $("sxKodNot").innerHTML=`<span class="sx-warn">Bu sınav şu an kapalı.</span>`; return; }
-  SX.exam=x; SX.alistirma=false; SX.ekran="isim"; ciz();
+  SX.exam=x; SX.alistirma=false;
+  if(SX.user&&SX.user.rol==="ogrenci"){ SX.ogrenci=SX.user.ad; }
+  SX.ekran="isim"; ciz();
 }
 function isimOnayla(){
   const ad=($("sxIsim").value||"").trim();
@@ -195,20 +264,51 @@ async function girisYap(){
 async function kayitOl(){
   const n=$("sxAuthNot"), ad=($("sxAd")?$("sxAd").value:"").trim();
   const mail=($("sxMail").value||"").trim(), sifre=$("sxSifre").value||"";
+  const rol=SX.kayitRol||"ogrenci";
+  const sinifKodu=($("sxSinifKodu")?$("sxSinifKodu").value:"").trim().toUpperCase();
   if(!ad){ n.innerHTML=`<span class="sx-warn">Adını yaz.</span>`; return; }
   if(!mailMi(mail)){ n.innerHTML=`<span class="sx-warn">Geçerli bir e-posta yaz.</span>`; return; }
   if(sifre.length<6){ n.innerHTML=`<span class="sx-warn">Şifre en az 6 karakter olmalı.</span>`; return; }
   const b=document.querySelector('[data-sx="kayitOl"]'); mesgul(b,true); n.textContent="Hesap oluşturuluyor…";
   try{
-    const u=await API.kayit(mail,sifre,ad);
+    const u=await API.kayit(mail,sifre,ad,rol,sinifKodu);
     if(u.durum==="onayli") await girisSonrasi(u);
     else { SX.user=u; toast("Kaydın alındı. Yönetici onayı bekleniyor."); ciz(); }
-  }catch(e){ mesgul(b,false); n.innerHTML=`<span class="sx-warn">${/MAIL_VAR/.test(e.message)?"Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene.":"Bağlantı kurulamadı, internetini kontrol et."}</span>`; }
+  }catch(err){
+    mesgul(b,false);
+    const m=/MAIL_VAR/.test(err.message) ? "Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene."
+      : /SINIF_YOK/.test(err.message) ? "Bu öğretmen kodu bulunamadı. Boş bırakıp sonra da ekleyebilirsin."
+      : "Bağlantı kurulamadı, internetini kontrol et.";
+    n.innerHTML=`<span class="sx-warn">${m}</span>`;
+  }
 }
 async function girisSonrasi(u){
-  SX.user=u; SX.pekran="panel"; SX.ptab="sinavlar"; Oturum.yaz(u);
-  if(u.durum==="onayli"){ if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); }
+  SX.user=u; Oturum.yaz(u);
+  try{ await API.girisIzi(u) }catch(err){}
+  if(u.durum==="onayli"){
+    if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+    else {
+      SX.pekran="panel"; SX.ptab="sinavlar";
+      if(u.yonetici) await hesaplariYukle();
+      await sinavlariYukle(); await ogrencileriYukle();
+    }
+  }
   ciz();
+}
+async function ogrenciVerileriYukle(uid){
+  const [s,o,c]=await Promise.all([API.ogrenciSonuclari(uid),API.odevler(uid),API.sertifikalar(uid)]);
+  SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c;
+}
+async function ogrencileriYukle(){
+  if(!SX.user||SX.user.rol==="ogrenci") return;
+  try{
+    SX.ogrenciler=(await API.ogrenciler(SX.user.uid)).sort((a,b)=>(b.sonGiris||0)-(a.sonGiris||0));
+    SX.ogrOzet={};
+    for(const o of SX.ogrenciler){
+      const s=await API.ogrenciSonuclari(o.uid);
+      SX.ogrOzet[o.uid]={sinav:s.length, ort:s.length?Math.round(s.reduce((a,r)=>a+r.dogru/r.toplam*100,0)/s.length):0};
+    }
+  }catch(err){ SX.ogrenciler=[]; }
 }
 async function hesaplariYukle(){ SX.hesaplar=(await API.hesaplar()).sort((a,b)=>(b.at||0)-(a.at||0)); }
 async function sinavlariYukle(){ if(!SX.user) return;

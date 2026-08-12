@@ -45,21 +45,33 @@ const Oturum={
   sil(){ Yerel.del("zx:oturum"); }
 };
 const API={
- async kayit(mail,sifre,ad){
-   mail=mail.trim().toLowerCase();
+ async kayit(mail,sifre,ad,rol,ogretmenKodu){
+   mail=mail.trim().toLowerCase(); rol=rol||"ogretmen";
    let yonetici=!!(ADMIN_EMAIL&&mail===ADMIN_EMAIL.trim().toLowerCase());
-   if(!ADMIN_EMAIL){ try{ yonetici=(await this.hesaplar()).length===0 }catch(e){} }
-   const k={mail,ad:ad.trim(),durum:yonetici?"onayli":"bekliyor",yonetici,at:Date.now()};
+   if(!ADMIN_EMAIL&&rol==="ogretmen"){ try{ yonetici=(await this.hesaplar()).length===0 }catch(e){} }
+   // öğrenci hesapları doğrudan açılır, öğretmen hesapları yönetici onayı bekler
+   const k={ mail, ad:ad.trim(), rol,
+     durum:(rol==="ogrenci"||yonetici)?"onayli":"bekliyor",
+     yonetici, at:Date.now(), sonGiris:Date.now() };
+   if(rol==="ogretmen") k.sinifKodu=yeniKod();
+   if(rol==="ogrenci"&&ogretmenKodu){
+     const sinif=await this.sinifAl(ogretmenKodu.trim().toUpperCase());
+     if(!sinif) throw new Error("SINIF_YOK");
+     k.ogretmen=sinif.ogretmen; k.ogretmenAd=sinif.ogretmenAd;
+   }
    if(bulut()){
      let j; try{ j=await FB.id("signUp",{email:mail,password:sifre,returnSecureToken:true}) }
      catch(e){ throw new Error(/EMAIL_EXISTS/.test(e.message)?"MAIL_VAR":"AG") }
      FB.token=j.idToken; FB.uid=j.localId; k.uid=j.localId;
-     await FB.set("users/"+j.localId,k); return k;
+     await FB.set("users/"+j.localId,k);
+     if(k.sinifKodu) await FB.set("classes/"+k.sinifKodu,{kod:k.sinifKodu,ogretmen:k.uid,ogretmenAd:k.ad});
+     return k;
    }
    if(await KV.get("sx:mail:"+mail)) throw new Error("MAIL_VAR");
    k.uid="u_"+(await sha(mail)).slice(0,12);
    k.ph=await sha(mail+"::"+sifre);
    await KV.set("sx:user:"+k.uid,k); await KV.set("sx:mail:"+mail,k.uid);
+   if(k.sinifKodu) await KV.set("sx:sinif:"+k.sinifKodu,{kod:k.sinifKodu,ogretmen:k.uid,ogretmenAd:k.ad});
    return k;
  },
  async giris(mail,sifre){
@@ -108,4 +120,46 @@ const API={
  async sonuclar(kod){ if(bulut()) return (await FB.list("exams/"+kod+"/results")).map(r=>Object.assign(r,{_k:"exams/"+kod+"/results/"+r._id}));
    const ks=await KV.list("sx:res:"+kod+":");const o=[];for(const k of ks){const r=await KV.get(k);if(r)o.push(Object.assign({_k:k},r))}return o },
  async sonucSil(k){ bulut()? await FB.del(k) : await KV.del(k) }
+ ,
+ /* --- sınıf kodu --- */
+ async sinifYaz(k,uid,ad){ const d={kod:k,ogretmen:uid,ogretmenAd:ad};
+   bulut()? await FB.set("classes/"+k,d) : await KV.set("sx:sinif:"+k,d) },
+ async sinifAl(k){ return bulut()? await FB.get("classes/"+k) : await KV.get("sx:sinif:"+k) },
+
+ /* --- öğrenciler --- */
+ async ogrenciler(ogretmenUid){
+   const hepsi=await this.hesaplar();
+   return hepsi.filter(u=>u.rol==="ogrenci"&&u.ogretmen===ogretmenUid);
+ },
+ async ogrenciAl(uid){ return bulut()? await FB.get("users/"+uid) : await KV.get("sx:user:"+uid) },
+ async girisIzi(u){ u.sonGiris=Date.now(); try{ await this.hesapYaz(u) }catch(e){} },
+
+ /* --- ödevler --- */
+ async odevYaz(uid,o){ o.id=o.id||yeniId();
+   bulut()? await FB.set("students/"+uid+"/tasks/"+o.id,o) : await KV.set("sx:odev:"+uid+":"+o.id,o); return o },
+ async odevler(uid){
+   if(bulut()) return await FB.list("students/"+uid+"/tasks");
+   const ks=await KV.list("sx:odev:"+uid+":"); const o=[];
+   for(const k of ks){ const x=await KV.get(k); if(x) o.push(x) } return o;
+ },
+ async odevSil(uid,id){ bulut()? await FB.del("students/"+uid+"/tasks/"+id) : await KV.del("sx:odev:"+uid+":"+id) },
+
+ /* --- sertifikalar --- */
+ async sertifikaYaz(uid,s){ s.id=s.id||yeniId();
+   bulut()? await FB.set("students/"+uid+"/certs/"+s.id,s) : await KV.set("sx:sert:"+uid+":"+s.id,s); return s },
+ async sertifikalar(uid){
+   if(bulut()) return await FB.list("students/"+uid+"/certs");
+   const ks=await KV.list("sx:sert:"+uid+":"); const o=[];
+   for(const k of ks){ const x=await KV.get(k); if(x) o.push(x) } return o;
+ },
+ async sertifikaSil(uid,id){ bulut()? await FB.del("students/"+uid+"/certs/"+id) : await KV.del("sx:sert:"+uid+":"+id) },
+
+ /* --- öğrencinin sınav geçmişi --- */
+ async ogrenciSonucYaz(uid,r){ const id=yeniId(); r.id=id;
+   bulut()? await FB.set("students/"+uid+"/results/"+id,r) : await KV.set("sx:ogrsonuc:"+uid+":"+id,r) },
+ async ogrenciSonuclari(uid){
+   if(bulut()) return await FB.list("students/"+uid+"/results");
+   const ks=await KV.list("sx:ogrsonuc:"+uid+":"); const o=[];
+   for(const k of ks){ const x=await KV.get(k); if(x) o.push(x) } return o;
+ }
 };

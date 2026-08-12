@@ -3,6 +3,13 @@
 const DATA = {
   marka:{ ad:"Zihin Akademi", alt:"zihinsel aritmetik", sinavLinki:"#/sinav" },
 
+  kurslar:[
+    {ad:"Seviye 1 — Abaküs tanışma", not:"Boncuk okuma, tek basamaklı toplama"},
+    {ad:"Seviye 2 — İki basamak", not:"Beş ve on tamamlayanlar, çıkarma"},
+    {ad:"Seviye 3 — Zihin abaküsü", not:"Fiziksel abaküsten hayalî abaküse geçiş"},
+    {ad:"Seviye 4 — Hız ve dayanıklılık", not:"Uzun diziler, yarışma temposu"}
+  ],
+
   ana:{
     etiket:"Gaziantep · 7–14 yaş",
     baslik:"Çocuklar sayıları <span class='grad'>görerek</span> düşünmeyi öğreniyor",
