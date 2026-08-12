@@ -1,6 +1,29 @@
 /* Site sekmelerinin görünümleri. */
 
 /* ---------------- görünümler ---------------- */
+
+/* --- giriş kontrolü --- */
+function girisliMi(){ return !!(SX.user && SX.user.durum==="onayli"); }
+function kilitliEkran(baslik, aciklama, liste){
+  return `<section class="page">
+    <div class="eyebrow">Üyelere özel</div>
+    <h2 style="margin:10px 0 8px">${esc(baslik)}</h2>
+    <p class="muted" style="max-width:52ch">${esc(aciklama)}</p>
+    <div class="card pad kilit" style="max-width:560px;margin-top:22px">
+      <div class="kilit-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+      </div>
+      <h3 style="margin-bottom:8px">Bu bölüm üyelere açık</h3>
+      <p class="muted" style="font-size:14.5px">Ücretsiz bir öğrenci hesabı aç, tüm ${esc(baslik.toLowerCase())} arşivine ve sınav geçmişine eriş.</p>
+      <ul class="kilit-liste">${(liste||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+      <div class="sx-row" style="margin-top:18px">
+        <button class="btn" data-sx="girisIste">Giriş yap</button>
+        <button class="btn ghost" data-sx="kayitIste">Ücretsiz kayıt ol</button>
+      </div>
+    </div></section>`;
+}
+
 function vAna(){
   const a=DATA.ana;
   return `
@@ -47,6 +70,9 @@ function kartOzet(etiket,baslik,alt,link,cta){
 }
 
 function vKesitler(){
+  if(!girisliMi()) return kilitliEkran("Ders kesitleri",
+    "Derslerden alınan kısa video parçaları. Çocuğunun hangi tekniği öğrendiğini görmenin en kolay yolu.",
+    ["Tüm seviyelerin ders kesitleri","Yeni kesitler eklendikçe erişim","Sınav geçmişi ve ödev takibi"]);
   const k=DATA.kesitler;
   const liste=k.liste.filter(x=>filtre==="Tümü"||x.kategori===filtre);
   return `<section class="page">
@@ -72,6 +98,9 @@ function vKesitler(){
 }
 
 function vPodcast(){
+  if(!girisliMi()) return kilitliEkran("Podcast bölümleri",
+    "Velilerle ve eğitmenlerle yaptığımız sohbetler. Arabada, mutfakta dinlenecek uzunlukta.",
+    ["Bütün bölümler ve yeni yayınlar","İndirilebilir ses dosyaları","Sınav geçmişi ve ödev takibi"]);
   const p=DATA.podcast;
   return `<section class="page">
     <div class="eyebrow">Dinle</div>

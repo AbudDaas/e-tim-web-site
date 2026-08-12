@@ -196,6 +196,11 @@ function sxPanel(){
         ${u.sinifKodu?`<span class="sx-badge">sınıf kodu ${esc(u.sinifKodu)}</span>`:""}
         <span style="margin-inline-start:auto"></span>
         <button class="btn ghost sm" data-sx="cikis">Çıkış yap</button></div>
+      ${(yon&&bekleyen)?`<div class="uyari" data-sx="ptab" data-v="hesaplar" role="button" tabindex="0">
+        <span class="uyari-nokta"></span>
+        <div><b>${bekleyen} hesap onayını bekliyor</b>
+        <div class="s">Onaylamadığın öğretmenler panele giremez. Görmek için dokun.</div></div>
+        <span class="uyari-ok">→</span></div>`:""}
       <div class="sx-tabs">
         <button data-sx="ptab" data-v="sinavlar" aria-pressed="${SX.ptab==="sinavlar"}">Sınavlarım</button>
         <button data-sx="ptab" data-v="ogrenciler" aria-pressed="${SX.ptab==="ogrenciler"}">Öğrencilerim${(SX.ogrenciler||[]).length?` (${SX.ogrenciler.length})`:""}</button>

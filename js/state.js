@@ -3,6 +3,6 @@
 const SX={ ekran:"giris", pekran:"giris", ptab:"sinavlar",
   user:null, exam:null, ogrenci:"", taslak:null, sinavlar:[], hesaplar:[], sonuclar:[],
   resCode:null, acikSonuc:null, alistirma:false,
-  kayitRol:"ogrenci", ogrenciler:[], ogrOzet:{}, acikOgrenci:null,
+  kayitRol:"ogrenci", geriYol:null, ogrenciler:[], ogrOzet:{}, acikOgrenci:null,
   ogrSonuc:[], ogrOdev:[], ogrSertifika:[],
   qs:[],i:0,answers:[],times:[],t0:0,qt0:0,tick:null,kilit:false,sureBitti:false,bitis:0 };

@@ -113,6 +113,8 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    girisIste:()=>{ SX.geriYol=location.hash||"#/"; SX.pekran="giris"; location.hash="#/profil"; },
+    kayitIste:()=>{ SX.geriYol=location.hash||"#/"; SX.pekran="kayit"; SX.kayitRol="ogrenci"; location.hash="#/profil"; },
     ogrenciYenile:async()=>{ await ogrencileriYukle(); ciz(); toast("Liste güncellendi."); },
     ogrenciAc:async()=>{
       const o=(SX.ogrenciler||[]).find(x=>x.uid===v); if(!o) return;
@@ -284,6 +286,7 @@ async function kayitOl(){
 }
 async function girisSonrasi(u){
   SX.user=u; Oturum.yaz(u);
+  const geri=SX.geriYol; SX.geriYol=null;
   try{ await API.girisIzi(u) }catch(err){}
   if(u.durum==="onayli"){
     if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
@@ -293,6 +296,7 @@ async function girisSonrasi(u){
       await sinavlariYukle(); await ogrencileriYukle();
     }
   }
+  if(geri && geri!=="#/profil"){ location.hash=geri; toast("Hoş geldin, "+(u.ad||"").split(" ")[0]+"."); return; }
   ciz();
 }
 async function ogrenciVerileriYukle(uid){
