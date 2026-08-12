@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soroban · Zihinsel Aritmetik Platformu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tatami:#DAD6C4; --tatami-2:#CFCAB5; --washi:#F4F1E7;
+  --ink:#241E1B; --ink-soft:#6C645C;
+  --indigo:#26456F; --bamboo:#B5873C; --jade:#2E7D5B; --persimmon:#C1522F;
+  --rod:#BDB7A4; --line:rgba(36,30,27,.16);
+  --shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 8px 24px -14px rgba(36,30,27,.55);
+  --ui:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --num:"Zen Kaku Gothic New","IBM Plex Sans Arabic",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 1px,transparent 1px 6px),var(--tatami);color:var(--ink);font-family:var(--ui);-webkit-text-size-adjust:100%;display:flex;justify-content:center;padding:16px 14px 34px;min-height:100vh}
+.app{width:100%;max-width:680px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font-weight:700;font-size:16px;letter-spacing:-.01em;cursor:pointer}
+.brand span{color:var(--bamboo)}
+.tag{font-family:var(--mono);font-size:10px;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase}
+.spacer{margin-inline-start:auto}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.35)}
+.lang button{font-family:var(--mono);font-size:11px;padding:5px 11px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--washi)}
+.mode{font-family:var(--mono);font-size:10px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:rgba(255,255,255,.35)}
+.card{background:var(--washi);border:1px solid var(--line);border-radius:7px;box-shadow:var(--shadow);padding:18px;margin-bottom:12px}
+h1{font-family:var(--num);font-weight:900;font-size:clamp(25px,6.2vw,36px);line-height:1.08;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-family:var(--num);font-weight:700;font-size:19px;margin:0 0 4px}
+.lede{color:var(--ink-soft);font-size:14px;line-height:1.55;margin:0 0 18px;max-width:48ch}
+.field{margin-bottom:16px}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.chip{font-family:var(--ui);font-size:13px;font-weight:500;padding:8px 13px;border-radius:5px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.chip:hover{border-color:var(--indigo)}
+.chip[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.chip small{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:2px}
+.mins{font-family:var(--mono);font-size:13px;width:82px;padding:8px 9px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.txt{width:100%;font-family:var(--ui);font-size:15px;padding:11px 12px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.code-in{font-family:var(--mono);font-size:26px;letter-spacing:.28em;text-align:center;text-transform:uppercase;padding:14px 10px}
+textarea{width:100%;min-height:150px;resize:vertical;font-family:var(--mono);font-size:14px;line-height:1.7;padding:12px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink);direction:ltr;text-align:left}
+.note{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.75;margin-top:8px}
+.note b{color:var(--ink);font-weight:500}
+.note .warn{color:var(--persimmon)}
+.note .good{color:var(--jade)}
+.btn{font-family:var(--ui);font-weight:600;font-size:15px;padding:13px 20px;border-radius:5px;border:1px solid var(--ink);background:var(--ink);color:var(--washi);cursor:pointer;width:100%}
+.btn:hover{background:#000}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:rgba(36,30,27,.06)}
+.btn.sm{font-size:13px;padding:9px 13px;width:auto}
+.btn.danger{border-color:var(--persimmon);color:var(--persimmon);background:transparent}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.row .btn{flex:1}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--bamboo);outline-offset:2px}
+.pick{display:grid;gap:10px}
+.pick button{text-align:start;padding:18px;border-radius:6px;border:1px solid var(--line);background:var(--washi);cursor:pointer;font-family:var(--ui);color:var(--ink);box-shadow:var(--shadow)}
+.pick button:hover{border-color:var(--indigo)}
+.pick b{display:block;font-family:var(--num);font-weight:700;font-size:19px;margin-bottom:3px}
+.pick span{font-size:13px;color:var(--ink-soft);line-height:1.5}
+.item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .grow{flex:1;min-width:0}
+.item b{display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .sub{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:3px}
+.pill{font-family:var(--mono);font-size:13px;letter-spacing:.16em;background:var(--indigo);color:#fff;border-radius:4px;padding:5px 9px}
+.empty{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);line-height:1.8;padding:10px 0}
+.meta{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+#clock{font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink)}
+#clock.low{color:var(--persimmon);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.rail{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px;justify-content:center}
+.rod{display:flex;gap:3px;padding:4px 5px;border-radius:999px;background:rgba(36,30,27,.05);position:relative}
+.rod::before{content:"";position:absolute;inset-inline:5px;top:50%;height:1px;background:var(--rod)}
+.bead{width:7px;height:7px;border-radius:50%;background:var(--washi);border:1px solid var(--rod);position:relative;z-index:1;transition:transform .18s,background .18s,border-color .18s}
+.bead.ok{background:var(--indigo);border-color:var(--indigo)}
+.bead.no{background:var(--persimmon);border-color:var(--persimmon)}
+.bead.now{background:var(--bamboo);border-color:var(--bamboo);transform:scale(1.65)}
+.stack{position:relative;min-height:182px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 14px}
+.stack .rodline{position:absolute;top:14px;bottom:44px;width:2px;background:var(--bamboo);opacity:.35;inset-inline-start:calc(50% - 74px)}
+.term{font-family:var(--num);font-weight:900;font-size:clamp(31px,9vw,43px);line-height:1.14;font-variant-numeric:tabular-nums;width:118px;text-align:end;direction:ltr;animation:drop .28s cubic-bezier(.2,.7,.3,1) backwards}
+.term.neg{color:var(--persimmon)}
+@keyframes drop{from{opacity:0;transform:translateY(-9px)}to{opacity:1;transform:none}}
+.sumline{width:132px;height:2px;background:var(--ink);margin-top:8px;opacity:.85}
+.answer{display:flex;gap:9px;margin-top:12px}
+.answer input{flex:1;min-width:0;font-family:var(--num);font-weight:700;font-size:27px;text-align:center;direction:ltr;padding:10px 12px;border-radius:5px;border:2px solid var(--line);background:#fff;color:var(--ink)}
+.answer .btn{width:auto;flex:0 0 auto;padding-inline:18px}
+.answer.shake{animation:shake .32s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.verdict{height:24px;margin-top:9px;text-align:center;font-family:var(--mono);font-size:13px}
+.verdict.ok{color:var(--jade)}
+.verdict.no{color:var(--persimmon)}
+.pad{display:none;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+.pad button{font-family:var(--num);font-weight:700;font-size:21px;padding:13px 0;border-radius:5px;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--ink);cursor:pointer}
+.pad .wide{font-family:var(--ui);font-size:15px;font-weight:600}
+@media (max-width:760px){.pad{display:grid}}
+.banner{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--persimmon);text-align:center;margin-bottom:10px}
+.who{text-align:center;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:6px}
+.score{font-family:var(--num);font-weight:900;font-size:clamp(48px,14vw,70px);line-height:1;text-align:center;direction:ltr}
+.score small{font-size:.34em;color:var(--ink-soft);font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:18px 0}
+.stat{background:var(--washi);padding:12px 8px;text-align:center}
+.stat b{display:block;font-family:var(--mono);font-size:17px;font-weight:500;direction:ltr}
+.stat span{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+.misses{border-top:1px solid var(--line);margin-top:6px;padding-top:14px}
+.miss{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.miss .q{font-family:var(--mono);font-size:13px;direction:ltr;flex:1}
+.miss .mine{color:var(--persimmon);font-family:var(--mono);text-decoration:line-through}
+.miss .mine.skip{text-decoration:none;opacity:.6}
+.miss .real{color:var(--jade);font-family:var(--mono);font-weight:500}
+.miss .idx{font-family:var(--mono);font-size:11px;color:var(--ink-soft);min-width:26px}
+.rank{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.rank .no{font-family:var(--mono);font-size:12px;color:var(--ink-soft);min-width:22px}
+.rank .nm{flex:1;font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .sc{font-family:var(--mono);font-size:14px;font-weight:500}
+.rank .tm{font-family:var(--mono);font-size:11px;color:var(--ink-soft);min-width:44px;text-align:end}
+.bar{height:4px;border-radius:2px;background:var(--tatami-2);overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:var(--indigo)}
+footer{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-align:center;line-height:1.7}
+kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:1px 4px;background:rgba(255,255,255,.5)}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tabs button{font-family:var(--ui);font-size:14px;font-weight:600;padding:9px 13px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--indigo)}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
+.badge.wait{color:var(--bamboo);border-color:var(--bamboo)}
+.badge.ok{color:var(--jade);border-color:var(--jade)}
+.badge.blocked{color:var(--persimmon);border-color:var(--persimmon)}
+.who-bar{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-bottom:12px}
+.who-bar b{font-family:var(--ui);font-size:13px;color:var(--ink);font-weight:600}
+.hidden{display:none!important}
+.toast{position:fixed;inset-inline:0;bottom:18px;margin:auto;width:max-content;max-width:90%;background:var(--ink);color:var(--washi);font-family:var(--mono);font-size:12.5px;padding:10px 16px;border-radius:5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="brand" id="home-link">SOROBAN<span>·</span>SINIF</div>
+      <div class="tag" id="tagline">zihinsel aritmetik platformu</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="mode" id="modeBadge">—</div>
+    <div class="lang">
+      <button id="tr" aria-pressed="true">TR</button>
+      <button id="ar" aria-pressed="false">AR</button>
+    </div>
+  </header>
+  <main id="screen"></main>
+  <footer id="foot"></footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* =====================================================================
+   KURULUM
+   1) Firebase Console → yeni proje (ya da mevcut projen)
+   2) Authentication → Sign-in method → Email/Password ve Anonymous: aç
+   3) Firestore Database → oluştur
+   4) Project settings → Web App → apiKey ve projectId'yi buraya yaz
+   5) ADMIN_EMAIL: senin yönetici hesabın. Bu adresle kayıt ol, otomatik onaylı gelir.
+   Boş bırakırsan her şey yalnız açtığın tarayıcıda çalışır (deneme modu).
+   ===================================================================== */
+const FIREBASE   = { projectId:"huda-math-egtin-sitesi", apiKey:"AIzaSyBjemD2llIDz22g8ZXIOAVpxWwziRjLEzU" };
+const ADMIN_EMAIL = "abdulrazakdaas01@gmail.com";
+
+/* ---------------- i18n ---------------- */
+const T={
+ tr:{
+  tagline:"zihinsel aritmetik platformu",
+  modeCloud:"bulut", modeShared:"paylaşımlı", modeLocal:"deneme",
+  homeTitle:"Zihinsel aritmetik sınıfı",
+  homeLede:"Öğretmen sınav hazırlar, öğrenciler kodla girer, sonuçlar panelde toplanır.",
+  iAmStudent:"Öğrenciyim", iAmStudentSub:"Öğretmenin verdiği kodu gir, sınavı çöz.",
+  iAmTeacher:"Öğretmen girişi", iAmTeacherSub:"Hesabınla gir, sınav hazırla, sonuçları gör.",
+  practice:"Serbest alıştırma", practiceSub:"Kod olmadan kendine soru üret ve çalış.",
+  join:"Sınava gir", codeLabel:"Sınav kodu", codePh:"ABC123",
+  notFound:"Bu kodla sınav bulunamadı.", closed:"Bu sınav kapatılmış.",
+  name:"Adın soyadın", namePh:"Ad Soyad", needName:"Önce adını yaz.",
+  start:"Başla", check:"Kontrol", stop:"Bitir", back:"Geri",
+  ok:"Doğru", no:"Yanlış — doğrusu", saved:"Cevap alındı", skipped:"boş",
+  acc:"isabet", time:"süre", avg:"soru başına",
+  timeout:"Süre doldu", missTitle:"Yanlış ve boş kalanlar", none:"Hepsi doğru. Tam puan.",
+  hint:"<kbd>Enter</kbd> ile kontrol et · <kbd>-</kbd> eksi cevap için",
+  sent:"Sonucun öğretmene iletildi.", notSent:"Sonuç kaydedilemedi, öğretmenine haber ver.",
+  again:"Yeniden çöz", retry:"Yanlışları çöz", exit:"Çıkış",
+  /* hesap */
+  login:"Giriş yap", register:"Kayıt ol", email:"E-posta", pass:"Şifre",
+  passPh:"en az 6 karakter", fullName:"Ad soyad",
+  doLogin:"Giriş yap", doRegister:"Hesap oluştur", logout:"Çıkış yap",
+  needEmail:"Geçerli bir e-posta yaz.", needPass:"Şifre en az 6 karakter olmalı.",
+  needFull:"Adını yaz.", emailTaken:"Bu e-posta zaten kayıtlı.",
+  badCred:"E-posta veya şifre hatalı.", regOk:"Kaydın alındı. Yönetici onayı bekleniyor.",
+  pendingTitle:"Hesabın onay bekliyor", pendingLede:"Yönetici hesabını onayladıktan sonra panele girebilirsin. Onaylandığında tekrar giriş yap.",
+  blockedTitle:"Hesabın kapalı", blockedLede:"Bu hesabın erişimi yönetici tarafından durduruldu.",
+  /* yönetici */
+  admin:"Yönetici", adminUsers:"Hesaplar", waiting:"Onay bekleyen",
+  approve:"Onayla", reject:"Reddet", block:"Askıya al", unblock:"Yeniden aç", delUser:"Sil",
+  delUserAsk:"Hesap silinsin mi?", noPending:"Bekleyen hesap yok.", noUsers:"Kayıtlı hesap yok.",
+  stPending:"bekliyor", stApproved:"onaylı", stBlocked:"kapalı",
+  tabExams:"Sınavlarım", tabAdmin:"Hesaplar",
+  /* sınav */
+  panel:"Sınavlarım", newExam:"Yeni sınav", noExams:"Henüz sınav yok. Yeni sınav ile başla.",
+  results:"Sonuçlar", edit:"Düzenle", del:"Sil", delAsk:"Sınav ve sonuçları silinsin mi?",
+  examTitle:"Sınav adı", examTitlePh:"3. Sınıf — 1. Deneme",
+  source:"Sorular", auto:"Otomatik üret", custom:"Kendim yazacağım",
+  level:"Seviye", count:"Soru sayısı", write:"Soruları yaz",
+  limit:"Süre", noLimit:"Süresiz", min:"dk", custMin:"özel",
+  minus:"Eksi işareti", left:"Solda −5", right:"Sağda 5−",
+  options:"Seçenekler", shuffle:"Sırayı karıştır", feedback:"Her soruda doğru/yanlış göster",
+  reveal:"Bitince yanlışları öğrenciye göster", sound:"Ses",
+  save:"Sınavı yayınla", update:"Değişiklikleri kaydet",
+  needTitle:"Sınav adı gerekli.", needQ:"En az bir soru gerekli.",
+  published:"Sınav yayında", shareText:"Öğrencilere şunu gönder:",
+  copy:"Kopyala", copied:"Kopyalandı", wa:"WhatsApp", done:"Tamam",
+  active:"Açık", inactive:"Kapalı", toggle:"Aç / kapat",
+  noResults:"Henüz kimse çözmedi.", refresh:"Yenile", csv:"CSV indir",
+  students:"öğrenci", avgScore:"ortalama", best:"en iyi",
+  detailOf:"cevap dökümü", delRes:"Bu sonucu sil", delResAsk:"Sonuç silinsin mi?",
+  help:'Her satır bir soru. Sayıları boşlukla ayır. Eksi için <b>-3</b> ya da <b>3-</b>. Cevabı kendin vermek istersen satır sonuna <b>= 41</b> ekle. <b>#</b> ile başlayan satır atlanır.',
+  ready:q=>`<span class="good">${q} soru hazır.</span>`,
+  badLines:l=>`<span class="warn">Anlaşılmayan satır: ${l}</span>`,
+  empty:"Henüz soru yok.", qmark:"soru",
+  storeCloud:"Hesaplar ve sonuçlar Firebase projende.",
+  storeShared:"Deneme modu: veriler bu sayfanın paylaşımlı deposunda.",
+  storeLocal:"Deneme modu: veriler yalnız bu tarayıcıda. Gerçek kullanım için dosyadaki FIREBASE ve ADMIN_EMAIL alanlarını doldur.",
+  netErr:"Bağlantı hatası."
+ },
+ ar:{
+  tagline:"منصة الحساب الذهني",
+  modeCloud:"سحابة", modeShared:"مشترك", modeLocal:"تجريبي",
+  homeTitle:"صف الحساب الذهني",
+  homeLede:"المعلّم يجهّز الاختبار، الطلاب يدخلون برمز، والنتائج تُجمع في اللوحة.",
+  iAmStudent:"أنا طالب", iAmStudentSub:"أدخل الرمز من معلّمك وابدأ.",
+  iAmTeacher:"دخول المعلّم", iAmTeacherSub:"ادخل بحسابك، جهّز اختبارًا، وتابع النتائج.",
+  practice:"تدريب حر", practiceSub:"بدون رمز، ولّد مسائل وتمرّن.",
+  join:"دخول الاختبار", codeLabel:"رمز الاختبار", codePh:"ABC123",
+  notFound:"لا يوجد اختبار بهذا الرمز.", closed:"هذا الاختبار مغلق.",
+  name:"اسمك الكامل", namePh:"الاسم الكامل", needName:"اكتب اسمك أولًا.",
+  start:"ابدأ", check:"تحقّق", stop:"إنهاء", back:"رجوع",
+  ok:"صحيح", no:"خطأ — الصواب", saved:"تم استلام الإجابة", skipped:"فارغ",
+  acc:"الدقة", time:"الوقت", avg:"لكل مسألة",
+  timeout:"انتهى الوقت", missTitle:"الأخطاء والمتروكة", none:"كل الإجابات صحيحة.",
+  hint:"<kbd>Enter</kbd> للتحقّق · <kbd>-</kbd> للإجابة السالبة",
+  sent:"أُرسلت نتيجتك إلى المعلّم.", notSent:"تعذّر حفظ النتيجة، أخبر معلّمك.",
+  again:"إعادة", retry:"حلّ الأخطاء", exit:"خروج",
+  login:"تسجيل الدخول", register:"إنشاء حساب", email:"البريد الإلكتروني", pass:"كلمة المرور",
+  passPh:"٦ أحرف على الأقل", fullName:"الاسم الكامل",
+  doLogin:"دخول", doRegister:"إنشاء الحساب", logout:"خروج",
+  needEmail:"اكتب بريدًا صحيحًا.", needPass:"كلمة المرور ٦ أحرف على الأقل.",
+  needFull:"اكتب اسمك.", emailTaken:"هذا البريد مسجّل مسبقًا.",
+  badCred:"البريد أو كلمة المرور خطأ.", regOk:"تم التسجيل. بانتظار موافقة المشرف.",
+  pendingTitle:"حسابك بانتظار الموافقة", pendingLede:"بعد موافقة المشرف يمكنك الدخول إلى اللوحة.",
+  blockedTitle:"الحساب موقوف", blockedLede:"أوقف المشرف الوصول لهذا الحساب.",
+  admin:"المشرف", adminUsers:"الحسابات", waiting:"بانتظار الموافقة",
+  approve:"موافقة", reject:"رفض", block:"إيقاف", unblock:"إعادة تفعيل", delUser:"حذف",
+  delUserAsk:"هل تحذف الحساب؟", noPending:"لا طلبات معلّقة.", noUsers:"لا حسابات.",
+  stPending:"معلّق", stApproved:"مفعّل", stBlocked:"موقوف",
+  tabExams:"اختباراتي", tabAdmin:"الحسابات",
+  panel:"اختباراتي", newExam:"اختبار جديد", noExams:"لا توجد اختبارات بعد.",
+  results:"النتائج", edit:"تعديل", del:"حذف", delAsk:"هل تحذف الاختبار ونتائجه؟",
+  examTitle:"اسم الاختبار", examTitlePh:"الصف الثالث — اختبار ١",
+  source:"المسائل", auto:"توليد تلقائي", custom:"سأكتبها بنفسي",
+  level:"المستوى", count:"عدد المسائل", write:"اكتب المسائل",
+  limit:"الوقت", noLimit:"بلا وقت", min:"د", custMin:"مخصص",
+  minus:"علامة الطرح", left:"يسار −5", right:"يمين 5−",
+  options:"خيارات", shuffle:"ترتيب عشوائي", feedback:"إظهار الصح/الخطأ بعد كل مسألة",
+  reveal:"إظهار الأخطاء للطالب في النهاية", sound:"الصوت",
+  save:"نشر الاختبار", update:"حفظ التعديلات",
+  needTitle:"اسم الاختبار مطلوب.", needQ:"مطلوب مسألة واحدة على الأقل.",
+  published:"الاختبار منشور", shareText:"أرسل هذا للطلاب:",
+  copy:"نسخ", copied:"تم النسخ", wa:"واتساب", done:"تم",
+  active:"مفتوح", inactive:"مغلق", toggle:"فتح / إغلاق",
+  noResults:"لم يحلّه أحد بعد.", refresh:"تحديث", csv:"تنزيل CSV",
+  students:"طالب", avgScore:"المعدل", best:"الأفضل",
+  detailOf:"تفصيل الإجابات", delRes:"حذف النتيجة", delResAsk:"هل تحذف النتيجة؟",
+  help:'كل سطر مسألة. افصل الأرقام بمسافة. للطرح <b>-3</b> أو <b>3-</b>. لتحديد الإجابة أضف <b>= 41</b>.',
+  ready:q=>`<span class="good">${q} مسألة جاهزة.</span>`,
+  badLines:l=>`<span class="warn">أسطر غير مفهومة: ${l}</span>`,
+  empty:"لا توجد مسائل.", qmark:"مسألة",
+  storeCloud:"الحسابات والنتائج في مشروع Firebase.",
+  storeShared:"وضع تجريبي: البيانات في المخزن المشترك للصفحة.",
+  storeLocal:"وضع تجريبي: البيانات في هذا المتصفح فقط.",
+  netErr:"خطأ في الاتصال."
+ }
+};
+const LEVELS=[{min:3,max:3,lo:1,hi:9,neg:0},{min:3,max:4,lo:1,hi:9,neg:.35},
+ {min:4,max:5,lo:1,hi:59,neg:.4},{min:5,max:6,lo:1,hi:79,neg:.45},{min:6,max:8,lo:2,hi:99,neg:.45}];
+const LEVEL_NAME={tr:["Başlangıç","Kolay","Orta","İleri","Uzman"],ar:["مبتدئ","سهل","متوسط","متقدم","خبير"]};
+const LEVEL_DESC={tr:["3 sayı · toplama","3–4 sayı · çıkarma","4–5 sayı · karışık","5–6 sayı · hızlı","6–8 sayı · iki basamak"],
+ ar:["٣ أرقام · جمع","٣–٤ · طرح","٤–٥ · مختلط","٥–٦ · سريع","٦–٨ · خانتان"]};
+
+/* ---------------- yardımcılar ---------------- */
+const $=id=>document.getElementById(id);
+const el=s=>document.querySelector(s);
+const L=()=>T[S.lang];
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=ms=>{const s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+const showNum=(v,r)=>(v<0&&r)?Math.abs(v)+"−":(v<0?"−"+Math.abs(v):""+v);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const isMail=e=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2400);}
+function newCode(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<6;i++)s+=A[rnd(0,A.length-1)];return s;}
+async function sha(s){
+  try{ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join(""); }
+  catch(e){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))>>>0; return "x"+h.toString(16); }
+}
+const Safe={
+  get(k){ try{return localStorage.getItem(k)}catch(e){return null} },
+  set(k,v){ try{localStorage.setItem(k,v)}catch(e){} },
+  del(k){ try{localStorage.removeItem(k)}catch(e){} }
+};
+
+/* ---------------- veri katmanı ---------------- */
+const KV={
+ mode:"local",
+ async init(){ this.mode=(typeof window.storage!=="undefined"&&window.storage)?"shared":"local"; },
+ async get(k){ try{
+    if(this.mode==="shared"){const r=await window.storage.get(k,true);return r?JSON.parse(r.value):null;}
+    const v=Safe.get(k); return v?JSON.parse(v):null; }catch(e){return null} },
+ async set(k,v){ if(this.mode==="shared") await window.storage.set(k,JSON.stringify(v),true); else Safe.set(k,JSON.stringify(v)); },
+ async del(k){ try{ if(this.mode==="shared") await window.storage.delete(k,true); else Safe.del(k); }catch(e){} },
+ async list(p){ try{
+    if(this.mode==="shared"){const r=await window.storage.list(p,true);return r?r.keys:[];}
+    return Object.keys(localStorage).filter(k=>k.startsWith(p)); }catch(e){return []} }
+};
+const FB={
+ on:false, token:null, uid:null,
+ idUrl(m){ return `https://identitytoolkit.googleapis.com/v1/accounts:${m}?key=${FIREBASE.apiKey}`; },
+ docUrl(p){ return `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/${p}`; },
+ hdr(){ const h={"Content-Type":"application/json"}; if(this.token) h.Authorization="Bearer "+this.token; return h; },
+ async id(method,body){
+   const r=await fetch(this.idUrl(method),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+   const j=await r.json();
+   if(!r.ok) throw new Error((j.error&&j.error.message)||"AUTH");
+   return j;
+ },
+ enc(o){
+   const f={};
+   for(const k in o){
+     const v=o[k];
+     if(v===null||v===undefined) f[k]={nullValue:null};
+     else if(typeof v==="number") f[k]={doubleValue:v};
+     else if(typeof v==="boolean") f[k]={booleanValue:v};
+     else if(typeof v==="object") f[k]={stringValue:JSON.stringify(v)};
+     else f[k]={stringValue:String(v)};
+   }
+   return {fields:f};
+ },
+ dec(d){
+   const o={};
+   for(const k in (d.fields||{})){
+     const v=d.fields[k];
+     if("doubleValue" in v) o[k]=Number(v.doubleValue);
+     else if("integerValue" in v) o[k]=Number(v.integerValue);
+     else if("booleanValue" in v) o[k]=v.booleanValue;
+     else if("nullValue" in v) o[k]=null;
+     else { const s=v.stringValue; try{ o[k]=(s[0]==="["||s[0]==="{")?JSON.parse(s):s }catch(e){ o[k]=s } }
+   }
+   o._id=d.name.split("/").pop();
+   return o;
+ },
+ async get(path){
+   const r=await fetch(this.docUrl(path),{headers:this.hdr()});
+   if(r.status===404) return null;
+   if(!r.ok) throw new Error("GET "+r.status);
+   return this.dec(await r.json());
+ },
+ async set(path,obj){
+   const r=await fetch(this.docUrl(path),{method:"PATCH",headers:this.hdr(),body:JSON.stringify(this.enc(obj))});
+   if(!r.ok) throw new Error("SET "+r.status);
+   return true;
+ },
+ async del(path){ await fetch(this.docUrl(path),{method:"DELETE",headers:this.hdr()}); },
+ async list(coll){
+   const r=await fetch(this.docUrl(coll)+"?pageSize=300",{headers:this.hdr()});
+   if(!r.ok) return [];
+   const j=await r.json();
+   return (j.documents||[]).map(d=>this.dec(d));
+ }
+};
+
+/* ---------------- hesap + veri API ---------------- */
+const API={
+ cloud(){ return FB.on; },
+ /* --- hesap --- */
+ async register(email,pass,name){
+   email=email.trim().toLowerCase();
+   let isAdmin = !!(ADMIN_EMAIL && email===ADMIN_EMAIL.trim().toLowerCase());
+   if(!ADMIN_EMAIL){ try{ isAdmin=(await this.listUsers()).length===0; }catch(e){} }
+   const rec={email,name:name.trim(),status:isAdmin?"approved":"pending",admin:!!isAdmin,at:Date.now()};
+   if(this.cloud()){
+     let j;
+     try{ j=await FB.id("signUp",{email,password:pass,returnSecureToken:true}); }
+     catch(e){ throw new Error(/EMAIL_EXISTS/.test(e.message)?"EMAIL_TAKEN":e.message); }
+     FB.token=j.idToken; FB.uid=j.localId;
+     rec.uid=j.localId;
+     await FB.set("users/"+j.localId,rec);
+     return rec;
+   }
+   if(await KV.get("sx:mail:"+email)) throw new Error("EMAIL_TAKEN");
+   rec.uid="u_"+(await sha(email)).slice(0,12);
+   rec.ph=await sha(email+"::"+pass);
+   await KV.set("sx:user:"+rec.uid,rec);
+   await KV.set("sx:mail:"+email,rec.uid);
+   return rec;
+ },
+ async login(email,pass){
+   email=email.trim().toLowerCase();
+   if(this.cloud()){
+     let j;
+     try{ j=await FB.id("signInWithPassword",{email,password:pass,returnSecureToken:true}); }
+     catch(e){ throw new Error("BAD_CRED"); }
+     FB.token=j.idToken; FB.uid=j.localId;
+     let u=await FB.get("users/"+j.localId);
+     if(!u){ u={uid:j.localId,email,name:email.split("@")[0],status:"pending",admin:false,at:Date.now()};
+             await FB.set("users/"+j.localId,u); }
+     return u;
+   }
+   const id=await KV.get("sx:mail:"+email);
+   if(!id) throw new Error("BAD_CRED");
+   const u=await KV.get("sx:user:"+id);
+   if(!u || u.ph!==await sha(email+"::"+pass)) throw new Error("BAD_CRED");
+   return u;
+ },
+ async anon(){ if(this.cloud()&&!FB.token){ try{ const j=await FB.id("signUp",{returnSecureToken:true}); FB.token=j.idToken; FB.uid=j.localId; }catch(e){} } },
+ async listUsers(){
+   if(this.cloud()) return await FB.list("users");
+   const ks=await KV.list("sx:user:"); const out=[];
+   for(const k of ks){ const u=await KV.get(k); if(u) out.push(u); }
+   return out;
+ },
+ async setUser(u){ if(this.cloud()) await FB.set("users/"+u.uid,u); else await KV.set("sx:user:"+u.uid,u); },
+ async delUser(u){
+   if(this.cloud()) await FB.del("users/"+u.uid);
+   else { await KV.del("sx:user:"+u.uid); await KV.del("sx:mail:"+u.email); }
+ },
+ /* --- sınav --- */
+ async saveExam(ex){ if(this.cloud()) await FB.set("exams/"+ex.code,ex); else await KV.set("sx:exam:"+ex.code,ex); },
+ async getExam(code){ return this.cloud()? await FB.get("exams/"+code) : await KV.get("sx:exam:"+code); },
+ async listExams(owner){
+   if(this.cloud()) return (await FB.list("exams")).filter(e=>e.owner===owner);
+   const ks=await KV.list("sx:exam:"); const out=[];
+   for(const k of ks){ const e=await KV.get(k); if(e&&e.owner===owner) out.push(e); }
+   return out;
+ },
+ async delExam(code){
+   if(this.cloud()){
+     for(const r of await FB.list("exams/"+code+"/results")) await FB.del("exams/"+code+"/results/"+r._id);
+     await FB.del("exams/"+code);
+   } else {
+     for(const k of await KV.list("sx:res:"+code+":")) await KV.del(k);
+     await KV.del("sx:exam:"+code);
+   }
+ },
+ /* --- sonuç --- */
+ async saveResult(code,res){
+   const id=uid();
+   if(this.cloud()) await FB.set("exams/"+code+"/results/"+id,res);
+   else await KV.set("sx:res:"+code+":"+id,res);
+ },
+ async listResults(code){
+   if(this.cloud()) return (await FB.list("exams/"+code+"/results")).map(r=>Object.assign(r,{_k:"exams/"+code+"/results/"+r._id}));
+   const ks=await KV.list("sx:res:"+code+":"); const out=[];
+   for(const k of ks){ const r=await KV.get(k); if(r) out.push(Object.assign({_k:k},r)); }
+   return out;
+ },
+ async delResult(k){ if(this.cloud()) await FB.del(k); else await KV.del(k); }
+};
+/* ---------------- durum ---------------- */
+const S={ lang:"tr", screen:"home", tab:"exams", user:null, exam:null, student:"", draft:null,
+  exams:[], users:[], results:[], resCode:null, openRes:null, practice:false, authTab:"login",
+  qs:[],i:0,answers:[],times:[],t0:0,qt0:0,tick:null,locked:false,timedOut:false,deadline:0 };
+
+/* ---------------- soru motoru ---------------- */
+function makeQuestion(cfg){
+  for(let a=0;a<40;a++){
+    const n=rnd(cfg.min,cfg.max);const terms=[];let run=0;
+    for(let i=0;i<n;i++){
+      let v;
+      if(i>0&&Math.random()<cfg.neg&&run>1){const cap=Math.min(run-1,cfg.hi);v=cap>=1?-rnd(1,cap):rnd(cfg.lo,cfg.hi);}
+      else v=rnd(cfg.lo,cfg.hi);
+      run+=v;terms.push(v);
+    }
+    if(run>0) return {terms,ans:run};
+  }
+  return {terms:[3,4],ans:7};
+}
+function parseQuestions(text){
+  const qs=[],bad=[];
+  String(text||"").split(/\r?\n/).forEach((line,li)=>{
+    let s=line.trim(); if(!s||s.startsWith("#"))return;
+    let forced=null; const parts=s.split("=");
+    if(parts.length===2){const f=Number(parts[1].trim().replace(/[−–]/g,"-"));if(!isNaN(f)&&parts[1].trim()!=="")forced=f;s=parts[0].trim();}
+    const toks=s.split(/[\s,;،]+/).filter(Boolean); const terms=[]; let ok=toks.length>0;
+    for(let t of toks){
+      t=t.replace(/[−–]/g,"-").replace(/^\+/,"");
+      if(/^\d+-$/.test(t)) t="-"+t.slice(0,-1);
+      const v=Number(t); if(t===""||isNaN(v)){ok=false;break;} terms.push(v);
+    }
+    if(!ok||terms.length<2){bad.push(li+1);return;}
+    qs.push({terms,ans:forced!==null?forced:terms.reduce((a,b)=>a+b,0)});
+  });
+  return {qs,bad};
+}
+function questionsToText(qs){
+  return (qs||[]).map(q=>{const sum=q.terms.reduce((a,b)=>a+b,0);
+    return q.terms.join(" ")+(q.ans!==sum?" = "+q.ans:"")}).join("\n");
+}
+let actx=null;
+function beep(f,d,t){
+  if(!S.exam||S.exam.sound===false) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=t;o.frequency.value=f;
+    g.gain.setValueAtTime(.09,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);
+    o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);
+  }catch(e){}
+}
+
+/* ---------------- yönlendirme ---------------- */
+function go(s){ S.screen=s; render(); window.scrollTo(0,0); }
+function render(){
+  const t=L();
+  document.documentElement.lang=S.lang;
+  document.documentElement.dir=S.lang==="ar"?"rtl":"ltr";
+  $("tagline").textContent=t.tagline;
+  $("modeBadge").textContent = API.cloud()?t.modeCloud:(KV.mode==="shared"?t.modeShared:t.modeLocal);
+  $("tr").setAttribute("aria-pressed",S.lang==="tr");
+  $("ar").setAttribute("aria-pressed",S.lang==="ar");
+  $("foot").innerHTML=(S.screen==="drill")?t.hint:"";
+  const v={home:vHome,join:vJoin,gate:vGate,drill:vDrill,result:vResult,auth:vAuth,pending:vPending,
+    panel:vPanel,editor:vEditor,published:vPublished,results:vResults,practice:vPractice}[S.screen];
+  $("screen").innerHTML=v();
+  if(S.screen==="drill") paintQuestion();
+  if(S.screen==="results") loadResults();
+  const f=el("#screen input:not([readonly])");
+  if(f&&S.screen!=="drill"&&window.innerWidth>760) f.focus();
+}
+function chip(k,val,label,on,sub){
+  return `<button class="chip" data-act="setChip" data-k="${k}" data-val="${val}" aria-pressed="${!!on}">${label}${sub?`<small>${sub}</small>`:""}</button>`;
+}
+function userBar(){
+  const t=L(), u=S.user; if(!u) return "";
+  return `<div class="who-bar"><b>${esc(u.name)}</b><span>${esc(u.email)}</span>
+    ${u.admin?`<span class="badge ok">${t.admin}</span>`:""}
+    <span style="margin-inline-start:auto"></span>
+    <button class="btn ghost sm" data-act="logout">${t.logout}</button></div>`;
+}
+
+/* ---------------- görünümler ---------------- */
+function vHome(){
+  const t=L();
+  const store=API.cloud()?t.storeCloud:(KV.mode==="shared"?t.storeShared:t.storeLocal);
+  return `<div class="card"><h1>${t.homeTitle}</h1><p class="lede">${t.homeLede}</p>
+    <div class="pick">
+      <button data-act="join"><b>${t.iAmStudent}</b><span>${t.iAmStudentSub}</span></button>
+      <button data-act="teacher"><b>${t.iAmTeacher}</b><span>${t.iAmTeacherSub}</span></button>
+      <button data-act="practice"><b>${t.practice}</b><span>${t.practiceSub}</span></button>
+    </div><div class="note">${store}</div></div>`;
+}
+function vAuth(){
+  const t=L(), reg=S.authTab==="register";
+  return `<div class="card">
+    <div class="tabs">
+      <button data-act="authTab" data-v="login" aria-pressed="${!reg}">${t.login}</button>
+      <button data-act="authTab" data-v="register" aria-pressed="${reg}">${t.register}</button>
+    </div>
+    ${reg?`<div class="field"><div class="label">${t.fullName}</div>
+      <input class="txt" id="regName" autocomplete="name" placeholder="${t.namePh}"></div>`:""}
+    <div class="field"><div class="label">${t.email}</div>
+      <input class="txt" id="mailIn" type="email" autocomplete="email" inputmode="email" placeholder="ornek@mail.com"></div>
+    <div class="field"><div class="label">${t.pass}</div>
+      <input class="txt" id="passIn" type="password" autocomplete="${reg?"new-password":"current-password"}" placeholder="${t.passPh}"></div>
+    <div class="row">
+      <button class="btn" data-act="${reg?"doRegister":"doLogin"}">${reg?t.doRegister:t.doLogin}</button>
+      <button class="btn ghost" data-act="home">${t.back}</button></div>
+    <div class="note" id="authNote"></div></div>`;
+}
+function vPending(){
+  const t=L(), blocked=S.user&&S.user.status==="blocked";
+  return `<div class="card">
+    <h2>${blocked?t.blockedTitle:t.pendingTitle}</h2>
+    <p class="lede">${blocked?t.blockedLede:t.pendingLede}</p>
+    <div class="who-bar"><b>${esc(S.user?S.user.name:"")}</b><span>${esc(S.user?S.user.email:"")}</span>
+      <span class="badge ${blocked?"blocked":"wait"}">${blocked?t.stBlocked:t.stPending}</span></div>
+    <button class="btn ghost" data-act="logout">${t.back}</button></div>`;
+}
+function vJoin(){
+  const t=L();
+  return `<div class="card"><h2>${t.join}</h2><p class="lede">${t.iAmStudentSub}</p>
+    <div class="field"><div class="label">${t.codeLabel}</div>
+      <input class="txt code-in" id="codeIn" maxlength="6" autocomplete="off" placeholder="${t.codePh}"></div>
+    <div class="row"><button class="btn" data-act="doJoin">${t.start}</button>
+      <button class="btn ghost" data-act="home">${t.back}</button></div>
+    <div class="note" id="joinNote"></div></div>`;
+}
+function vGate(){
+  const t=L(), e=S.exam;
+  const lim=e.limitSec?Math.round(e.limitSec/60)+" "+t.min:t.noLimit;
+  return `<div class="card"><h1>${esc(e.title)}</h1>
+    <p class="lede">${e.qs.length} ${t.qmark} · ${lim}${e.ownerName?" · "+esc(e.ownerName):""}</p>
+    <div class="field"><div class="label">${t.name}</div>
+      <input class="txt" id="nameIn" autocomplete="name" placeholder="${t.namePh}" value="${esc(S.student)}"></div>
+    <div class="row"><button class="btn" data-act="doGate">${t.start}</button>
+      <button class="btn ghost" data-act="home">${t.back}</button></div></div>`;
+}
+function vDrill(){
+  const t=L();
+  return `<div class="rail" id="rail"></div>
+  <div class="card">
+    <div class="meta"><span id="progress"></span><span id="clock">00:00</span></div>
+    <div class="stack" id="stack"></div>
+    <div class="answer" id="answerBox">
+      <input id="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="cevap">
+      <button class="btn" data-act="check">${t.check}</button></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="pad" id="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}
+      <button data-k="-">−</button><button data-k="0">0</button><button class="wide" data-k="del">⌫</button></div>
+  </div><button class="btn ghost" data-act="stop">${t.stop}</button>`;
+}
+function vResult(){
+  const t=L(), e=S.exam, showMiss=S.practice||e.reveal!==false;
+  let miss="";
+  if(showMiss){
+    const m=S.qs.map((q,i)=>({q,i})).filter(({q,i})=>S.answers[i]!==q.ans);
+    miss=`<div class="misses">`+(m.length
+      ? `<div class="label">${t.missTitle} · ${m.length}</div>`+m.map(({q,i})=>{
+          const mine=S.answers[i]===null?`<span class="mine skip">${t.skipped}</span>`:`<span class="mine">${S.answers[i]}</span>`;
+          return `<div class="miss"><span class="idx">${i+1}</span><span class="q">${q.terms.map(v=>showNum(v,e.minusRight)).join("  ")}</span>${mine}<span class="real">${q.ans}</span></div>`;
+        }).join("")
+      : `<div class="label">${t.missTitle}</div><p class="lede" style="margin:8px 0 0">${t.none}</p>`)+`</div>`;
+  }
+  return `<div class="card">
+    ${S.timedOut?`<div class="banner">${t.timeout}</div>`:""}
+    <div class="who">${esc([S.student,!S.practice?e.title:""].filter(Boolean).join(" · "))}</div>
+    <div class="score">${S._correct}<small>/${S.qs.length}</small></div>
+    <div class="stats">
+      <div class="stat"><b>${S._answered?Math.round(S._correct/S._answered*100):0}%</b><span>${t.acc}</span></div>
+      <div class="stat"><b>${fmt(S._spent)}</b><span>${t.time}</span></div>
+      <div class="stat"><b>${S._answered?(S._spent/S._answered/1000).toFixed(1)+"s":"—"}</b><span>${t.avg}</span></div></div>
+    ${S.practice?"":`<div class="note" style="text-align:center">${S._saved?t.sent:t.notSent}</div>`}
+    <div class="row" style="margin-top:14px">
+      ${S.practice?`<button class="btn" data-act="again">${t.again}</button>`:""}
+      ${showMiss?`<button class="btn ghost" data-act="retry">${t.retry}</button>`:""}
+      <button class="btn ghost" data-act="exit">${t.exit}</button></div>${miss}</div>`;
+}
+function vPanel(){
+  const t=L(), u=S.user, admin=u&&u.admin;
+  const tabs = admin?`<div class="tabs">
+      <button data-act="tab" data-v="exams" aria-pressed="${S.tab==="exams"}">${t.tabExams}</button>
+      <button data-act="tab" data-v="admin" aria-pressed="${S.tab==="admin"}">${t.tabAdmin}${pendingCount()?` (${pendingCount()})`:""}</button>
+    </div>`:"";
+  const body = (admin&&S.tab==="admin") ? adminBody() : examsBody();
+  return `<div class="card">${userBar()}${tabs}${body}</div>`;
+}
+function pendingCount(){ return S.users.filter(x=>x.status==="pending").length; }
+function examsBody(){
+  const t=L();
+  const rows=S.exams.length?S.exams.map(x=>`
+    <div class="item"><div class="grow"><b>${esc(x.title)}</b>
+      <div class="sub">${x.qs.length} ${t.qmark} · ${x.limitSec?Math.round(x.limitSec/60)+" "+t.min:t.noLimit} · ${x.active===false?t.inactive:t.active}</div></div>
+      <span class="pill">${x.code}</span></div>
+    <div class="row" style="margin:-4px 0 12px">
+      <button class="btn ghost sm" data-act="openRes" data-v="${x.code}">${t.results}</button>
+      <button class="btn ghost sm" data-act="editExam" data-v="${x.code}">${t.edit}</button>
+      <button class="btn ghost sm" data-act="toggleActive" data-v="${x.code}">${t.toggle}</button>
+      <button class="btn ghost sm danger" data-act="delExam" data-v="${x.code}">${t.del}</button></div>`).join("")
+    :`<div class="empty">${t.noExams}</div>`;
+  return `<h2>${t.panel}</h2>
+    <button class="btn" data-act="newExam" style="margin:10px 0 16px">${t.newExam}</button>${rows}
+    <button class="btn ghost" data-act="home" style="margin-top:14px">${t.back}</button>`;
+}
+function adminBody(){
+  const t=L();
+  const st=u=>u.status==="approved"?`<span class="badge ok">${t.stApproved}</span>`
+    :u.status==="blocked"?`<span class="badge blocked">${t.stBlocked}</span>`
+    :`<span class="badge wait">${t.stPending}</span>`;
+  const acts=u=>{
+    if(u.admin) return "";
+    const b=[];
+    if(u.status==="pending"){ b.push(`<button class="btn ghost sm" data-act="setStatus" data-v="${u.uid}" data-s="approved">${t.approve}</button>`);
+      b.push(`<button class="btn ghost sm danger" data-act="delAcc" data-v="${u.uid}">${t.reject}</button>`); }
+    else if(u.status==="approved") b.push(`<button class="btn ghost sm danger" data-act="setStatus" data-v="${u.uid}" data-s="blocked">${t.block}</button>`);
+    else b.push(`<button class="btn ghost sm" data-act="setStatus" data-v="${u.uid}" data-s="approved">${t.unblock}</button>`);
+    b.push(`<button class="btn ghost sm danger" data-act="delAcc" data-v="${u.uid}">${t.delUser}</button>`);
+    return `<div class="row" style="margin:-4px 0 12px">${b.join("")}</div>`;
+  };
+  const line=u=>`<div class="item"><div class="grow"><b>${esc(u.name||u.email)}</b>
+      <div class="sub">${esc(u.email)} · ${new Date(u.at||Date.now()).toLocaleDateString()}</div></div>${st(u)}</div>${acts(u)}`;
+  const pend=S.users.filter(u=>u.status==="pending");
+  const rest=S.users.filter(u=>u.status!=="pending").sort((a,b)=>(b.admin?1:0)-(a.admin?1:0));
+  return `<h2>${t.adminUsers}</h2>
+    <div class="label" style="margin-top:14px">${t.waiting} · ${pend.length}</div>
+    ${pend.length?pend.map(line).join(""):`<div class="empty">${t.noPending}</div>`}
+    <div class="label" style="margin-top:18px">${t.adminUsers}</div>
+    ${rest.length?rest.map(line).join(""):`<div class="empty">${t.noUsers}</div>`}
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost sm" data-act="reloadUsers">${t.refresh}</button>
+      <button class="btn ghost sm" data-act="home">${t.back}</button></div>`;
+}
+function formFields(){
+  const t=L(), d=S.draft, presets=[0,120,300,600];
+  const custom=d.limitSec>0&&!presets.includes(d.limitSec);
+  return `
+  <div class="field"><div class="label">${t.source}</div><div class="chips">
+    ${chip("source","auto",t.auto,d.source==="auto")}${chip("source","custom",t.custom,d.source==="custom")}</div></div>
+  ${d.source==="auto"?`
+  <div class="field"><div class="label">${t.level}</div><div class="chips">
+    ${LEVEL_NAME[S.lang].map((n,i)=>chip("level",i,n,d.level===i,LEVEL_DESC[S.lang][i])).join("")}</div>
+    <div class="label" style="margin-top:14px">${t.count}</div><div class="chips">
+    ${[10,20,50,100].map(c=>chip("count",c,c,d.count===c)).join("")}</div></div>`:`
+  <div class="field"><div class="label">${t.write}</div>
+    <textarea data-bind="text" spellcheck="false" placeholder="48 51 5 -3&#10;12 -7 8 8 -7&#10;17 7 57">${esc(d.text)}</textarea>
+    <div class="note" id="qnote"></div>
+    <div class="chips" style="margin-top:10px">${chip("shuffle",d.shuffle?0:1,t.shuffle,d.shuffle)}</div></div>`}
+  <div class="field"><div class="label">${t.limit}</div><div class="chips">
+    ${presets.map(s=>chip("limitSec",s,s===0?t.noLimit:(s/60)+" "+t.min,d.limitSec===s)).join("")}
+    <input class="mins" data-bind="limitMin" type="number" min="1" max="180" placeholder="${t.custMin}" value="${custom?d.limitSec/60:""}"></div></div>
+  <div class="field"><div class="label">${t.minus}</div><div class="chips">
+    ${chip("minusRight","0",t.left,!d.minusRight)}${chip("minusRight","1",t.right,d.minusRight)}</div></div>
+  <div class="field"><div class="label">${t.options}</div><div class="chips">
+    ${chip("feedback",d.feedback?0:1,t.feedback,d.feedback)}
+    ${chip("reveal",d.reveal?0:1,t.reveal,d.reveal)}
+    ${chip("sound",d.sound?0:1,t.sound,d.sound)}</div></div>`;
+}
+function vEditor(){
+  const t=L(), d=S.draft;
+  return `<div class="card">${userBar()}<h2>${d.code?t.edit:t.newExam}</h2>
+    <div class="field" style="margin-top:12px"><div class="label">${t.examTitle}</div>
+      <input class="txt" data-bind="title" placeholder="${t.examTitlePh}" value="${esc(d.title)}"></div>
+    ${formFields()}
+    <div class="row"><button class="btn" data-act="saveExam">${d.code?t.update:t.save}</button>
+      <button class="btn ghost" data-act="panel">${t.back}</button></div></div>`;
+}
+function vPractice(){
+  const t=L();
+  return `<div class="card"><h2>${t.practice}</h2>${formFields()}
+    <div class="row"><button class="btn" data-act="startPractice">${t.start}</button>
+      <button class="btn ghost" data-act="home">${t.back}</button></div></div>`;
+}
+function vPublished(){
+  const t=L(), d=S.draft, url=location.href.split("#")[0];
+  const msg=`${d.title}\n${t.codeLabel}: ${d.code}\n${url}`;
+  return `<div class="card" style="text-align:center">
+    <div class="label">${t.published}</div>
+    <div class="score" style="font-size:clamp(36px,10vw,54px);letter-spacing:.12em">${d.code}</div>
+    <p class="lede" style="margin:14px auto 10px;text-align:center">${t.shareText}</p>
+    <textarea id="shareBox" readonly style="min-height:86px;text-align:start">${esc(msg)}</textarea>
+    <div class="row" style="margin-top:9px">
+      <button class="btn ghost sm" data-act="copy">${t.copy}</button>
+      <button class="btn ghost sm" data-act="wa">${t.wa}</button></div>
+    <button class="btn" data-act="panel" style="margin-top:14px">${t.done}</button></div>`;
+}
+function vResults(){
+  const t=L();
+  return `<div class="card"><h2 id="resTitle">${t.results}</h2>
+    <div id="resBody"><div class="empty">…</div></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost sm" data-act="refresh">${t.refresh}</button>
+      <button class="btn ghost sm" data-act="csv">${t.csv}</button>
+      <button class="btn ghost sm" data-act="panel">${t.back}</button></div></div>`;
+}
+/* ---------------- olaylar ---------------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const a=b.dataset.act, v=b.dataset.v;
+  const map={
+    home:()=>go("home"), join:()=>go("join"), panel:()=>go("panel"),
+    teacher:openTeacher, authTab:()=>{S.authTab=v;render()},
+    doLogin:doLogin, doRegister:doRegister, logout:doLogout,
+    tab:()=>{S.tab=v;render()}, reloadUsers:reloadUsers,
+    setStatus:()=>setStatus(v,b.dataset.s), delAcc:()=>delAcc(v),
+    practice:()=>{S.draft=defDraft();go("practice")},
+    doJoin:doJoin, doGate:doGate,
+    newExam:()=>{S.draft=defDraft();go("editor")},
+    editExam:()=>openEditor(v), delExam:()=>delExam(v),
+    toggleActive:()=>toggleActive(v), saveExam:saveExam, startPractice:startPractice,
+    openRes:()=>{S.resCode=v;S.openRes=null;go("results")},
+    check:submit, stop:()=>finish(),
+    again:()=>{S.timedOut=false;beginRun(examList())},
+    retry:()=>{ if(S._missed&&S._missed.length){S.timedOut=false;beginRun(S._missed.slice())} },
+    exit:()=>{ if(S.user){go("panel")} else {S.exam=null;go("home")} },
+    refresh:loadResults, csv:exportCsv,
+    openDetail:()=>{S.openRes=(S.openRes===v?null:v);paintResults()},
+    delRes:()=>delResult(v),
+    copy:()=>copyText($("shareBox").value,b),
+    wa:()=>window.open("https://wa.me/?text="+encodeURIComponent($("shareBox").value),"_blank"),
+    setChip:()=>{ setDraft(b.dataset.k,b.dataset.val); render(); }
+  };
+  (map[a]||(()=>{}))();
+});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("#pad button"); if(!b||S.locked) return;
+  const inp=$("input"), k=b.dataset.k;
+  if(k==="del") inp.value=inp.value.slice(0,-1);
+  else if(k==="-") inp.value=inp.value.startsWith("-")?inp.value.slice(1):"-"+inp.value;
+  else inp.value+=k;
+});
+document.addEventListener("input",e=>{
+  const i=e.target.closest("[data-bind]"); if(!i) return;
+  const k=i.dataset.bind;
+  if(k==="limitMin"){ const m=parseFloat(i.value); if(m>0) S.draft.limitSec=Math.round(m*60); }
+  else { S.draft[k]=i.value; if(k==="text") refreshNote(); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  const id=e.target.id;
+  if(id==="codeIn") doJoin();
+  else if(id==="nameIn") doGate();
+  else if(id==="input") submit();
+  else if(id==="mailIn"||id==="passIn"||id==="regName") (S.authTab==="register"?doRegister:doLogin)();
+});
+$("home-link").onclick=()=>{ if(S.screen!=="drill") go(S.user?"panel":"home"); };
+$("tr").onclick=()=>{S.lang="tr";render()};
+$("ar").onclick=()=>{S.lang="ar";render()};
+
+/* ---------------- hesap akışı ---------------- */
+function openTeacher(){
+  if(S.user&&S.user.status==="approved"){ loadExams().then(()=>go("panel")); return; }
+  if(S.user){ go("pending"); return; }
+  S.authTab="login"; go("auth");
+}
+async function afterAuth(u){
+  S.user=u;
+  Safe.set("sx:session",JSON.stringify({email:u.email,uid:u.uid}));
+  if(u.status!=="approved"){ go("pending"); return; }
+  if(u.admin) await reloadUsers(true);
+  await loadExams();
+  S.tab="exams"; go("panel");
+}
+async function doLogin(){
+  const t=L(), n=$("authNote"), email=($("mailIn").value||"").trim(), pass=$("passIn").value||"";
+  if(!isMail(email)){ n.innerHTML=`<span class="warn">${t.needEmail}</span>`; return; }
+  n.textContent="…";
+  try{ const u=await API.login(email,pass); await afterAuth(u); }
+  catch(e){ n.innerHTML=`<span class="warn">${/BAD_CRED/.test(e.message)?t.badCred:t.netErr}</span>`; }
+}
+async function doRegister(){
+  const t=L(), n=$("authNote");
+  const name=($("regName")?$("regName").value:"").trim();
+  const email=($("mailIn").value||"").trim(), pass=$("passIn").value||"";
+  if(!name){ n.innerHTML=`<span class="warn">${t.needFull}</span>`; return; }
+  if(!isMail(email)){ n.innerHTML=`<span class="warn">${t.needEmail}</span>`; return; }
+  if(pass.length<6){ n.innerHTML=`<span class="warn">${t.needPass}</span>`; return; }
+  n.textContent="…";
+  try{
+    const u=await API.register(email,pass,name);
+    if(u.status==="approved"){ await afterAuth(u); }
+    else { S.user=u; toast(t.regOk); go("pending"); }
+  }catch(e){ n.innerHTML=`<span class="warn">${/EMAIL_TAKEN/.test(e.message)?t.emailTaken:t.netErr}</span>`; }
+}
+function doLogout(){
+  S.user=null; S.exams=[]; S.users=[]; FB.token=null; FB.uid=null;
+  Safe.del("sx:session"); go("home");
+}
+async function reloadUsers(silent){
+  S.users=await API.listUsers();
+  S.users.sort((a,b)=>(b.at||0)-(a.at||0));
+  if(!silent) render();
+}
+async function setStatus(uid,st){
+  const u=S.users.find(x=>x.uid===uid); if(!u) return;
+  u.status=st; await API.setUser(u); render();
+  toast(st==="approved"?L().approve:L().block);
+}
+async function delAcc(uid){
+  if(!confirm(L().delUserAsk)) return;
+  const u=S.users.find(x=>x.uid===uid); if(!u) return;
+  await API.delUser(u);
+  S.users=S.users.filter(x=>x.uid!==uid); render();
+}
+
+/* ---------------- sınav yönetimi ---------------- */
+function defDraft(){
+  return {title:"",source:"auto",level:1,count:20,text:"",limitSec:300,
+    minusRight:false,shuffle:false,feedback:true,reveal:true,sound:true,active:true,code:null};
+}
+function setDraft(k,val){
+  const d=S.draft; if(!d) return;
+  if(["level","count","limitSec"].includes(k)) d[k]=+val;
+  else if(["minusRight","shuffle","feedback","reveal","sound"].includes(k)) d[k]=(val==="1");
+  else d[k]=val;
+}
+function draftQuestions(){
+  const d=S.draft;
+  if(d.source==="custom") return parseQuestions(d.text).qs;
+  const cfg=LEVELS[d.level];
+  return Array.from({length:d.count},()=>makeQuestion(cfg));
+}
+function refreshNote(){
+  const t=L(), n=$("qnote"); if(!n) return;
+  const {qs,bad}=parseQuestions(S.draft.text);
+  let line=qs.length?t.ready(qs.length):`<span class="warn">${t.empty}</span>`;
+  if(bad.length) line+=" "+t.badLines(bad.join(", "));
+  n.innerHTML=t.help+"<br>"+line;
+}
+async function loadExams(){
+  if(!S.user) return;
+  S.exams=await API.listExams(S.user.uid);
+  S.exams.sort((a,b)=>(b.at||0)-(a.at||0));
+}
+async function openEditor(code){
+  const ex=S.exams.find(x=>x.code===code)||await API.getExam(code); if(!ex) return;
+  S.draft={title:ex.title,source:"custom",level:1,count:ex.qs.length,text:questionsToText(ex.qs),
+    limitSec:ex.limitSec,minusRight:ex.minusRight,shuffle:ex.shuffle,feedback:ex.feedback!==false,
+    reveal:ex.reveal!==false,sound:ex.sound!==false,active:ex.active!==false,code:ex.code};
+  go("editor");
+}
+async function saveExam(){
+  const t=L(), d=S.draft;
+  if(!d.title.trim()){ toast(t.needTitle); return; }
+  const qs=draftQuestions();
+  if(!qs.length){ toast(t.needQ); return; }
+  if(!d.code) d.code=newCode();
+  const exam={code:d.code,title:d.title.trim(),qs,limitSec:d.limitSec,minusRight:d.minusRight,
+    shuffle:d.shuffle,feedback:d.feedback,reveal:d.reveal,sound:d.sound,active:d.active!==false,
+    owner:S.user.uid, ownerName:S.user.name, at:Date.now()};
+  try{ await API.saveExam(exam); }catch(e){ toast(t.netErr); return; }
+  await loadExams(); go("published");
+}
+async function toggleActive(code){
+  const ex=S.exams.find(x=>x.code===code); if(!ex) return;
+  ex.active=ex.active===false;
+  await API.saveExam(ex); render();
+}
+async function delExam(code){
+  if(!confirm(L().delAsk)) return;
+  await API.delExam(code);
+  S.exams=S.exams.filter(x=>x.code!==code); render();
+}
+
+/* ---------------- sonuçlar ---------------- */
+async function loadResults(){
+  const t=L(), code=S.resCode;
+  const ex=S.exams.find(x=>x.code===code);
+  if($("resTitle")) $("resTitle").textContent=(ex?ex.title:t.results)+" · "+code;
+  S.results=(await API.listResults(code)).sort((a,b)=> b.correct-a.correct || a.spent-b.spent);
+  paintResults();
+}
+function paintResults(){
+  const t=L(), box=$("resBody"); if(!box) return;
+  if(!S.results.length){ box.innerHTML=`<div class="empty">${t.noResults}</div>`; return; }
+  const n=S.results.length;
+  const avg=Math.round(S.results.reduce((s,r)=>s+r.correct/r.total*100,0)/n);
+  const best=S.results[0];
+  box.innerHTML=`<div class="stats">
+    <div class="stat"><b>${n}</b><span>${t.students}</span></div>
+    <div class="stat"><b>${avg}%</b><span>${t.avgScore}</span></div>
+    <div class="stat"><b>${best.correct}/${best.total}</b><span>${t.best}</span></div></div>`
+   + S.results.map((r,i)=>{
+      const pct=Math.round(r.correct/r.total*100), open=S.openRes===r._k;
+      let det="";
+      if(open){
+        const d=Array.isArray(r.detail)?r.detail:[];
+        det=`<div class="misses" style="border-top:0;padding-top:6px"><div class="label">${t.detailOf}</div>`+
+          d.map((x,qi)=>{
+            const mine=x.a===null||x.a===undefined?`<span class="mine skip">${t.skipped}</span>`
+              :(x.a===x.c?`<span class="real">${x.a}</span>`:`<span class="mine">${x.a}</span>`);
+            return `<div class="miss"><span class="idx">${qi+1}</span><span class="q">${esc(x.q)}</span>${mine}<span class="real">${x.c}</span></div>`;
+          }).join("")+
+          `<button class="btn ghost sm danger" data-act="delRes" data-v="${r._k}" style="margin-top:10px">${t.delRes}</button></div>`;
+      }
+      return `<div class="rank" data-act="openDetail" data-v="${r._k}">
+        <span class="no">${i+1}</span>
+        <span class="nm">${esc(r.name)}<div class="bar"><i style="width:${pct}%"></i></div></span>
+        <span class="sc">${r.correct}/${r.total}</span>
+        <span class="tm">${fmt(r.spent)}</span></div>${det}`;
+   }).join("");
+}
+async function delResult(k){
+  if(!confirm(L().delResAsk)) return;
+  await API.delResult(k); S.openRes=null; await loadResults();
+}
+function exportCsv(){
+  const rows=[["ad","dogru","toplam","isabet%","sure","tarih"]].concat(
+    S.results.map(r=>[r.name,r.correct,r.total,Math.round(r.correct/r.total*100),fmt(r.spent),new Date(r.at).toLocaleString()]));
+  const csv="\ufeff"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download=(S.resCode||"sonuclar")+".csv"; a.click();
+}
+function copyText(txt,btn){
+  const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+  ta.select(); try{document.execCommand("copy")}catch(e){}
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).catch(()=>{});
+  ta.remove(); const o=btn.textContent; btn.textContent=L().copied; setTimeout(()=>btn.textContent=o,1400);
+}
+
+/* ---------------- öğrenci akışı ---------------- */
+async function doJoin(){
+  const t=L(), code=($("codeIn").value||"").trim().toUpperCase();
+  if(code.length<4) return;
+  $("joinNote").textContent="…";
+  await API.anon();
+  let ex=null;
+  try{ ex=await API.getExam(code); }catch(e){}
+  if(!ex){ $("joinNote").innerHTML=`<span class="warn">${t.notFound}</span>`; return; }
+  if(ex.active===false){ $("joinNote").innerHTML=`<span class="warn">${t.closed}</span>`; return; }
+  S.exam=ex; S.practice=false; go("gate");
+}
+function doGate(){
+  const n=($("nameIn").value||"").trim();
+  if(!n){ $("nameIn").focus(); toast(L().needName); return; }
+  S.student=n; beginRun(examList());
+}
+function examList(){
+  const list=S.exam.qs.slice();
+  if(S.exam.shuffle) for(let i=list.length-1;i>0;i--){const j=rnd(0,i);[list[i],list[j]]=[list[j],list[i]];}
+  return list;
+}
+function startPractice(){
+  const qs=draftQuestions();
+  if(!qs.length){ toast(L().needQ); return; }
+  const d=S.draft;
+  S.exam={title:L().practice,qs,limitSec:d.limitSec,minusRight:d.minusRight,shuffle:d.shuffle,
+    feedback:d.feedback,reveal:true,sound:d.sound};
+  S.practice=true; S.student=""; beginRun(examList());
+}
+
+/* ---------------- çözüm motoru ---------------- */
+function beginRun(list){
+  S.qs=list; S.answers=new Array(list.length).fill(null); S.times=new Array(list.length).fill(0);
+  S.i=0; S.timedOut=false; S._saved=false;
+  S.t0=Date.now(); S.deadline=S.exam.limitSec>0?S.t0+S.exam.limitSec*1000:0;
+  clearInterval(S.tick); S.tick=setInterval(tickClock,200);
+  go("drill"); tickClock();
+}
+function tickClock(){
+  const c=$("clock"); if(!c) return;
+  if(S.deadline){
+    const left=S.deadline-Date.now();
+    c.textContent=fmt(left); c.classList.toggle("low",left<=30000);
+    if(left<=0){ S.timedOut=true; finish(); }
+  } else c.textContent=fmt(Date.now()-S.t0);
+}
+function paintRail(){
+  const rail=$("rail"); if(!rail) return;
+  const rows=Math.ceil(S.qs.length/10); let h="";
+  for(let r=0;r<rows;r++){
+    h+='<div class="rod">';
+    for(let b=0;b<Math.min(10,S.qs.length-r*10);b++){
+      const k=r*10+b; let cls="bead";
+      if(S.answers[k]!==null) cls+= S.answers[k]===S.qs[k].ans?" ok":" no";
+      if(k===S.i) cls+=" now";
+      h+=`<div class="${cls}"></div>`;
+    }
+    h+="</div>";
+  }
+  rail.innerHTML=h;
+}
+function paintQuestion(){
+  S.locked=false;
+  const q=S.qs[S.i], right=S.exam.minusRight;
+  $("progress").textContent=(S.i+1)+" / "+S.qs.length;
+  $("verdict").textContent=""; $("verdict").className="verdict";
+  const inp=$("input"); inp.value=""; inp.disabled=false;
+  $("stack").innerHTML='<div class="rodline"></div>'+
+    q.terms.map((v,i)=>`<div class="term${v<0?" neg":""}" style="animation-delay:${i*45}ms">${showNum(v,right)}</div>`).join("")+
+    '<div class="sumline"></div>';
+  paintRail(); S.qt0=Date.now();
+  if(window.innerWidth>760) inp.focus();
+}
+function submit(){
+  if(S.locked||S.screen!=="drill") return;
+  const t=L(), box=$("answerBox"), raw=($("input").value||"").trim().replace(/[−–]/g,"-");
+  if(raw===""||isNaN(Number(raw))){ box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake"); return; }
+  S.locked=true;
+  const val=Number(raw), q=S.qs[S.i], right=val===q.ans;
+  S.answers[S.i]=val; S.times[S.i]=Date.now()-S.qt0;
+  $("input").disabled=true;
+  if(S.exam.feedback!==false){
+    $("verdict").textContent=right?t.ok:`${t.no} ${q.ans}`;
+    $("verdict").className="verdict "+(right?"ok":"no");
+    beep(right?880:165,right?.09:.16,right?"triangle":"square");
+    if(!right){ box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake"); }
+  } else { $("verdict").textContent=t.saved; beep(660,.07,"triangle"); }
+  paintRail();
+  const wait=S.exam.feedback===false?260:(right?520:1150);
+  setTimeout(()=>{ if(S.timedOut) return; if(S.i>=S.qs.length-1) finish(); else { S.i++; paintQuestion(); } },wait);
+}
+async function finish(){
+  clearInterval(S.tick);
+  if(S.screen==="result") return;
+  S._spent=(S.deadline&&S.timedOut)?S.exam.limitSec*1000:Date.now()-S.t0;
+  S._answered=S.answers.filter(a=>a!==null).length;
+  S._correct=S.answers.filter((a,i)=>a!==null&&a===S.qs[i].ans).length;
+  S._missed=S.qs.filter((q,i)=>S.answers[i]!==q.ans);
+  S._saved=false;
+  if(!S.practice&&S.exam.code){
+    try{
+      await API.saveResult(S.exam.code,{
+        name:S.student, correct:S._correct, total:S.qs.length, answered:S._answered,
+        spent:S._spent, at:Date.now(), timedOut:S.timedOut, owner:S.exam.owner||"",
+        detail:S.qs.map((q,i)=>({q:q.terms.map(v=>showNum(v,S.exam.minusRight)).join(" "),a:S.answers[i],c:q.ans}))
+      });
+      S._saved=true;
+    }catch(e){ S._saved=false; }
+  }
+  go("result");
+}
+
+/* ---------------- açılış ---------------- */
+(async function boot(){
+  await KV.init();
+  FB.on = !!(FIREBASE.projectId && FIREBASE.apiKey);
+  const m=location.hash.match(/[#&]k=([A-Z0-9]{4,8})/i);
+  if(m){
+    await API.anon();
+    try{
+      const ex=await API.getExam(m[1].toUpperCase());
+      if(ex&&ex.active!==false){ S.exam=ex; S.practice=false; go("gate"); return; }
+    }catch(e){}
+  }
+  go("home");
+})();
+</script>
+</body>
+</html>
