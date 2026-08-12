@@ -1,0 +1,144 @@
+/* Sekme tanımları, yönlendirme, site etkileşimleri, açılış. */
+
+/* ---------------- sekmeler ---------------- */
+const SAYFALAR = [
+  {yol:"/",        ad:"Ana sayfa",     gor:vAna},
+  {yol:"/kesitler",ad:"Ders kesitleri",gor:vKesitler},
+  {yol:"/podcast", ad:"Podcastler",    gor:vPodcast},
+  {yol:"/yarisma", ad:"Yarışmalar",    gor:vYarisma},
+  {yol:"/gurur",   ad:"Gurur tablomuz",gor:vGurur},
+  {yol:"/sinav",   ad:"Sınav",         gor:vSinav},
+  {yol:"/profil",  ad:"Profil",        gor:vProfil},
+  {yol:"/hakkinda",ad:"Hakkımızda",    gor:vHakkinda}
+];
+
+/* ---------------- yönlendirme ---------------- */
+function yol(){ const h=location.hash.replace(/^#/,"");
+  if(h==="/gizlilik") return h;
+  return SAYFALAR.some(s=>s.yol===h)?h:"/" }
+function ciz(){
+  const y=yol(), s=(y==="/gizlilik")?GIZLI_SAYFA:SAYFALAR.find(x=>x.yol===y);
+  $("nav").innerHTML=SAYFALAR.map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${p.ad}</a>`).join("");
+  $("nav").classList.remove("on"); $("burger").setAttribute("aria-expanded","false");
+  $("view").innerHTML=s.gor();
+  document.title=(y==="/"?"":s.ad+" · ")+DATA.marka.ad;
+  const ab=$("authBtn");
+  if(ab){
+    const u=SX.user;
+    ab.textContent = u ? (u.ad||"").split(" ")[0] : "Giriş yap";
+    ab.setAttribute("aria-label", u ? "Profilim" : "Öğretmen girişi");
+    ab.classList.toggle("ghost", !u);
+  }
+  if(y==="/yarisma") sayacBasla();
+  if(y==="/sinav"&&SX.ekran==="coz") soruBoya();
+  if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
+  if(y==="/profil"&&SX.pekran==="editor") notYenile();
+  if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();
+}
+$("burger").onclick=()=>{
+  const n=$("nav"), acik=n.classList.toggle("on");
+  $("burger").setAttribute("aria-expanded",acik?"true":"false");
+};
+document.addEventListener("click",e=>{
+  if(!e.target.closest("#nav")&&!e.target.closest("#burger")){
+    $("nav").classList.remove("on"); $("burger").setAttribute("aria-expanded","false");
+  }
+});
+window.addEventListener("hashchange",()=>{
+  if(SX.ekran==="coz"&&yol()!=="/sinav"){ clearInterval(SX.tick); SX.ekran="giris"; }
+  ciz(); window.scrollTo(0,0);
+});
+
+/* --- site etkileşimleri --- */
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-filtre]");
+  if(f){ filtre=f.dataset.filtre; ciz(); return; }
+  const v=e.target.closest("[data-video]");
+  if(v){ acVideo(+v.dataset.video); return; }
+  const p=e.target.closest("[data-ep]");
+  if(p){ calBolum(+p.dataset.ep); return; }
+});
+function acVideo(i){
+  const v=DATA.kesitler.liste[i];
+  $("lb").innerHTML=`<div class="lightbox" id="lbBox">
+    <div class="box" role="dialog" aria-label="${esc(v.baslik)}">
+      ${v.yt?`<iframe src="https://www.youtube.com/embed/${esc(v.yt)}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+        :`<div style="aspect-ratio:16/9;display:grid;place-items:center;background:linear-gradient(140deg,#4338CA,#7C3AED 60%,#0D9488);color:#fff;text-align:center;padding:24px">
+           <div><b style="font-family:var(--disp);font-size:19px">Video henüz bağlanmadı</b>
+           <p style="opacity:.85;font-size:14px;margin-top:8px">İçerik bloğunda bu kesitin <code>yt</code> alanına YouTube video kimliğini yaz.</p></div></div>`}
+      <div class="cap"><div><b style="font-family:var(--disp)">${esc(v.baslik)}</b>
+        <div class="muted" style="font-size:13px">${esc(v.ders)}</div></div>
+        <button class="close" id="lbClose" aria-label="kapat">×</button></div></div></div>`;
+  document.body.style.overflow="hidden";
+  const kapat=()=>{ $("lb").innerHTML=""; document.body.style.overflow="" };
+  $("lbClose").onclick=kapat;
+  $("lbBox").onclick=ev=>{ if(ev.target.id==="lbBox") kapat() };
+  document.addEventListener("keydown",function k(ev){ if(ev.key==="Escape"){kapat();document.removeEventListener("keydown",k)} });
+}
+function calBolum(i){
+  const b=DATA.podcast.bolumler[i], a=$("audio");
+  $("pTag").textContent="Bölüm "+b.no+" · "+b.sure;
+  if(b.mp3){ $("pTitle").textContent=b.baslik; a.src=b.mp3; a.style.display=""; a.play().catch(()=>{}); }
+  else { $("pTitle").textContent=b.baslik+" — ses dosyası eklenmedi"; a.removeAttribute("src"); a.style.display="none"; }
+  $("player").classList.add("on");
+}
+$("pClose").onclick=()=>{ $("audio").pause(); $("player").classList.remove("on"); };
+let sayacT=null;
+function sayacBasla(){
+  clearInterval(sayacT);
+  const hedef=new Date(DATA.yarismalar.aktif.tarih).getTime();
+  const yaz=()=>{
+    const k=$("sayac"); if(!k){ clearInterval(sayacT); return; }
+    const f=hedef-Date.now();
+    if(f<=0){ k.innerHTML=`<div style="padding:10px 16px"><b style="font-size:17px">Yarışma günü geldi</b></div>`; clearInterval(sayacT); return; }
+    const g=Math.floor(f/864e5), s=Math.floor(f/36e5)%24, d=Math.floor(f/6e4)%60, sn=Math.floor(f/1e3)%60;
+    k.innerHTML=[[g,"gün"],[s,"saat"],[d,"dakika"],[sn,"saniye"]]
+      .map(([n,a])=>`<div><b>${String(n).padStart(2,"0")}</b><span>${a}</span></div>`).join("");
+  };
+  yaz(); sayacT=setInterval(yaz,1000);
+}
+
+
+/* --- mobil menü ve kaydırma gölgesi --- */
+(function(){
+  const btn=$("menuBtn"), nav=$("nav"), ust=document.querySelector(".top");
+  if(btn){
+    btn.addEventListener("click",()=>{
+      const acik=nav.classList.toggle("acik");
+      btn.setAttribute("aria-expanded",acik);
+    });
+    nav.addEventListener("click",e=>{ if(e.target.closest("a")){ nav.classList.remove("acik"); btn.setAttribute("aria-expanded","false"); } });
+    document.addEventListener("click",e=>{
+      if(!nav.contains(e.target)&&!btn.contains(e.target)){ nav.classList.remove("acik"); btn.setAttribute("aria-expanded","false"); }
+    });
+    document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ nav.classList.remove("acik"); btn.setAttribute("aria-expanded","false"); } });
+  }
+  if(ust){ const kay=()=>ust.classList.toggle("kayar",window.scrollY>6); kay(); window.addEventListener("scroll",kay,{passive:true}); }
+})();
+
+/* ---------------- açılış ---------------- */
+$("brandName").textContent=DATA.marka.ad;
+$("brandSub").textContent=DATA.marka.alt;
+$("topCta").href="#/sinav";
+$("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(DATA.marka.ad)}</b>
+  <span>${esc(DATA.hakkimizda.iletisim.adres)}</span>
+  <a href="mailto:${esc(DATA.hakkimizda.iletisim.mail)}">${esc(DATA.hakkimizda.iletisim.mail)}</a>
+  <a href="#/gizlilik">Gizlilik ve KVKK</a>
+  <a href="#/sinav">Sınava gir</a>
+  <span style="margin-inline-start:auto">© ${new Date().getFullYear()} ${esc(DATA.marka.ad)}</span>`;
+KV.init();
+(async function ac(){
+  try{
+    const u=await API.oturumTazele();
+    if(u){ SX.user=u;
+      if(u.durum==="onayli"){ SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); }
+    }
+  }catch(e){}
+  const m=location.hash.match(/^#k=([A-Z0-9]{4,8})$/i);
+  if(m){ await API.anonim();
+    try{ const x=await API.sinavAl(m[1].toUpperCase());
+      if(x&&x.acik!==false){ SX.exam=x; SX.alistirma=false; SX.ekran="isim"; location.hash="#/sinav"; return; }
+    }catch(e){}
+  }
+  ciz();
+})();
