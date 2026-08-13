@@ -153,12 +153,17 @@ $("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(
   <span style="margin-inline-start:auto">© ${new Date().getFullYear()} ${esc(DATA.marka.ad)}</span>`;
 KV.init();
 (async function ac(){
-  try{
-    const kayitli=await API.icerikAl();
-    if(kayitli && typeof kayitli==="object"){
-      Object.keys(kayitli).forEach(k=>{ if(kayitli[k]!=null) DATA[k]=kayitli[k]; });
-    }
-  }catch(e){}
+  /* Yönetim panelinden yayınlanan içerik dosyadakinin yerine geçer.
+     Adrese ?icerik=dosya eklenirse kayıtlı içerik yok sayılır. */
+  const dosyaModu = /[?&]icerik=dosya/.test(location.search);
+  if(!dosyaModu){
+    try{
+      const kayitli=await API.icerikAl();
+      if(kayitli && typeof kayitli==="object"){
+        Object.keys(kayitli).forEach(k=>{ if(kayitli[k]!=null) DATA[k]=kayitli[k]; });
+      }
+    }catch(e){}
+  }
   try{
     const u=await API.oturumTazele();
     if(u){ SX.user=u;
