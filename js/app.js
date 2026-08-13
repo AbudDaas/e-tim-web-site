@@ -18,6 +18,7 @@ function yol(){ const h=location.hash.replace(/^#/,"");
   if(h==="/gizlilik") return h;
   return SAYFALAR.some(s=>s.yol===h)?h:"/" }
 function ciz(){
+  try{
   const y=yol(), s=(y==="/gizlilik")?GIZLI_SAYFA:SAYFALAR.find(x=>x.yol===y);
   $("nav").innerHTML=cevirHtml(SAYFALAR.filter(p=>!(p.gizli&&p.gizli())).map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${typeof p.ad==="function"?p.ad():p.ad}</a>`).join(""));
   const mb=$("menuBtn");
@@ -39,6 +40,19 @@ function ciz(){
   if(y==="/profil"&&SX.pekran==="editor") notYenile();
   if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();
   if(typeof menuOlc==="function") menuOlc();
+  }catch(hata){
+    console.error("çizim hatası:",hata);
+    if(aktifDil()!=="tr"){
+      /* çeviri kaynaklı bir sorunsa Türkçeye dönüp tekrar dene */
+      dilAyarla("tr");
+      try{ return ciz(); }catch(e2){}
+    }
+    $("view").innerHTML=`<section class="page"><div class="card pad">
+      <h2>Bir şeyler ters gitti</h2>
+      <p class="muted" style="margin-top:8px">Sayfa çizilirken hata oluştu. Sayfayı yenilemeyi dene.</p>
+      <button class="btn" style="margin-top:14px" onclick="location.reload()">Sayfayı yenile</button>
+      <div class="sx-note">${String(hata&&hata.message||hata)}</div></div></section>`;
+  }
 }
 window.addEventListener("hashchange",()=>{
   if(SX.ekran==="coz"&&yol()!=="/sinav"){ clearInterval(SX.tick); SX.ekran="giris"; }

@@ -59,7 +59,7 @@ function cevapla(){
   if(SX.exam.geriBildirim!==false){
     $("sxHukum").textContent=cevirHtml(dogru?"Doğru":`Yanlış — doğrusu ${q.c}`);
     $("sxHukum").className="sx-verdict "+(dogru?"ok":"no");
-    bip(dogru?880:165,dogru?.09:.16,dogru?"triangle":"square");
+    bip(dogru?880:165, dogru? 0.09 : 0.16, dogru?"triangle":"square");
     if(!dogru){ kutu.classList.remove("shake"); void kutu.offsetWidth; kutu.classList.add("shake"); }
   } else { $("sxHukum").textContent="Cevap alındı"; bip(660,.07,"triangle"); }
   railBoya();

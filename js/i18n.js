@@ -345,17 +345,33 @@ function _haritaKur(){
     _harita.push([m.tr,hedef]);
   }
   _harita.sort((a,b)=>b[0].length-a[0].length);
-  _harita=_harita.map(([tr,hedef])=>{
-    let re;
-    try{ re=new RegExp("(?<![\\p{L}\\p{N}])"+_kacir(tr)+"(?![\\p{L}\\p{N}])","gu"); }
-    catch(e){ re=new RegExp(_kacir(tr),"g"); }
+  /* Kelime sınırı için lookbehind kullanmıyoruz: eski Safari ve bazı
+     Android tarayıcıları desteklemiyor, hata verince sayfa boş kalıyordu.
+     Bunun yerine önceki karakteri yakalayıp geri yazıyoruz. */
+  _harita=_harita.map(function(c){
+    const tr=c[0], hedef=c[1];
+    let re=null;
+    try{ re=new RegExp("(^|[^\\p{L}\\p{N}])"+_kacir(tr)+"(?![\\p{L}\\p{N}])","gu"); }
+    catch(e){
+      try{ re=new RegExp("(^|[^A-Za-zÇĞİÖŞÜçğıöşü0-9])"+_kacir(tr)+"(?![A-Za-zÇĞİÖŞÜçğıöşü0-9])","g"); }
+      catch(e2){ re=null; }
+    }
     return [re,hedef];
-  });
+  }).filter(function(c){ return c[0]; });
 }
 function cevirHtml(x){
   if(AKTIF_DIL==="tr" || x==null) return x;
-  if(!_harita) _haritaKur();
-  let s=String(x);
-  for(const [re,hedef] of _harita) s=s.replace(re,hedef);
-  return s;
+  try{
+    if(!_harita) _haritaKur();
+    let s=String(x);
+    for(let i=0;i<_harita.length;i++){
+      const re=_harita[i][0], hedef=_harita[i][1];
+      s=s.replace(re,function(tam,onceki){ return (onceki||"")+hedef; });
+    }
+    return s;
+  }catch(e){
+    /* çeviri başarısız olursa metin Türkçe kalsın, sayfa yine de açılsın */
+    console.warn("çeviri atlandı:",e);
+    return x;
+  }
 }

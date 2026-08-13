@@ -137,10 +137,10 @@ function vYonetim(){
 }
 
 function yonAlan(a){
-  const deger = ceviri(pAl(DATA,a.y)) ?? "";
+  const deger = ceviri(pAl(DATA,a.y)); const d0 = (deger===0?0:(deger||""));
   const giris = a.tip==="uzun"
-    ? `<textarea class="sx-ta" style="min-height:84px" data-ybind="${a.y}">${esc(deger)}</textarea>`
-    : `<input class="sx-in" data-ybind="${a.y}" value="${esc(deger)}">`;
+    ? `<textarea class="sx-ta" style="min-height:84px" data-ybind="${a.y}">${esc(d0)}</textarea>`
+    : `<input class="sx-in" data-ybind="${a.y}" value="${esc(d0)}">`;
   return `<div class="sx-field"><div class="sx-label">${esc(a.ad)}</div>${giris}
     ${a.ipucu?`<div class="sx-note">${a.ipucu}</div>`:""}</div>`;
 }
@@ -162,7 +162,7 @@ function yonListe(l){
         <button class="btn ghost sm" data-sx="yonSil" data-y="${l.y}" data-i="${i}">${t("sil")}</button>
       </div>
       ${l.alanlar.map(a=>{
-        const d = ceviri(x[a.k]) ?? "";
+        const dd = ceviri(x[a.k]); const d = (dd===0?0:(dd||""));
         const yol=`${l.y}.${i}.${a.k}`;
         const g = a.tip==="uzun"
           ? `<textarea class="sx-ta" style="min-height:64px" data-ybind="${yol}">${esc(d)}</textarea>`
