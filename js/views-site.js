@@ -47,7 +47,7 @@ function vAna(){
     </div>
 
     <div class="grid g4" style="margin-top:16px">
-      ${a.istatistik.map(s=>`<div class="card stat"><b>${esc(s.sayi)}</b><span>${esc(s.ad)}</span></div>`).join("")}
+      ${a.istatistik.map(s=>`<div class="card stat"><b>${esc(ceviri(s.sayi))}</b><span>${esc(ceviri(s.ad))}</span></div>`).join("")}
     </div>
 
     <div class="card strip"><span class="dot"></span><span>${esc(ceviri(a.duyuru))}</span></div>
@@ -74,24 +74,24 @@ function vKesitler(){
     "Derslerden alınan kısa video parçaları. Çocuğunun hangi tekniği öğrendiğini görmenin en kolay yolu.",
     ["Tüm seviyelerin ders kesitleri","Yeni kesitler eklendikçe erişim","Sınav geçmişi ve ödev takibi"]);
   const k=DATA.kesitler;
-  const liste=k.liste.filter(x=>filtre==="Tümü"||x.kategori===filtre);
+  const liste=k.liste.filter(x=> filtre===0 || ceviri(x.kategori)===ceviri(k.kategoriler[filtre]));
   return `<section class="page">
     <div class="eyebrow">Arşiv</div>
     <h2 style="margin:10px 0 8px">Canlı ders kesitleri</h2>
     <p class="muted" style="max-width:52ch">Derslerden kısa parçalar. Çocuğunuzun hangi tekniği öğrendiğini görmek için en kolay yol.</p>
-    <div class="chips">${k.kategoriler.map(c=>
-      `<button class="chip" data-filtre="${esc(c)}" aria-pressed="${c===filtre}">${esc(c)}</button>`).join("")}</div>
+    <div class="chips">${k.kategoriler.map((c,i)=>
+      `<button class="chip" data-filtre="${i}" aria-pressed="${i===filtre}">${esc(ceviri(c))}</button>`).join("")}</div>
     <div class="grid g3">${liste.map((v,i)=>`
       <button class="clip" data-video="${k.liste.indexOf(v)}">
         <div class="thumb">
           ${v.yt?`<img loading="lazy" src="https://img.youtube.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="">`:""}
-          <span class="play"></span><span class="dur">${esc(v.sure)}</span>
+          <span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span>
         </div>
         <div class="body">
-          <span class="tag">${esc(v.kategori)}</span>
-          <h3 style="margin:10px 0 5px">${esc(v.baslik)}</h3>
-          <p class="muted" style="font-size:13.5px">${esc(v.ozet)}</p>
-          <p class="muted" style="font-size:12.5px;margin-top:8px;font-family:var(--mono)">${esc(v.ders)}</p>
+          <span class="tag">${esc(ceviri(v.kategori))}</span>
+          <h3 style="margin:10px 0 5px">${esc(ceviri(v.baslik))}</h3>
+          <p class="muted" style="font-size:13.5px">${esc(ceviri(v.ozet))}</p>
+          <p class="muted" style="font-size:12.5px;margin-top:8px;font-family:var(--mono)">${esc(ceviri(v.ders))}</p>
         </div>
       </button>`).join("")||`<div class="card pad muted">Bu başlıkta henüz kesit yok.</div>`}</div>
   </section>`;
@@ -111,9 +111,9 @@ function vPodcast(){
         <div class="ep">
           <span class="n">#${b.no}</span>
           <div class="grow">
-            <h3>${esc(b.baslik)}</h3>
-            <div class="sub">${esc(b.ozet)}</div>
-            <div class="sub" style="font-family:var(--mono);font-size:12px;margin-top:5px">${esc(b.tarih)} · ${esc(b.sure)}</div>
+            <h3>${esc(ceviri(b.baslik))}</h3>
+            <div class="sub">${esc(ceviri(b.ozet))}</div>
+            <div class="sub" style="font-family:var(--mono);font-size:12px;margin-top:5px">${esc(ceviri(b.tarih))} · ${esc(ceviri(b.sure))}</div>
           </div>
           <button class="pbtn" data-ep="${i}" aria-label="çal">▶</button>
         </div>`).join("")}
@@ -132,10 +132,10 @@ function vYarisma(){
     <h2 style="margin:10px 0 22px">Yarışmalar</h2>
     <div class="card contest">
       <span class="tag teal">Kayıtlar açık</span>
-      <h3 style="font-size:26px;margin:12px 0 6px">${esc(y.aktif.ad)}</h3>
-      <p class="muted">${esc(y.aktif.yer)} · ${esc(y.aktif.katilimci)}</p>
+      <h3 style="font-size:26px;margin:12px 0 6px">${esc(ceviri(y.aktif.ad))}</h3>
+      <p class="muted">${esc(ceviri(y.aktif.yer))} · ${esc(ceviri(y.aktif.katilimci))}</p>
       <div class="count" id="sayac"></div>
-      <p style="max-width:56ch">${esc(y.aktif.metin)}</p>
+      <p style="max-width:56ch">${esc(ceviri(y.aktif.metin))}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
         <a class="btn" href="${esc(DATA.marka.sinavLinki)}${y.aktif.kod?"#k="+esc(y.aktif.kod):""}">${y.aktif.kod?"Yarışma sınavına gir":"Kayıt için yaz"}</a>
         <a class="btn ghost" href="#/hakkinda">Sorularım var</a>
@@ -144,9 +144,9 @@ function vYarisma(){
     <h3 style="margin:36px 0 14px">Geçmiş yarışmalar</h3>
     <div class="card">
       ${y.gecmis.map(g=>`<div class="past">
-        <span class="date">${esc(g.tarih)}</span>
-        <div class="grow" style="flex:1"><b style="font-family:var(--disp)">${esc(g.ad)}</b>
-        <div class="muted" style="font-size:13.5px">${esc(g.not)}</div></div></div>`).join("")}
+        <span class="date">${esc(ceviri(g.tarih))}</span>
+        <div class="grow" style="flex:1"><b style="font-family:var(--disp)">${esc(ceviri(g.ad))}</b>
+        <div class="muted" style="font-size:13.5px">${esc(ceviri(g.not))}</div></div></div>`).join("")}
     </div>
   </section>`;
 }
@@ -154,17 +154,17 @@ function vYarisma(){
 function vGurur(){
   const g=DATA.gurur, [a,b,c]=g.ilkUc;
   return `<section class="page">
-    <div class="eyebrow">${esc(g.donem)}</div>
+    <div class="eyebrow">${esc(ceviri(g.donem))}</div>
     <h2 style="margin:10px 0 8px">Gurur tablomuz</h2>
-    <p class="muted" style="max-width:52ch">${esc(g.metin)}</p>
+    <p class="muted" style="max-width:52ch">${esc(ceviri(g.metin))}</p>
     ${g.ilkUc.length?`<div class="podium">${pod(b,"two","2")}${pod(a,"one","1")}${pod(c,"three","3")}</div>`
       :`<div class="card pad" style="margin:22px 0"><p class="muted">Bu dönemin listesi henüz açıklanmadı. Ayın sonunda burada olacak.</p></div>`}
     <div class="card">
       ${g.liste.map((x,i)=>`<div class="trow">
         <span class="rk">${i+4}</span>
-        <span class="nm">${esc(x.ad)}</span>
-        <span class="cl">${esc(x.sinif)}</span>
-        <span class="pt">${esc(x.puan)}</span></div>`).join("")}
+        <span class="nm">${esc(ceviri(x.ad))}</span>
+        <span class="cl">${esc(ceviri(x.sinif))}</span>
+        <span class="pt">${esc(ceviri(x.puan))}</span></div>`).join("")}
     </div>
     <p class="muted" style="font-size:13px;margin-top:14px">Listede adı geçmeyen çocuklar geride kalmış değil — bu tablo ayın en yüksek ortalamalarını gösteriyor, herkesin kendi ilerlemesi karnesinde.</p>
   </section>`;
@@ -172,7 +172,7 @@ function vGurur(){
 function pod(x,cls,no){
   if(!x) return "";
   return `<div class="card pod ${cls}"><div class="medal">${no}</div>
-    <b>${esc(x.ad)}</b><div class="sc">${esc(x.puan)}</div><div class="cls">${esc(x.sinif)}</div></div>`;
+    <b>${esc(ceviri(x.ad))}</b><div class="sc">${esc(ceviri(x.puan))}</div><div class="cls">${esc(ceviri(x.sinif))}</div></div>`;
 }
 
 function vHakkinda(){
@@ -183,27 +183,27 @@ function vHakkinda(){
     <p class="muted" style="max-width:58ch;font-size:16px">${esc(ceviri(h.metin))}</p>
     <div class="grid g3" style="margin-top:26px">
       ${h.degerler.map(d=>`<div class="card value">
-        <div class="ico">${d.ico}</div><h3>${esc(d.ad)}</h3>
-        <p class="muted" style="font-size:14px;margin-top:7px">${esc(d.not)}</p></div>`).join("")}
+        <div class="ico">${d.ico}</div><h3>${esc(ceviri(d.ad))}</h3>
+        <p class="muted" style="font-size:14px;margin-top:7px">${esc(ceviri(d.not))}</p></div>`).join("")}
     </div>
     <h3 style="margin:36px 0 14px">Ekip</h3>
     <div class="grid g3">
       ${h.ekip.map(p=>`<div class="card person">
         <div class="av">${esc(p.ad.split(" ").map(w=>w[0]).join("").slice(0,2))}</div>
-        <div><b style="font-family:var(--disp)">${esc(p.ad)}</b>
-        <div class="muted" style="font-size:13.5px">${esc(p.rol)}</div></div></div>`).join("")}
+        <div><b style="font-family:var(--disp)">${esc(ceviri(p.ad))}</b>
+        <div class="muted" style="font-size:13.5px">${esc(ceviri(p.rol))}</div></div></div>`).join("")}
     </div>
     <div class="grid g2" style="margin-top:26px">
       <div class="card pad">
         <div class="eyebrow">İletişim</div>
-        <p style="margin-top:12px;font-size:16px">${esc(i.adres)}</p>
+        <p style="margin-top:12px;font-size:16px">${esc(ceviri(i.adres))}</p>
         <p style="margin-top:6px"><a href="tel:${esc(i.telefon.replace(/\s/g,""))}">${esc(i.telefon)}</a></p>
         <p style="margin-top:4px"><a href="mailto:${esc(i.mail)}">${esc(i.mail)}</a></p>
         <a class="btn sm" style="margin-top:16px" href="https://wa.me/${esc(i.telefon.replace(/[^0-9]/g,""))}">WhatsApp'tan yaz</a>
       </div>
       <div class="card">
-        ${h.sss.map(f=>`<details class="faq"><summary>${esc(f.s)}</summary>
-          <div class="ans">${esc(f.c)}</div></details>`).join("")}
+        ${h.sss.map(f=>`<details class="faq"><summary>${esc(ceviri(f.s))}</summary>
+          <div class="ans">${esc(ceviri(f.c))}</div></details>`).join("")}
       </div>
     </div>
   </section>`;

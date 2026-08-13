@@ -62,7 +62,7 @@ window.addEventListener("hashchange",()=>{
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{
   const f=e.target.closest("[data-filtre]");
-  if(f){ filtre=f.dataset.filtre; ciz(); return; }
+  if(f){ filtre=+f.dataset.filtre; ciz(); return; }
   const v=e.target.closest("[data-video]");
   if(v){ acVideo(+v.dataset.video); return; }
   const p=e.target.closest("[data-ep]");

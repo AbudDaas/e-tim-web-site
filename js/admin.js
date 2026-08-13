@@ -132,7 +132,7 @@ function vYonetim(){
         <button class="btn ghost" data-sx="yonYedek">JSON yedeği indir</button>
         <button class="btn ghost" data-sx="yonSifirla">Dosyadaki varsayılana dön</button>
       </div>
-      <div class="sx-note" id="yonNot">Yayınla dediğin an site herkeste güncellenir. Yedek almadan sıfırlama.</div>
+      <div class="sx-note" id="yonNot">Şu an <b>${DILLER[aktifDil()].ad}</b> içeriğini düzenliyorsun. Başka bir dilin metnini düzenlemek için Profil → Ayarlar bölümünden dili değiştir. Yayınla dediğin an site herkeste güncellenir.</div>
     </div></section>`;
 }
 
