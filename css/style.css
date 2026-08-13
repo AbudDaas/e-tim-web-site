@@ -278,8 +278,7 @@ body.menu-dar .cta-top{margin-inline-start:10px}
 .sx-miss{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed rgba(20,26,51,.12);font-size:14px}
 .sx-miss .q{font-family:var(--mono);font-size:13px;flex:1;direction:ltr}
 .sx-miss .mine{font-family:var(--mono);color:#C0392B;text-decoration:line-through}
-.sx-miss .mine.skip{text-decoration:none;opacity:.6}
-.sx-miss .real{font-family:var(--mono);color:var(--turkuaz);font-weight:500}
+.sx-miss .mine.sx-miss .real{font-family:var(--mono);color:var(--turkuaz);font-weight:500}
 .sx-miss .i{font-family:var(--mono);font-size:11px;color:var(--gece-2);min-width:26px}
 .sx-rank{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(20,26,51,.08);cursor:pointer}
 .sx-rank .n{font-family:var(--mono);font-size:12px;color:var(--gece-2);min-width:22px}
@@ -294,8 +293,6 @@ body.menu-dar .cta-top{margin-inline-start:10px}
 .toast.on{opacity:1}
 
 
-.skip{position:absolute;left:-9999px;top:8px;background:var(--gece);color:#fff;padding:10px 16px;border-radius:10px;z-index:99}
-.skip:focus{left:16px}
 @media(max-width:960px){
     nav{display:none;position:absolute;inset-inline:16px;top:70px;flex-direction:column;padding:10px;border-radius:18px;
      background:rgba(255,255,255,.96);box-shadow:var(--golge);overflow:visible}
@@ -311,6 +308,15 @@ body.menu-dar .cta-top{margin-inline-start:10px}
 .linkish{background:none;border:0;padding:0;color:var(--murekkep);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
 .legal h3{margin:22px 0 8px}
 .legal p{margin-bottom:10px;color:var(--gece-2);font-size:14.5px;line-height:1.7}
+ .skip{position:absolute;top:8px;inset-inline-start:16px;z-index:99;
+  width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;
+  background:var(--gece);color:#fff;border-radius:999px;font-size:14px;text-decoration:none}
+.skip:focus{width:auto;height:auto;padding:10px 16px;clip:auto;clip-path:none;overflow:visible}
+
+/* yatay taşmayı kes: RTL'de tek bir geniş öğe sayfayı ikiye böler */
+html,body{max-width:100%;overflow-x:hidden}
+html{background:var(--bulut);color-scheme:light}
+
 :focus-visible{outline:2px solid var(--menekse);outline-offset:3px;border-radius:6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -381,7 +387,7 @@ input[type="date"].sx-in{font-family:var(--body)}
 
 /* --- sağdan sola (Arapça) --- */
 [dir="rtl"] body{font-family:"IBM Plex Sans Arabic","Plus Jakarta Sans",system-ui,sans-serif}
-[dir="rtl"] .sx-term,[dir="rtl"] .sx-answer input,[dir="rtl"] .sx-in.code,
+[dir="rtl"] .sx-stack,[dir="rtl"] .sx-rail,[dir="rtl"] .sx-term,[dir="rtl"] .sx-answer input,[dir="rtl"] .sx-in.code,
 [dir="rtl"] .sx-score,[dir="rtl"] .miss .q,[dir="rtl"] .sx-miss .q{direction:ltr}
 [dir="rtl"] .zaman-sat,[dir="rtl"] .sx-item,[dir="rtl"] .sx-rank{text-align:start}
 [dir="rtl"] .uyari-ok{transform:scaleX(-1)}
@@ -410,3 +416,7 @@ input[type="date"].sx-in{font-family:var(--body)}
 .hata-ic button{font-family:var(--disp);font-weight:700;font-size:15px;padding:12px 22px;border:0;border-radius:999px;
   background:linear-gradient(100deg,var(--murekkep),var(--menekse));color:#fff;cursor:pointer}
 .hata-ic code{display:block;margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--gece-2);word-break:break-all}
+
+/* RTL: taşma yaratabilecek süslemeleri kutuya hapset */
+[dir="rtl"] .contest,[dir="rtl"] .hero-main,[dir="rtl"] .card{overflow-x:clip}
+[dir="rtl"] .sx-answer input,[dir="rtl"] .sx-in.code{text-align:center}
