@@ -114,6 +114,27 @@ document.addEventListener("click",async e=>{
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
     dilSec:()=>{ dilAyarla(v); ciz(); toast(t("dilDegisti")); },
+    yonTab:()=>{ SX.yonTab=v; ciz(); },
+    yonKaydet:yonKaydet, yonYedek:yonYedek, yonSifirla:yonSifirla,
+    yonEkle:()=>{
+      const yol=b.dataset.y, l=yonListeBul(yol); if(!l) return;
+      const dizi=pAl(DATA,yol)||[];
+      dizi.push(l.duz? l.yeni : JSON.parse(JSON.stringify(l.yeni)));
+      pYaz(DATA,yol,dizi); SX.yonKirli=true; ciz();
+    },
+    yonSil:()=>{
+      const yol=b.dataset.y, i=+b.dataset.i;
+      const dizi=pAl(DATA,yol)||[];
+      if(!confirm("Bu kayıt silinsin mi?")) return;
+      dizi.splice(i,1); pYaz(DATA,yol,dizi); SX.yonKirli=true; ciz();
+    },
+    yonTasi:()=>{
+      const yol=b.dataset.y, i=+b.dataset.i, d=+b.dataset.d;
+      const dizi=pAl(DATA,yol)||[]; const j=i+d;
+      if(j<0||j>=dizi.length) return;
+      [dizi[i],dizi[j]]=[dizi[j],dizi[i]];
+      pYaz(DATA,yol,dizi); SX.yonKirli=true; ciz();
+    },
     durumKontrol:async()=>{
       const n=$("sxDurumNot"); if(n) n.textContent="Kontrol ediliyor…";
       try{

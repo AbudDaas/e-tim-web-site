@@ -137,6 +137,11 @@ const API={
  async sonucSil(k){ bulut()? await FB.del(k) : await KV.del(k) }
  ,
  /* --- sınıf kodu --- */
+ /* --- site içeriği (yönetim paneli) --- */
+ async icerikAl(){ try{ return bulut()? await FB.get("site/icerik") : await KV.get("sx:icerik") }catch(e){ return null } },
+ async icerikYaz(o){ if(bulut()) await FB.set("site/icerik",o); else await KV.set("sx:icerik",o); },
+ async icerikSil(){ try{ bulut()? await FB.del("site/icerik") : await KV.del("sx:icerik") }catch(e){} },
+
  async sinifYaz(k,uid,ad){ const d={kod:k,ogretmen:uid,ogretmenAd:ad};
    bulut()? await FB.set("classes/"+k,d) : await KV.set("sx:sinif:"+k,d) },
  async sinifAl(k){ return bulut()? await FB.get("classes/"+k) : await KV.get("sx:sinif:"+k) },

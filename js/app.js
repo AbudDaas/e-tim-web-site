@@ -9,7 +9,8 @@ const SAYFALAR = [
   {yol:"/gurur",   ad:()=>t("gururTablosu"), gor:vGurur},
   {yol:"/sinav",   ad:()=>t("sinav"),         gor:vSinav},
   {yol:"/profil",  ad:()=>t("profil"),        gor:vProfil},
-  {yol:"/hakkinda",ad:()=>t("hakkimizda"),   gor:vHakkinda}
+  {yol:"/hakkinda",ad:()=>t("hakkimizda"),   gor:vHakkinda},
+  {yol:"/yonetim", ad:()=>"Yönetim", gor:vYonetim, gizli:()=>!(SX.user&&SX.user.yonetici)}
 ];
 
 /* ---------------- yönlendirme ---------------- */
@@ -18,7 +19,7 @@ function yol(){ const h=location.hash.replace(/^#/,"");
   return SAYFALAR.some(s=>s.yol===h)?h:"/" }
 function ciz(){
   const y=yol(), s=(y==="/gizlilik")?GIZLI_SAYFA:SAYFALAR.find(x=>x.yol===y);
-  $("nav").innerHTML=cevirHtml(SAYFALAR.map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${typeof p.ad==="function"?p.ad():p.ad}</a>`).join(""));
+  $("nav").innerHTML=cevirHtml(SAYFALAR.filter(p=>!(p.gizli&&p.gizli())).map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${typeof p.ad==="function"?p.ad():p.ad}</a>`).join(""));
   const mb=$("menuBtn");
   $("nav").classList.remove("acik");
   if(mb) mb.setAttribute("aria-expanded","false");
@@ -138,6 +139,12 @@ $("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(
   <span style="margin-inline-start:auto">© ${new Date().getFullYear()} ${esc(DATA.marka.ad)}</span>`;
 KV.init();
 (async function ac(){
+  try{
+    const kayitli=await API.icerikAl();
+    if(kayitli && typeof kayitli==="object"){
+      Object.keys(kayitli).forEach(k=>{ if(kayitli[k]!=null) DATA[k]=kayitli[k]; });
+    }
+  }catch(e){}
   try{
     const u=await API.oturumTazele();
     if(u){ SX.user=u;

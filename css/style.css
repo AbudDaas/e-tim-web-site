@@ -388,3 +388,15 @@ input[type="date"].sx-in{font-family:var(--body)}
 [dir="rtl"] .kilit-liste li::before{inset-inline-start:0}
 [dir="rtl"] .ser-alt{flex-direction:row-reverse}
 .chip small{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:2px}
+
+/* --- yönetim paneli --- */
+.yon-blok{border-top:1px solid rgba(20,26,51,.08);padding-top:4px;margin-top:6px}
+.yon-kart{border:1px solid rgba(20,26,51,.12);border-radius:14px;padding:14px;margin-top:10px;
+  background:rgba(255,255,255,.55)}
+.yon-kart-ust{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.yon-no{font-family:var(--mono);font-size:11px;color:var(--gece-2);min-width:20px}
+.yon-ozet{flex:1;font-family:var(--disp);font-weight:700;font-size:14.5px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.yon-satir{display:flex;gap:8px;align-items:center;margin-top:8px}
+.yon-satir .sx-in{flex:1}
+.yon-kart .sx-field:last-child{margin-bottom:0}
