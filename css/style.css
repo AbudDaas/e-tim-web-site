@@ -420,3 +420,19 @@ input[type="date"].sx-in{font-family:var(--body)}
 /* RTL: taşma yaratabilecek süslemeleri kutuya hapset */
 [dir="rtl"] .contest,[dir="rtl"] .hero-main,[dir="rtl"] .card{overflow-x:clip}
 [dir="rtl"] .sx-answer input,[dir="rtl"] .sx-in.code{text-align:center}
+
+/* --- RTL güvenlik ağı: hiçbir öğe sayfayı yatayda genişletemesin --- */
+html{overflow-x:hidden}
+body{overflow-x:hidden;position:relative;width:100%;max-width:100%}
+.app,.wrap,main,section,.card{max-width:100%}
+[dir="rtl"] body,[dir="rtl"] html{overflow-x:hidden}
+
+/* --- karışık dilli metinler: noktalama doğru yerde dursun ---
+   Türkçe/İngilizce bir cümle Arapça sayfada gösterilince nokta ve virgül
+   satır başına kayıyordu. plaintext her paragrafın yönünü kendi içeriğine
+   göre belirler, böylece iki dil yan yana doğru görünür. */
+h1,h2,h3,p,li,td,th,summary,label,figcaption,
+.lede,.eyebrow,.muted,.sub,.s,.tag,.badge,.sx-label,.sx-note,.sx-empty,
+.item b,.sx-item b,.rank .nm,.sx-rank .nm,.miss,.sx-miss,.zaman-sat b,
+.stat span,.sx-stat span,.pod b,.pod .cls,.ep h3,.clip h3,.past,.value,.person,
+.yon-ozet,.hata-ic p,.kilit-liste li{unicode-bidi:plaintext}
