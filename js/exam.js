@@ -34,12 +34,12 @@ function railBoya(){
     }
     h+="</div>";
   }
-  r.innerHTML=h;
+  r.innerHTML=cevirHtml(h);
 }
 function soruBoya(){
   SX.kilit=false;
   const q=SX.qs[SX.i], sag=SX.exam.eksiSag;
-  $("sxIlerleme").textContent=(SX.i+1)+" / "+SX.qs.length;
+  $("sxIlerleme").textContent=cevirHtml((SX.i+1)+" / "+SX.qs.length);
   $("sxHukum").textContent=""; $("sxHukum").className="sx-verdict";
   const g=$("sxCevap"); g.value=""; g.disabled=false;
   $("sxStack").innerHTML='<div class="rod"></div>'+
@@ -57,7 +57,7 @@ function cevapla(){
   SX.answers[SX.i]=v; SX.times[SX.i]=Date.now()-SX.qt0;
   $("sxCevap").disabled=true;
   if(SX.exam.geriBildirim!==false){
-    $("sxHukum").textContent=dogru?"Doğru":`Yanlış — doğrusu ${q.c}`;
+    $("sxHukum").textContent=cevirHtml(dogru?"Doğru":`Yanlış — doğrusu ${q.c}`);
     $("sxHukum").className="sx-verdict "+(dogru?"ok":"no");
     bip(dogru?880:165,dogru?.09:.16,dogru?"triangle":"square");
     if(!dogru){ kutu.classList.remove("shake"); void kutu.offsetWidth; kutu.classList.add("shake"); }
@@ -113,6 +113,7 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    dilSec:()=>{ dilAyarla(v); ciz(); toast(t("dilDegisti")); },
     durumKontrol:async()=>{
       const n=$("sxDurumNot"); if(n) n.textContent="Kontrol ediliyor…";
       try{
@@ -299,7 +300,7 @@ async function kayitOl(){
     const m=/MAIL_VAR/.test(err.message) ? "Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene."
       : /SINIF_YOK/.test(err.message) ? "Bu öğretmen kodu bulunamadı. Boş bırakıp sonra da ekleyebilirsin."
       : "Bağlantı kurulamadı, internetini kontrol et.";
-    n.innerHTML=`<span class="sx-warn">${m}</span>`;
+    n.innerHTML=cevirHtml(`<span class="sx-warn">${m}</span>`);
   }
 }
 async function girisSonrasi(u){

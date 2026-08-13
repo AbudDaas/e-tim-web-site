@@ -2,14 +2,14 @@
 
 /* ---------------- sekmeler ---------------- */
 const SAYFALAR = [
-  {yol:"/",        ad:"Ana sayfa",     gor:vAna},
-  {yol:"/kesitler",ad:"Ders kesitleri",gor:vKesitler},
-  {yol:"/podcast", ad:"Podcastler",    gor:vPodcast},
-  {yol:"/yarisma", ad:"Yarışmalar",    gor:vYarisma},
-  {yol:"/gurur",   ad:"Gurur tablomuz",gor:vGurur},
-  {yol:"/sinav",   ad:"Sınav",         gor:vSinav},
-  {yol:"/profil",  ad:"Profil",        gor:vProfil},
-  {yol:"/hakkinda",ad:"Hakkımızda",    gor:vHakkinda}
+  {yol:"/",        ad:()=>t("anaSayfa"),      gor:vAna},
+  {yol:"/kesitler",ad:()=>t("dersKesitleri"), gor:vKesitler},
+  {yol:"/podcast", ad:()=>t("podcastler"),   gor:vPodcast},
+  {yol:"/yarisma", ad:()=>t("yarismalar"),   gor:vYarisma},
+  {yol:"/gurur",   ad:()=>t("gururTablosu"), gor:vGurur},
+  {yol:"/sinav",   ad:()=>t("sinav"),         gor:vSinav},
+  {yol:"/profil",  ad:()=>t("profil"),        gor:vProfil},
+  {yol:"/hakkinda",ad:()=>t("hakkimizda"),   gor:vHakkinda}
 ];
 
 /* ---------------- yönlendirme ---------------- */
@@ -18,16 +18,17 @@ function yol(){ const h=location.hash.replace(/^#/,"");
   return SAYFALAR.some(s=>s.yol===h)?h:"/" }
 function ciz(){
   const y=yol(), s=(y==="/gizlilik")?GIZLI_SAYFA:SAYFALAR.find(x=>x.yol===y);
-  $("nav").innerHTML=SAYFALAR.map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${p.ad}</a>`).join("");
+  $("nav").innerHTML=cevirHtml(SAYFALAR.map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${typeof p.ad==="function"?p.ad():p.ad}</a>`).join(""));
   const mb=$("menuBtn");
   $("nav").classList.remove("acik");
   if(mb) mb.setAttribute("aria-expanded","false");
-  $("view").innerHTML=s.gor();
-  document.title=(y==="/"?"":s.ad+" · ")+DATA.marka.ad;
+  $("view").innerHTML=cevirHtml(s.gor());
+  const sad=typeof s.ad==="function"?s.ad():s.ad;
+  document.title=(y==="/"?"":sad+" · ")+ceviri(DATA.marka.ad);
   const ab=$("authBtn");
   if(ab){
     const u=SX.user;
-    ab.textContent = u ? (u.ad||"").split(" ")[0] : "Giriş yap";
+    ab.textContent = cevirHtml(u ? (u.ad||"").split(" ")[0] : t("girisYap"));
     ab.setAttribute("aria-label", u ? "Profilim" : "Öğretmen girişi");
     ab.classList.toggle("ghost", !u);
   }
@@ -71,7 +72,7 @@ function acVideo(i){
 }
 function calBolum(i){
   const b=DATA.podcast.bolumler[i], a=$("audio");
-  $("pTag").textContent="Bölüm "+b.no+" · "+b.sure;
+  $("pTag").textContent=cevirHtml("Bölüm "+b.no+" · "+b.sure);
   if(b.mp3){ $("pTitle").textContent=b.baslik; a.src=b.mp3; a.style.display=""; a.play().catch(()=>{}); }
   else { $("pTitle").textContent=b.baslik+" — ses dosyası eklenmedi"; a.removeAttribute("src"); a.style.display="none"; }
   $("player").classList.add("on");
@@ -127,8 +128,8 @@ function menuOlc(){
 })();
 
 /* ---------------- açılış ---------------- */
-$("brandName").textContent=DATA.marka.ad;
-$("brandSub").textContent=DATA.marka.alt;
+$("brandName").textContent=cevirHtml(DATA.marka.ad);
+$("brandSub").textContent=cevirHtml(DATA.marka.alt);
 $("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(DATA.marka.ad)}</b>
   <span>${esc(DATA.hakkimizda.iletisim.adres)}</span>
   <a href="mailto:${esc(DATA.hakkimizda.iletisim.mail)}">${esc(DATA.hakkimizda.iletisim.mail)}</a>

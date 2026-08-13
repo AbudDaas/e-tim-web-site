@@ -378,3 +378,13 @@ input[type="date"].sx-in{font-family:var(--body)}
   box-shadow:0 0 0 4px rgba(224,160,32,.22);animation:nabiz 1.8s infinite}
 @keyframes nabiz{50%{box-shadow:0 0 0 8px rgba(224,160,32,.06)}}
 .uyari-ok{margin-inline-start:auto;color:var(--kehribar);font-size:18px}
+
+/* --- sağdan sola (Arapça) --- */
+[dir="rtl"] body{font-family:"IBM Plex Sans Arabic","Plus Jakarta Sans",system-ui,sans-serif}
+[dir="rtl"] .sx-term,[dir="rtl"] .sx-answer input,[dir="rtl"] .sx-in.code,
+[dir="rtl"] .sx-score,[dir="rtl"] .miss .q,[dir="rtl"] .sx-miss .q{direction:ltr}
+[dir="rtl"] .zaman-sat,[dir="rtl"] .sx-item,[dir="rtl"] .sx-rank{text-align:start}
+[dir="rtl"] .uyari-ok{transform:scaleX(-1)}
+[dir="rtl"] .kilit-liste li::before{inset-inline-start:0}
+[dir="rtl"] .ser-alt{flex-direction:row-reverse}
+.chip small{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:2px}

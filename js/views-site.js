@@ -30,9 +30,9 @@ function vAna(){
   <section class="page">
     <div class="hero">
       <div class="card hero-main">
-        <div class="eyebrow">${esc(a.etiket)}</div>
-        <h1>${a.baslik}</h1>
-        <p class="lede">${esc(a.metin)}</p>
+        <div class="eyebrow">${esc(ceviri(a.etiket))}</div>
+        <h1>${ceviri(a.baslik)}</h1>
+        <p class="lede">${esc(ceviri(a.metin))}</p>
         <div class="acts">
           <a class="btn" href="${esc(DATA.marka.sinavLinki)}">Sınava gir</a>
           <a class="btn ghost" href="https://wa.me/${DATA.hakkimizda.iletisim.telefon.replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
@@ -50,7 +50,7 @@ function vAna(){
       ${a.istatistik.map(s=>`<div class="card stat"><b>${esc(s.sayi)}</b><span>${esc(s.ad)}</span></div>`).join("")}
     </div>
 
-    <div class="card strip"><span class="dot"></span><span>${esc(a.duyuru)}</span></div>
+    <div class="card strip"><span class="dot"></span><span>${esc(ceviri(a.duyuru))}</span></div>
 
     <h2 style="margin:44px 0 6px">Bu hafta</h2>
     <p class="muted" style="margin-bottom:18px">Sitede yeni olan üç şey.</p>
@@ -105,7 +105,7 @@ function vPodcast(){
   return `<section class="page">
     <div class="eyebrow">Dinle</div>
     <h2 style="margin:10px 0 8px">Podcastler</h2>
-    <p class="muted" style="max-width:52ch">${esc(p.aciklama)}</p>
+    <p class="muted" style="max-width:52ch">${esc(ceviri(p.aciklama))}</p>
     <div class="card" style="margin-top:22px">
       ${p.bolumler.map((b,i)=>`
         <div class="ep">
@@ -179,8 +179,8 @@ function vHakkinda(){
   const h=DATA.hakkimizda, i=h.iletisim;
   return `<section class="page">
     <div class="eyebrow">Hakkımızda</div>
-    <h2 style="margin:10px 0 10px">${esc(h.baslik)}</h2>
-    <p class="muted" style="max-width:58ch;font-size:16px">${esc(h.metin)}</p>
+    <h2 style="margin:10px 0 10px">${esc(ceviri(h.baslik))}</h2>
+    <p class="muted" style="max-width:58ch;font-size:16px">${esc(ceviri(h.metin))}</p>
     <div class="grid g3" style="margin-top:26px">
       ${h.degerler.map(d=>`<div class="card value">
         <div class="ico">${d.ico}</div><h3>${esc(d.ad)}</h3>

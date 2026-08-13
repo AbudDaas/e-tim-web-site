@@ -1,5 +1,9 @@
 /* İçerik — site metinleri, kesitler, podcast, yarışma, gurur tablosu. Sadece bu dosya düzenlenir. */
 
+/* Çok dilli içerik: herhangi bir metni {tr:"…", en:"…", ar:"…"} biçiminde
+   yazarsan seçilen dile göre gösterilir. Düz metin bırakırsan her dilde aynı kalır.
+   ÖRNEK:  baslik:{tr:"Merhaba", en:"Hello", ar:"مرحبا"}                          */
+
 const DATA = {
   marka:{ ad:"Zihin Akademi", alt:"zihinsel aritmetik", sinavLinki:"#/sinav" },
 

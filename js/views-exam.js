@@ -17,7 +17,7 @@ function notYenile(){
   const {qs,hata}=soruAyikla(SX.taslak.metin);
   let s=qs.length?`<span class="sx-good">${qs.length} soru hazır.</span>`:`<span class="sx-warn">Henüz soru yok.</span>`;
   if(hata.length) s+=` <span class="sx-warn">Anlaşılmayan satır: ${hata.join(", ")}</span>`;
-  n.innerHTML=`Her satır bir soru. Sayıları boşlukla ayır. Eksi için <b>-3</b> ya da <b>3-</b>. Cevabı kendin vermek istersen satır sonuna <b>= 41</b> ekle. <b>#</b> ile başlayan satır atlanır.<br>${s}`;
+  n.innerHTML=cevirHtml(`Her satır bir soru. Sayıları boşlukla ayır. Eksi için <b>-3</b> ya da <b>3-</b>. Cevabı kendin vermek istersen satır sonuna <b>= 41</b> ekle. <b>#</b> ile başlayan satır atlanır.<br>${s}`);
 }
 function sxChip(k,v,ad,acik,alt){
   return `<button class="chip" data-sx="chip" data-k="${k}" data-v="${v}" aria-pressed="${!!acik}">${ad}${alt?`<small style="display:block;font-family:var(--mono);font-size:10px;opacity:.7;margin-top:2px">${alt}</small>`:""}</button>`;
@@ -172,7 +172,9 @@ function sxGirisEkran(){
       <button class="btn" style="width:100%;justify-content:center" data-sx="${kayit?"kayitOl":"girisYap"}">${kayit?"Hesap oluştur":"Giriş yap"}</button>
       ${kayit?"":`<div style="margin-top:12px;text-align:center"><button class="linkish" data-sx="sifreUnuttum">Şifremi unuttum</button></div>`}
       <div class="sx-note" id="sxAuthNot"></div>
-    </div></section>`;
+    </div>
+    ${dilSecici()}
+    </section>`;
 }
 function sxBekleEkran(){
   const kapali=SX.user.durum==="kapali";
@@ -211,7 +213,9 @@ function sxPanel(){
         ${yon?`<button data-sx="ptab" data-v="hesaplar" aria-pressed="${SX.ptab==="hesaplar"}">Hesaplar${bekleyen?` (${bekleyen})`:""}</button>`:""}
       </div>
       ${govde}
-    </div></section>`;
+    </div>
+    ${SX.ptab==="sinavlar"?dilSecici():""}
+    </section>`;
 }
 function sxSinavListe(){
   const l=SX.sinavlar;
@@ -339,6 +343,19 @@ function vGizlilik(){
 }
 const GIZLI_SAYFA={yol:"/gizlilik",ad:"Gizlilik",gor:vGizlilik};
 
+
+/* ======================= AYARLAR: DİL ======================= */
+function dilSecici(){
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:4px">${t("ayarlar")}</h3>
+    <p class="muted" style="font-size:13.5px;margin-bottom:14px">${t("dilAcik")}</p>
+    <div class="sx-label">${t("dil")}</div>
+    <div class="chips" style="margin:0">
+      ${Object.keys(DILLER).map(k=>`<button class="chip" data-sx="dilSec" data-v="${k}"
+        aria-pressed="${aktifDil()===k}" lang="${k}">${DILLER[k].ad}<small>${DILLER[k].kisa}</small></button>`).join("")}
+    </div></div>`;
+}
+
 /* ======================= ÖĞRENCİ PROFİLİ ======================= */
 function tarihKisa(t){ return new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"short",year:"numeric"}); }
 function tarihSaat(t){ return new Date(t).toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }
@@ -419,6 +436,7 @@ function sxOgrenciProfil(){
           <span class="sx-badge ${bitti?"ok":""}">${bitti?"tamamlandı":"devam ediyor"}</span></div>`;
       }).join("")}
     </div>
+    ${dilSecici()}
   </section>`;
 }
 function sertifikaKarti(x,u){
