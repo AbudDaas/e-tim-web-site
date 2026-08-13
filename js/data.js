@@ -1,105 +1,106 @@
-/* İçerik — site metinleri, kesitler, podcast, yarışma, gurur tablosu. Sadece bu dosya düzenlenir. */
+/* المحتوى — نصوص الموقع والمقاطع والبودكاست والمسابقات ولوحة الشرف.
+   عدّل هذا الملف وحده، أو استخدم لوحة الإدارة داخل الموقع.
 
-/* Çok dilli içerik: herhangi bir metni {tr:"…", en:"…", ar:"…"} biçiminde
-   yazarsan seçilen dile göre gösterilir. Düz metin bırakırsan her dilde aynı kalır.
-   ÖRNEK:  baslik:{tr:"Merhaba", en:"Hello", ar:"مرحبا"}                          */
+   لدعم أكثر من لغة اكتب أي نص هكذا:
+   baslik:{ar:"مرحبا", tr:"Merhaba", en:"Hello"}
+   النص العادي يظهر كما هو في كل اللغات.                                */
 
 const DATA = {
-  marka:{ ad:"Zihin Akademi", alt:"zihinsel aritmetik", sinavLinki:"#/sinav" },
+  marka:{ ad:"أكاديمية الذهن", alt:"الحساب الذهني", sinavLinki:"#/sinav" },
 
   kurslar:[
-    {ad:"Seviye 1 — Abaküs tanışma", not:"Boncuk okuma, tek basamaklı toplama"},
-    {ad:"Seviye 2 — İki basamak", not:"Beş ve on tamamlayanlar, çıkarma"},
-    {ad:"Seviye 3 — Zihin abaküsü", not:"Fiziksel abaküsten hayalî abaküse geçiş"},
-    {ad:"Seviye 4 — Hız ve dayanıklılık", not:"Uzun diziler, yarışma temposu"}
+    {ad:"المستوى ١ — التعرّف على المعداد", not:"قراءة الخرز، الجمع بخانة واحدة"},
+    {ad:"المستوى ٢ — خانتان", not:"مكمّلات الخمسة والعشرة، الطرح"},
+    {ad:"المستوى ٣ — المعداد الذهني", not:"الانتقال من المعداد الحسّي إلى الذهني"},
+    {ad:"المستوى ٤ — السرعة والتحمّل", not:"سلاسل طويلة وإيقاع المسابقات"}
   ],
 
   ana:{
-    etiket:"Gaziantep · 7–14 yaş",
-    baslik:"Çocuklar sayıları <span class='grad'>görerek</span> düşünmeyi öğreniyor",
-    metin:"Abaküsle başlayan, kâğıt kalem olmadan devam eden bir zihin eğitimi. Haftada iki canlı ders, her ay bir yarışma, sürekli takip.",
+    etiket:"غازي عنتاب · من ٧ إلى ١٤ سنة",
+    baslik:"الأطفال يتعلّمون <span class='grad'>رؤية</span> الأرقام قبل حسابها",
+    metin:"تدريب ذهني يبدأ بالمعداد ويستمر بلا ورقة ولا قلم. حصّتان مباشرتان أسبوعيًا، مسابقة كل شهر، ومتابعة مستمرة.",
     istatistik:[
-      {sayi:"180+", ad:"öğrenci"}, {sayi:"12", ad:"grup"},
-      {sayi:"4 yıl", ad:"program"}, {sayi:"%92", ad:"devam oranı"}
+      {sayi:"+١٨٠", ad:"طالب"}, {sayi:"١٢", ad:"مجموعة"},
+      {sayi:"٤ سنوات", ad:"مدة البرنامج"}, {sayi:"٩٢٪", ad:"نسبة الحضور"}
     ],
-    duyuru:"Eylül dönemi kayıtları açıldı. Deneme dersi için mesaj bırakın."
+    duyuru:"فُتح التسجيل لدورة أيلول. راسلنا لحجز حصة تجريبية."
   },
 
   kesitler:{
-    kategoriler:["Tümü","Toplama","Çıkarma","Teknik","Motivasyon"],
+    kategoriler:["الكل","الجمع","الطرح","تقنيات","تحفيز"],
     liste:[
-      {baslik:"Beş boncuğu tek harekette okumak", kategori:"Teknik", sure:"6:12", ders:"Seviye 2 · Ders 14", yt:"", ozet:"Elin abaküs üzerinde nasıl gezindiğini yavaşlatarak gösterdik."},
-      {baslik:"İki basamaklı toplamada ritim", kategori:"Toplama", sure:"4:48", ders:"Seviye 3 · Ders 6", yt:"", ozet:"Sayıları tek tek değil, ikişerli gruplar hâlinde okumak."},
-      {baslik:"Eksiye düşmeden çıkarma", kategori:"Çıkarma", sure:"7:30", ders:"Seviye 3 · Ders 9", yt:"", ozet:"Ara toplam sıfırın altına inmeden nasıl ilerlenir."},
-      {baslik:"Zihinden 10 sayı: canlı deneme", kategori:"Teknik", sure:"9:05", ders:"Seviye 4 · Ders 2", yt:"", ozet:"Tahtadaki 10 sayıyı kimse kâğıt kullanmadan çözdü."},
-      {baslik:"Yavaş öğrenen çocuğa nasıl davranmalı", kategori:"Motivasyon", sure:"5:20", ders:"Veli sohbeti", yt:"", ozet:"Hızlanmayan çocuğun aslında ne yaptığını anlatıyoruz."},
-      {baslik:"Parmak alışkanlığını bırakma haftası", kategori:"Motivasyon", sure:"3:58", ders:"Seviye 1 · Ders 11", yt:"", ozet:"Hayalî abaküse geçerken yaşanan en sık takılma."}
+      {baslik:"قراءة خمس خرزات بحركة واحدة", kategori:"تقنيات", sure:"6:12", ders:"المستوى ٢ · الحصة ١٤", yt:"", ozet:"عرضنا بالتصوير البطيء كيف تتحرك اليد على المعداد."},
+      {baslik:"الإيقاع في جمع خانتين", kategori:"الجمع", sure:"4:48", ders:"المستوى ٣ · الحصة ٦", yt:"", ozet:"قراءة الأرقام في مجموعات ثنائية بدل قراءتها فرادى."},
+      {baslik:"الطرح دون النزول تحت الصفر", kategori:"الطرح", sure:"7:30", ders:"المستوى ٣ · الحصة ٩", yt:"", ozet:"كيف نتقدّم دون أن يهبط المجموع الجزئي تحت الصفر."},
+      {baslik:"عشرة أرقام ذهنيًا: تجربة مباشرة", kategori:"تقنيات", sure:"9:05", ders:"المستوى ٤ · الحصة ٢", yt:"", ozet:"حلّ الجميع أرقام السبورة العشرة دون استخدام الورقة."},
+      {baslik:"كيف نتعامل مع الطفل البطيء في التعلّم", kategori:"تحفيز", sure:"5:20", ders:"لقاء أولياء الأمور", yt:"", ozet:"ماذا يفعل الطفل الذي لا تزيد سرعته فعلًا."},
+      {baslik:"أسبوع التخلّي عن العدّ بالأصابع", kategori:"تحفيز", sure:"3:58", ders:"المستوى ١ · الحصة ١١", yt:"", ozet:"أكثر العقبات شيوعًا عند الانتقال إلى المعداد الذهني."}
     ]
   },
 
   podcast:{
-    aciklama:"Velilerle ve öğretmenlerle konuşuyoruz. Arabada, mutfakta dinlenecek uzunlukta.",
+    aciklama:"أحاديث مع أولياء الأمور والمعلمين. بطول يناسب الطريق أو المطبخ.",
     bolumler:[
-      {no:12, baslik:"Sınav kaygısı mı, hazırlıksızlık mı?", sure:"22 dk", tarih:"5 Ağustos 2026", ozet:"Yarışma öncesi ağlayan çocuk aslında ne söylüyor.", mp3:""},
-      {no:11, baslik:"Ekran süresi ve dikkat", sure:"18 dk", tarih:"22 Temmuz 2026", ozet:"Dikkat süresi kısaldı mı, yoksa beklentimiz mi büyüdü.", mp3:""},
-      {no:10, baslik:"Abaküs zekâyı artırır mı?", sure:"25 dk", tarih:"8 Temmuz 2026", ozet:"Araştırmaların söylediği ve söylemediği şeyler.", mp3:""},
-      {no:9, baslik:"Evde 10 dakikalık çalışma", sure:"15 dk", tarih:"24 Haziran 2026", ozet:"Uzun çalışma değil, aynı saatte çalışma işe yarıyor.", mp3:""}
+      {no:12, baslik:"قلق الاختبار أم نقص التحضير؟", sure:"٢٢ دقيقة", tarih:"٥ آب ٢٠٢٦", ozet:"ماذا يقول الطفل الذي يبكي قبل المسابقة.", mp3:""},
+      {no:11, baslik:"وقت الشاشة والانتباه", sure:"١٨ دقيقة", tarih:"٢٢ تموز ٢٠٢٦", ozet:"هل قصُر انتباه الأطفال أم كبرت توقعاتنا.", mp3:""},
+      {no:10, baslik:"هل يرفع المعداد الذكاء؟", sure:"٢٥ دقيقة", tarih:"٨ تموز ٢٠٢٦", ozet:"ما تقوله الأبحاث وما لا تقوله.", mp3:""},
+      {no:9, baslik:"عشر دقائق تدريب في البيت", sure:"١٥ دقيقة", tarih:"٢٤ حزيران ٢٠٢٦", ozet:"الانتظام في الموعد أنفع من إطالة الوقت.", mp3:""}
     ]
   },
 
   yarismalar:{
     aktif:{
-      ad:"Ağustos Hız Turnuvası",
+      ad:"بطولة آب للسرعة",
       tarih:"2026-08-30T10:00:00",
-      yer:"Şahinbey Kültür Merkezi · Gaziantep",
-      metin:"Üç kategori: Seviye 1–2, Seviye 3–4, Açık grup. Her tur 5 dakika, 20 soru. İlk üçe madalya, tüm katılımcılara katılım belgesi.",
-      kod:"", katilimci:"64 kayıt"
+      yer:"مركز شاهين بيك الثقافي · غازي عنتاب",
+      metin:"ثلاث فئات: المستوى ١–٢، المستوى ٣–٤، والفئة المفتوحة. كل جولة خمس دقائق وعشرون مسألة. ميداليات للمراكز الثلاثة وشهادة مشاركة للجميع.",
+      kod:"", katilimci:"٦٤ مشاركًا"
     },
     gecmis:[
-      {tarih:"Haziran 2026", ad:"Yaz Kupası", not:"78 katılımcı · birinci: Elif Y."},
-      {tarih:"Nisan 2026", ad:"Şehirler Arası Düello", not:"Gaziantep–Şanlıurfa · 40 kişilik takım"},
-      {tarih:"Şubat 2026", ad:"Sömestr Maratonu", not:"3 gün · 12 tur"}
+      {tarih:"حزيران ٢٠٢٦", ad:"كأس الصيف", not:"٧٨ مشاركًا · الأولى: إيلاف ي."},
+      {tarih:"نيسان ٢٠٢٦", ad:"مواجهة بين المدن", not:"غازي عنتاب – أورفا · فريق من ٤٠ طالبًا"},
+      {tarih:"شباط ٢٠٢٦", ad:"ماراثون العطلة", not:"٣ أيام · ١٢ جولة"}
     ]
   },
 
   gurur:{
-    donem:"Temmuz 2026",
-    metin:"Ay boyunca yapılan denemelerin ortalamasına göre. Liste her ayın başında yenilenir.",
+    donem:"تموز ٢٠٢٦",
+    metin:"بحسب متوسط الاختبارات خلال الشهر. تُحدَّث القائمة مطلع كل شهر.",
     ilkUc:[
-      {ad:"Elif Yıldız", sinif:"Seviye 4", puan:"98 / 100"},
-      {ad:"Yusuf Karaca", sinif:"Seviye 3", puan:"96 / 100"},
-      {ad:"Meryem Aslan", sinif:"Seviye 4", puan:"95 / 100"}
+      {ad:"إيلاف ي.", sinif:"المستوى ٤", puan:"٩٨ / ١٠٠"},
+      {ad:"يوسف ق.", sinif:"المستوى ٣", puan:"٩٦ / ١٠٠"},
+      {ad:"مريم أ.", sinif:"المستوى ٤", puan:"٩٥ / ١٠٠"}
     ],
     liste:[
-      {ad:"Ahmet Şahin", sinif:"Seviye 2", puan:"94"},
-      {ad:"Zeynep Demir", sinif:"Seviye 3", puan:"93"},
-      {ad:"Ömer Faruk Ay", sinif:"Seviye 1", puan:"92"},
-      {ad:"Rana Öztürk", sinif:"Seviye 2", puan:"91"},
-      {ad:"Selim Boz", sinif:"Seviye 4", puan:"90"},
-      {ad:"Hüda Ceylan", sinif:"Seviye 1", puan:"89"},
-      {ad:"Mustafa Er", sinif:"Seviye 3", puan:"88"}
+      {ad:"أحمد ش.", sinif:"المستوى ٢", puan:"٩٤"},
+      {ad:"زينب د.", sinif:"المستوى ٣", puan:"٩٣"},
+      {ad:"عمر ف.", sinif:"المستوى ١", puan:"٩٢"},
+      {ad:"رنا ع.", sinif:"المستوى ٢", puan:"٩١"},
+      {ad:"سليم ب.", sinif:"المستوى ٤", puan:"٩٠"},
+      {ad:"هدى ج.", sinif:"المستوى ١", puan:"٨٩"},
+      {ad:"مصطفى إ.", sinif:"المستوى ٣", puan:"٨٨"}
     ]
   },
 
   hakkimizda:{
-    baslik:"Sekiz yıldır aynı sınıfta, aynı işi yapıyoruz",
-    metin:"2018'de tek bir grupla başladık. Bugün on iki grubumuz var ama ders yapma biçimimiz değişmedi: küçük sınıf, çok tekrar, her çocuğun kendi hızı.",
+    baslik:"ثماني سنوات في الصف نفسه، والعمل نفسه",
+    metin:"بدأنا عام ٢٠١٨ بمجموعة واحدة. اليوم لدينا اثنتا عشرة مجموعة، لكن طريقتنا في التدريس لم تتغيّر: صفوف صغيرة، تكرار كثير، وسرعة خاصة لكل طفل.",
     degerler:[
-      {ico:"✋", ad:"Önce el, sonra zihin", not:"Her seviye fiziksel abaküsle başlar. Hayalî abaküse geçiş acele edilmez."},
-      {ico:"⏱", ad:"Hız değil, doğruluk", not:"Hatasız çözmeyen çocuğu hızlandırmıyoruz. Hız zaten arkadan geliyor."},
-      {ico:"👪", ad:"Veliye rapor", not:"Her ay ne yapıldığını, nerede takıldığını yazılı gönderiyoruz."}
+      {ico:"✋", ad:"اليد أولًا ثم الذهن", not:"كل مستوى يبدأ بالمعداد الحسّي، ولا نستعجل الانتقال إلى الذهني."},
+      {ico:"⏱", ad:"الدقة قبل السرعة", not:"لا نسرّع طفلًا لم يتقن الحل الصحيح. السرعة تأتي لاحقًا وحدها."},
+      {ico:"👪", ad:"تقرير لولي الأمر", not:"نرسل شهريًا ما أُنجز وأين تعثّر الطفل، مكتوبًا."}
     ],
     ekip:[
-      {ad:"Ayşe Demirtaş", rol:"Kurucu · Seviye 3–4 eğitmeni"},
-      {ad:"Kadir Yavuz", rol:"Seviye 1–2 eğitmeni"},
-      {ad:"Nur Aksoy", rol:"Veli iletişimi ve yarışma koordinasyonu"}
+      {ad:"عائشة د.", rol:"المؤسِّسة · معلّمة المستويين ٣ و٤"},
+      {ad:"قادر ي.", rol:"معلّم المستويين ١ و٢"},
+      {ad:"نور أ.", rol:"التواصل مع الأهالي وتنسيق المسابقات"}
     ],
-    iletisim:{ telefon:"+90 500 000 00 00", mail:"merhaba@zihinakademi.com", adres:"Şahinbey, Gaziantep" },
+    iletisim:{ telefon:"+90 500 000 00 00", mail:"merhaba@zihinakademi.com", adres:"شاهين بيك، غازي عنتاب" },
     sss:[
-      {s:"Kaç yaşında başlanır?", c:"7 yaş ideal. 6 yaşındaki çocuklarda önce sayı tanıma testine bakıyoruz."},
-      {s:"Ders süresi ne kadar?", c:"Haftada iki gün, 60'ar dakika. Ev çalışması günde 10 dakikayı geçmiyor."},
-      {s:"Kaçırılan ders telafi ediliyor mu?", c:"Evet, aynı hafta içinde başka bir grubun dersine katılabilirsiniz."},
-      {s:"Yarışmaya katılmak zorunlu mu?", c:"Hayır. Katılmak isteyen çocuğu hazırlıyoruz, istemeyeni zorlamıyoruz."}
+      {s:"ما هو سن البداية؟", c:"السابعة هي السن المثالية. أما ابن السادسة فنجري له اختبار تعرّف على الأرقام أولًا."},
+      {s:"كم تستغرق الحصة؟", c:"يومان أسبوعيًا، ستون دقيقة لكل حصة. والتدريب المنزلي لا يتجاوز عشر دقائق يوميًا."},
+      {s:"هل تُعوَّض الحصة الفائتة؟", c:"نعم، يمكنك حضور حصة مجموعة أخرى ضمن الأسبوع نفسه."},
+      {s:"هل المشاركة في المسابقة إلزامية؟", c:"لا. نُعدّ من يرغب، ولا نُجبر من لا يرغب."}
     ]
   }
 };

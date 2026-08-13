@@ -301,9 +301,10 @@ rolDegisOnay:  {tr:"hesabı rolü değiştirilsin mi?", en:"change this account'
 
 /* --- dil durumu --- */
 let AKTIF_DIL = (function(){
+  /* Sitenin varsayılan dili Arapça. Kullanıcı Profil → Ayarlar'dan
+     başka bir dil seçerse tercihi bu tarayıcıda saklanır. */
   try{ const k=localStorage.getItem("sx:dil"); if(k&&DILLER[k]) return k; }catch(e){}
-  const t=(navigator.language||"tr").slice(0,2).toLowerCase();
-  return DILLER[t] ? t : "tr";
+  return "ar";
 })();
 
 function t(anahtar){
