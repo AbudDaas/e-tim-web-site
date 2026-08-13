@@ -181,7 +181,11 @@ function sxBekleEkran(){
     <p class="muted">${kapali?"Bu hesabın erişimi yönetici tarafından durduruldu.":"Yönetici onayladıktan sonra panele girebilirsin. Onaylandığında tekrar giriş yap."}</p>
     <div class="sx-user" style="margin-top:18px"><b>${esc(SX.user.ad)}</b><span>${esc(SX.user.mail)}</span>
       <span class="sx-badge ${kapali?"no":"wait"}">${kapali?"kapalı":"bekliyor"}</span></div>
-    <button class="btn ghost sm" data-sx="cikis">Çıkış yap</button></div></section>`;
+    <div class="sx-row">
+      <button class="btn" data-sx="durumKontrol">Durumu kontrol et</button>
+      <button class="btn ghost" data-sx="cikis">Çıkış yap</button></div>
+    <div class="sx-note" id="sxDurumNot">Yönetici onayladıysa bu düğme seni panele alır.</div>
+    </div></section>`;
 }
 function sxPanel(){
   const u=SX.user, yon=u.yonetici;
@@ -234,11 +238,14 @@ function sxHesapListe(){
       b.push(`<button class="btn ghost sm" data-sx="hesapSil" data-v="${u.uid}">Reddet</button>`); }
     else if(u.durum==="onayli") b.push(`<button class="btn ghost sm" data-sx="durum" data-v="${u.uid}" data-s="kapali">Askıya al</button>`);
     else b.push(`<button class="btn ghost sm" data-sx="durum" data-v="${u.uid}" data-s="onayli">Yeniden aç</button>`);
+    b.push(u.rol==="ogrenci"
+      ? `<button class="btn ghost sm" data-sx="rolDegis" data-v="${u.uid}" data-s="ogretmen">Öğretmen yap</button>`
+      : `<button class="btn ghost sm" data-sx="rolDegis" data-v="${u.uid}" data-s="ogrenci">Öğrenci yap</button>`);
     if(u.durum!=="bekliyor") b.push(`<button class="btn ghost sm" data-sx="hesapSil" data-v="${u.uid}">Sil</button>`);
     return `<div class="sx-row" style="margin:-6px 0 14px">${b.join("")}</div>`;
   };
   const satir=u=>`<div class="sx-item"><div class="g"><b>${esc(u.ad||u.mail)}</b>
-    <div class="s">${esc(u.mail)} · ${new Date(u.at||Date.now()).toLocaleDateString("tr-TR")}</div></div>${rozet(u)}</div>${dugme(u)}`;
+    <div class="s">${esc(u.mail)} · ${u.rol==="ogrenci"?"öğrenci":u.yonetici?"yönetici":"öğretmen"} · ${new Date(u.at||Date.now()).toLocaleDateString("tr-TR")}</div></div>${rozet(u)}</div>${dugme(u)}`;
   const bek=SX.hesaplar.filter(u=>u.durum==="bekliyor"&&u.rol!=="ogrenci");
   const dig=SX.hesaplar.filter(u=>u.durum!=="bekliyor"||u.rol==="ogrenci").sort((a,b)=>(b.yonetici?1:0)-(a.yonetici?1:0));
   return `<h3 style="margin:6px 0 14px">Hesaplar</h3>

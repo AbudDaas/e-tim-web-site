@@ -113,6 +113,24 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    durumKontrol:async()=>{
+      const n=$("sxDurumNot"); if(n) n.textContent="Kontrol ediliyor…";
+      try{
+        const u=await API.oturumTazele();
+        if(u){ SX.user=u;
+          if(u.durum==="onayli"){ await girisSonrasi(u); toast("Hesabın açıldı."); return; }
+        }
+        if(n) n.innerHTML=`<span class="sx-warn">Hesabın hâlâ onay bekliyor.</span>`;
+      }catch(err){ if(n) n.innerHTML=`<span class="sx-warn">Bağlantı kurulamadı.</span>`; }
+    },
+    rolDegis:async()=>{
+      const u=SX.hesaplar.find(x=>x.uid===v); if(!u) return;
+      const yeni=b.dataset.s;
+      if(!confirm((u.ad||u.mail)+" hesabı "+(yeni==="ogretmen"?"öğretmen":"öğrenci")+" yapılsın mı?")) return;
+      await API.rolDegis(u,yeni);
+      await hesaplariYukle(); await ogrencileriYukle(); ciz();
+      toast("Rol güncellendi.");
+    },
     girisIste:()=>{ SX.geriYol=location.hash||"#/"; SX.pekran="giris"; location.hash="#/profil"; },
     kayitIste:()=>{ SX.geriYol=location.hash||"#/"; SX.pekran="kayit"; SX.kayitRol="ogrenci"; location.hash="#/profil"; },
     ogrenciYenile:async()=>{ await ogrencileriYukle(); ciz(); toast("Liste güncellendi."); },

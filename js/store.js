@@ -44,6 +44,21 @@ const Oturum={
   oku(){ try{ return JSON.parse(Yerel.get("zx:oturum")||"null") }catch(e){ return null } },
   sil(){ Yerel.del("zx:oturum"); }
 };
+/* ADMIN_EMAIL adresiyle giren hesap her durumda yönetici olur —
+   yanlış rolle kayıt olunsa ya da onay beklemede kalsa bile. */
+async function yoneticiKontrol(u){
+  if(!u || !ADMIN_EMAIL) return u;
+  if((u.mail||"").toLowerCase() !== ADMIN_EMAIL.trim().toLowerCase()) return u;
+  if(u.yonetici && u.durum==="onayli" && u.rol!=="ogrenci") return u;
+  u.yonetici=true; u.durum="onayli"; u.rol="ogretmen";
+  if(!u.sinifKodu) u.sinifKodu=yeniKod();
+  try{
+    await API.hesapYaz(u);
+    if(u.sinifKodu) await API.sinifYaz(u.sinifKodu,u.uid,u.ad);
+  }catch(e){}
+  return u;
+}
+
 const API={
  async kayit(mail,sifre,ad,rol,ogretmenKodu){
    mail=mail.trim().toLowerCase(); rol=rol||"ogretmen";
@@ -81,13 +96,13 @@ const API={
      catch(e){ throw new Error("HATALI") }
      FB.token=j.idToken; FB.uid=j.localId;
      let u=await FB.get("users/"+j.localId);
-     if(!u){ u={uid:j.localId,mail,ad:mail.split("@")[0],durum:"bekliyor",yonetici:false,at:Date.now()}; await FB.set("users/"+j.localId,u); }
-     return u;
+     if(!u){ u={uid:j.localId,mail,ad:mail.split("@")[0],rol:"ogretmen",durum:"bekliyor",yonetici:false,at:Date.now()}; await FB.set("users/"+j.localId,u); }
+     return await yoneticiKontrol(u);
    }
    const id=await KV.get("sx:mail:"+mail); if(!id) throw new Error("HATALI");
    const u=await KV.get("sx:user:"+id);
    if(!u||u.ph!==await sha(mail+"::"+sifre)) throw new Error("HATALI");
-   return u;
+   return await yoneticiKontrol(u);
  },
  async sifreSifirla(mail){
    if(!bulut()) throw new Error("YEREL");
@@ -98,10 +113,10 @@ const API={
    if(bulut()){
      if(!o.token||Date.now()-o.at>50*60*1000){ Oturum.sil(); return null; }
      FB.token=o.token; FB.uid=o.uid;
-     try{ const u=await FB.get("users/"+o.uid); if(!u){Oturum.sil();return null} return u }
+     try{ const u=await FB.get("users/"+o.uid); if(!u){Oturum.sil();return null} return await yoneticiKontrol(u) }
      catch(e){ Oturum.sil(); return null }
    }
-   return await KV.get("sx:user:"+o.uid);
+   return await yoneticiKontrol(await KV.get("sx:user:"+o.uid));
  },
  async anonim(){ if(bulut()&&!FB.token){try{const j=await FB.id("signUp",{returnSecureToken:true});FB.token=j.idToken;FB.uid=j.localId}catch(e){}} },
  async hesaplar(){ if(bulut()) return await FB.list("users");
@@ -130,6 +145,11 @@ const API={
  async ogrenciler(ogretmenUid){
    const hepsi=await this.hesaplar();
    return hepsi.filter(u=>u.rol==="ogrenci"&&u.ogretmen===ogretmenUid);
+ },
+ async rolDegis(u,rol){
+   u.rol=rol;
+   if(rol==="ogretmen"){ u.durum="onayli"; if(!u.sinifKodu){ u.sinifKodu=yeniKod(); await this.sinifYaz(u.sinifKodu,u.uid,u.ad); } }
+   await this.hesapYaz(u); return u;
  },
  async ogrenciAl(uid){ return bulut()? await FB.get("users/"+uid) : await KV.get("sx:user:"+uid) },
  async girisIzi(u){ u.sonGiris=Date.now(); try{ await this.hesapYaz(u) }catch(e){} },
