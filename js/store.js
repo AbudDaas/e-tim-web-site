@@ -92,10 +92,18 @@ const API={
  async giris(mail,sifre){
    mail=mail.trim().toLowerCase();
    if(bulut()){
-     let j; try{ j=await FB.id("signInWithPassword",{email:mail,password:sifre,returnSecureToken:true}) }
-     catch(e){ throw new Error("HATALI") }
+     let j;
+     try{ j=await FB.id("signInWithPassword",{email:mail,password:sifre,returnSecureToken:true}) }
+     catch(e){
+       const m=String(e.message||"");
+       if(/EMAIL_NOT_FOUND|INVALID_PASSWORD|INVALID_LOGIN_CREDENTIALS/.test(m)) throw new Error("HATALI");
+       if(/TOO_MANY_ATTEMPTS/.test(m)) throw new Error("COK_DENEME");
+       throw new Error("AG:"+m.slice(0,60));
+     }
      FB.token=j.idToken; FB.uid=j.localId;
-     let u=await FB.get("users/"+j.localId);
+     let u=null;
+     try{ u=await FB.get("users/"+j.localId); }
+     catch(e){ throw new Error("KURAL:"+String(e.message||"").slice(0,40)); }
      if(!u){ u={uid:j.localId,mail,ad:mail.split("@")[0],rol:"ogretmen",durum:"bekliyor",yonetici:false,at:Date.now()}; await FB.set("users/"+j.localId,u); }
      return await yoneticiKontrol(u);
    }

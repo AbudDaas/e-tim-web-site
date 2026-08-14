@@ -149,6 +149,10 @@ function sxGirisEkran(){
     <h2 style="margin:10px 0 8px">${kayit?"Kayıt ol":"Giriş yap"}</h2>
     <p class="muted" style="max-width:54ch">Öğrenciler sınav geçmişini, ödevlerini ve sertifikalarını görmek için; öğretmenler sınav hazırlamak ve öğrenci takibi için hesap açar.</p>
     <div class="card pad" style="max-width:500px;margin-top:22px">
+      ${!bulut()?`<div class="uyari" style="cursor:default;border-color:rgba(192,57,43,.4);background:rgba(192,57,43,.08)">
+        <span class="uyari-nokta" style="background:#C0392B;box-shadow:0 0 0 4px rgba(192,57,43,.18)"></span>
+        <div><b>Deneme modu</b><div class="s">Hesaplar yalnız bu cihazda saklanıyor. Başka telefondan aynı hesaba girilemez.
+        Bunun için js/config.js dosyasındaki FIREBASE ayarları doldurulmalı.</div></div></div>`:""}
       <div class="sx-tabs">
         <button data-sx="ptab2" data-v="giris" aria-pressed="${!kayit}">Giriş yap</button>
         <button data-sx="ptab2" data-v="kayit" aria-pressed="${kayit}">Kayıt ol</button></div>

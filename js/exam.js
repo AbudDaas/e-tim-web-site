@@ -301,7 +301,17 @@ async function girisYap(){
   if(!mailMi(mail)){ n.innerHTML=`<span class="sx-warn">Geçerli bir e-posta yaz.</span>`; return; }
   mesgul(b,true); n.textContent="Giriş yapılıyor…";
   try{ const u=await API.giris(mail,sifre); await girisSonrasi(u); }
-  catch(e){ mesgul(b,false); n.innerHTML=`<span class="sx-warn">${/HATALI/.test(e.message)?"E-posta veya şifre hatalı.":"Bağlantı kurulamadı, internetini kontrol et."}</span>`; }
+  catch(err){
+    mesgul(b,false);
+    const m=String(err.message||"");
+    let mesaj;
+    if(/HATALI/.test(m)) mesaj="E-posta veya şifre hatalı.";
+    else if(/COK_DENEME/.test(m)) mesaj="Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.";
+    else if(/KURAL/.test(m)) mesaj="Giriş yapıldı ama hesap bilgisi okunamadı — Firestore kurallarını güncelle. ("+m+")";
+    else if(!bulut()) mesaj="Bu cihazda böyle bir hesap yok. Site deneme modunda: hesaplar kaydolduğu tarayıcıda kalır.";
+    else mesaj="Bağlantı kurulamadı. ("+m+")";
+    n.innerHTML=`<span class="sx-warn">${mesaj}</span>`;
+  }
 }
 async function kayitOl(){
   const n=$("sxAuthNot"), ad=($("sxAd")?$("sxAd").value:"").trim();
