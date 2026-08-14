@@ -59,6 +59,18 @@ async function yoneticiKontrol(u){
   return u;
 }
 
+/* Öğretmenin sınıf kodu ile classes kaydını her girişte eşitler.
+   Kayıt elle silinse ya da hiç oluşmasa bile kod çalışmaya devam eder. */
+async function sinifGarantile(u){
+  if(!u || u.rol==="ogrenci") return u;
+  if(!u.sinifKodu){ u.sinifKodu=yeniKod(); try{ await API.hesapYaz(u) }catch(e){} }
+  try{
+    const mevcut=await API.sinifAl(u.sinifKodu);
+    if(!mevcut || mevcut.ogretmen!==u.uid) await API.sinifYaz(u.sinifKodu,u.uid,u.ad);
+  }catch(e){}
+  return u;
+}
+
 const API={
  async kayit(mail,sifre,ad,rol,ogretmenKodu){
    mail=mail.trim().toLowerCase(); rol=rol||"ogretmen";
@@ -105,12 +117,12 @@ const API={
      try{ u=await FB.get("users/"+j.localId); }
      catch(e){ throw new Error("KURAL:"+String(e.message||"").slice(0,40)); }
      if(!u){ u={uid:j.localId,mail,ad:mail.split("@")[0],rol:"ogretmen",durum:"bekliyor",yonetici:false,at:Date.now()}; await FB.set("users/"+j.localId,u); }
-     return await yoneticiKontrol(u);
+     return await sinifGarantile(await yoneticiKontrol(u));
    }
    const id=await KV.get("sx:mail:"+mail); if(!id) throw new Error("HATALI");
    const u=await KV.get("sx:user:"+id);
    if(!u||u.ph!==await sha(mail+"::"+sifre)) throw new Error("HATALI");
-   return await yoneticiKontrol(u);
+   return await sinifGarantile(await yoneticiKontrol(u));
  },
  async sifreSifirla(mail){
    if(!bulut()) throw new Error("YEREL");
@@ -121,10 +133,10 @@ const API={
    if(bulut()){
      if(!o.token||Date.now()-o.at>50*60*1000){ Oturum.sil(); return null; }
      FB.token=o.token; FB.uid=o.uid;
-     try{ const u=await FB.get("users/"+o.uid); if(!u){Oturum.sil();return null} return await yoneticiKontrol(u) }
+     try{ const u=await FB.get("users/"+o.uid); if(!u){Oturum.sil();return null} return await sinifGarantile(await yoneticiKontrol(u)) }
      catch(e){ Oturum.sil(); return null }
    }
-   return await yoneticiKontrol(await KV.get("sx:user:"+o.uid));
+   return await sinifGarantile(await yoneticiKontrol(await KV.get("sx:user:"+o.uid)));
  },
  async anonim(){ if(bulut()&&!FB.token){try{const j=await FB.id("signUp",{returnSecureToken:true});FB.token=j.idToken;FB.uid=j.localId}catch(e){}} },
  async hesaplar(){ if(bulut()) return await FB.list("users");

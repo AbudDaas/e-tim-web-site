@@ -209,7 +209,7 @@ document.addEventListener("click",async e=>{
       const n=$("sxBagNot");
       if(kod.length<4){ n.innerHTML=`<span class="sx-warn">Kodu eksiksiz yaz.</span>`; return; }
       const sinif=await API.sinifAl(kod);
-      if(!sinif){ n.innerHTML=`<span class="sx-warn">Bu kodla öğretmen bulunamadı.</span>`; return; }
+      if(!sinif){ n.innerHTML=`<span class="sx-warn">Bu kodla öğretmen bulunamadı. Öğretmeninin bir kez giriş yapmış olması gerekir; kodu ondan tekrar teyit et.</span>`; return; }
       SX.user.ogretmen=sinif.ogretmen; SX.user.ogretmenAd=sinif.ogretmenAd;
       await API.hesapYaz(SX.user); ciz(); toast("Öğretmenine bağlandın.");
     },
