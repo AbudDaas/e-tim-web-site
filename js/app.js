@@ -175,6 +175,7 @@ KV.init();
     if(u){ SX.user=u;
       if(u.durum==="onayli"){
         if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+        else if(u.rol==="veli"){ await veliVerileriYukle(); }
         else { SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); await ogrencileriYukle(); }
       }
     }

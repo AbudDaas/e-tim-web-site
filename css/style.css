@@ -478,3 +478,17 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .sx-flash.gir{animation:flashGir .12s ease-out}
 @keyframes flashGir{from{opacity:.25;transform:scale(.94)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.sx-flash.gir{animation:none}}
+
+/* --- yoklama --- */
+.yok-satir{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid rgba(20,26,51,.07)}
+.yok-satir:last-of-type{border-bottom:0}
+.yok-ad{flex:1;min-width:130px;font-weight:600;font-size:14.5px}
+.yok-satir .chip{padding:6px 11px;font-size:12.5px}
+.chip.yok-geldi[aria-pressed="true"]{background:var(--turkuaz);border-color:var(--turkuaz)}
+.chip.yok-gelmedi[aria-pressed="true"]{background:#C0392B;border-color:#C0392B}
+.chip.yok-izinli[aria-pressed="true"]{background:var(--kehribar);border-color:var(--kehribar)}
+.devam-serit{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.devam-kutu{width:16px;height:16px;border-radius:5px;background:rgba(20,26,51,.12)}
+.devam-kutu.geldi{background:var(--turkuaz)}
+.devam-kutu.gelmedi{background:#C0392B}
+.devam-kutu.izinli{background:var(--kehribar)}

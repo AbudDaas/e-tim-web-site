@@ -62,7 +62,8 @@ async function yoneticiKontrol(u){
 /* Öğretmenin sınıf kodu ile classes kaydını her girişte eşitler.
    Kayıt elle silinse ya da hiç oluşmasa bile kod çalışmaya devam eder. */
 async function sinifGarantile(u){
-  if(!u || u.rol==="ogrenci") return u;
+  if(u && u.rol==="ogrenci"){ try{ await API.veliKoduGarantile(u) }catch(e){} return u; }
+  if(!u || u.rol==="veli") return u;
   if(!u.sinifKodu){ u.sinifKodu=yeniKod(); try{ await API.hesapYaz(u) }catch(e){} }
   try{
     const mevcut=await API.sinifAl(u.sinifKodu);
@@ -78,9 +79,14 @@ const API={
    if(!ADMIN_EMAIL&&rol==="ogretmen"){ try{ yonetici=(await this.hesaplar()).length===0 }catch(e){} }
    // öğrenci hesapları doğrudan açılır, öğretmen hesapları yönetici onayı bekler
    const k={ mail, ad:ad.trim(), rol,
-     durum:(rol==="ogrenci"||yonetici)?"onayli":"bekliyor",
+     durum:(rol==="ogrenci"||rol==="veli"||yonetici)?"onayli":"bekliyor",
      yonetici, at:Date.now(), sonGiris:Date.now() };
    if(rol==="ogretmen") k.sinifKodu=yeniKod();
+   if(rol==="veli"&&ogretmenKodu){
+     const bag=await this.veliBagAl(ogretmenKodu.trim().toUpperCase());
+     if(!bag) throw new Error("VELI_KOD_YOK");
+     k.cocuk=bag.ogrenci; k.cocukAd=bag.ogrenciAd;
+   }
    if(rol==="ogrenci"&&ogretmenKodu){
      const sinif=await this.sinifAl(ogretmenKodu.trim().toUpperCase());
      if(!sinif) throw new Error("SINIF_YOK");
@@ -187,6 +193,34 @@ const API={
    try{ await this.sinifYaz(u.sinifKodu,u.uid,u.ad); }catch(e){}
    return u;
  },
+ /* --- veli bağlantı kodu --- */
+ async veliBagYaz(kod,ogrenciUid,ogrenciAd){
+   const d={kod,ogrenci:ogrenciUid,ogrenciAd};
+   bulut()? await FB.set("parents/"+kod,d) : await KV.set("sx:veli:"+kod,d);
+   return d;
+ },
+ async veliBagAl(kod){ return bulut()? await FB.get("parents/"+kod) : await KV.get("sx:veli:"+kod) },
+ async veliKoduGarantile(u){
+   if(!u || u.rol!=="ogrenci") return u;
+   if(!u.veliKodu){ u.veliKodu=yeniKod(); try{ await this.hesapYaz(u) }catch(e){} }
+   try{
+     const v=await this.veliBagAl(u.veliKodu);
+     if(!v || v.ogrenci!==u.uid) await this.veliBagYaz(u.veliKodu,u.uid,u.ad);
+   }catch(e){}
+   return u;
+ },
+
+ /* --- yoklama --- */
+ async yoklamaYaz(uid,tarih,kayit){
+   const d=Object.assign({tarih},kayit);
+   bulut()? await FB.set("students/"+uid+"/attendance/"+tarih,d) : await KV.set("sx:yok:"+uid+":"+tarih,d);
+ },
+ async yoklamalar(uid){
+   if(bulut()) return await FB.list("students/"+uid+"/attendance");
+   const ks=await KV.list("sx:yok:"+uid+":"); const o=[];
+   for(const k of ks){ const x=await KV.get(k); if(x) o.push(x) } return o;
+ },
+
  async ogrenciAl(uid){ return bulut()? await FB.get("users/"+uid) : await KV.get("sx:user:"+uid) },
  async girisIzi(u){ u.sonGiris=Date.now(); try{ await this.hesapYaz(u) }catch(e){} },
 

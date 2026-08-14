@@ -146,6 +146,7 @@ function vProfil(){
   if(!SX.user) return sxGirisEkran();
   if(SX.user.durum!=="onayli") return sxBekleEkran();
   if(SX.karne) return vKarne();
+  if(SX.user.rol==="veli") return sxVeliProfil();
   if(SX.user.rol==="ogrenci") return sxOgrenciProfil();
   if(SX.pekran==="editor") return sxEditor();
   if(SX.pekran==="yayin") return sxYayin();
@@ -170,12 +171,17 @@ function sxGirisEkran(){
       ${kayit?`
       <div class="sx-field"><div class="sx-label">Kim için</div><div class="chips" style="margin:0">
         <button class="chip" data-sx="rolSec" data-v="ogrenci" aria-pressed="${rol==="ogrenci"}">Öğrenciyim</button>
+        <button class="chip" data-sx="rolSec" data-v="veli" aria-pressed="${rol==="veli"}">Veliyim</button>
         <button class="chip" data-sx="rolSec" data-v="ogretmen" aria-pressed="${rol==="ogretmen"}">Öğretmenim</button></div>
-        <div class="sx-note" style="margin-top:8px">${rol==="ogrenci"
-          ? "Öğrenci hesapları hemen açılır."
-          : "Öğretmen hesapları yönetici onayından sonra kullanılabilir."}</div></div>
+        <div class="sx-note" style="margin-top:8px">${rol==="ogretmen"
+          ? "Öğretmen hesapları yönetici onayından sonra kullanılabilir."
+          : rol==="veli" ? "Veli hesapları hemen açılır. Çocuğunun profilindeki veli kodunu gireceksin."
+          : "Öğrenci hesapları hemen açılır."}</div></div>
       <div class="sx-field"><div class="sx-label">Ad soyad</div>
         <input class="sx-in" id="sxAd" autocomplete="name" placeholder="Ad Soyad"></div>
+      ${rol==="veli"?`<div class="sx-field"><div class="sx-label">Veli kodu</div>
+        <input class="sx-in" id="sxSinifKodu" maxlength="6" autocomplete="off" placeholder="ABC123" style="text-transform:uppercase">
+        <div class="sx-note">Çocuğun kendi profilinde görünen altı haneli kod.</div></div>`:""}
       ${rol==="ogrenci"?`<div class="sx-field"><div class="sx-label">Öğretmen kodu</div>
         <input class="sx-in" id="sxSinifKodu" maxlength="6" autocomplete="off" placeholder="ABC123" style="text-transform:uppercase">
         <div class="sx-note">Öğretmeninin verdiği altı haneli kod. Bilmiyorsan boş bırak, sonra eklenebilir.</div></div>`:""}
@@ -407,6 +413,13 @@ function sxOgrenciProfil(){
     </div>
 
     <div class="card pad" style="margin-top:14px">
+      <div class="sx-item" style="border:0;padding-top:0">
+        <div class="g"><b>Veli kodun</b><div class="s">Annen ya da baban bu kodla kayıt olup gelişimini görebilir</div></div>
+        <span class="sx-pill">${esc(u.veliKodu||"—")}</span></div>
+      ${devamOzeti(SX.ogrYoklama)}
+    </div>
+
+    <div class="card pad" style="margin-top:14px">
       <h3 style="margin-bottom:4px">Ödevlerim</h3>
       <p class="muted" style="font-size:13.5px;margin-bottom:12px">${bekleyen.length?`${bekleyen.length} ödev bekliyor.`:"Bekleyen ödevin yok."}</p>
       ${o.length? o.sort((a,b)=>(b.at||0)-(a.at||0)).map(x=>{
@@ -478,6 +491,7 @@ function sxOgrenciListe(){
     <div class="sx-item" style="border:0;padding-top:0">
       <div class="g"><b>Sınıf kodun</b><div class="s">Öğrencilerine bu kodu ver</div></div>
       <span class="sx-pill">${esc(u.sinifKodu||"—")}</span></div>
+    ${sxYoklamaKutusu()}
     <div class="toplu-odev">
       <div class="sx-label">Tüm sınıfa ödev ver</div>
       <div class="sx-field" style="margin-bottom:8px"><input class="sx-in" id="topBaslik" placeholder="Ödev başlığı — ör. 20 soruluk hız denemesi"></div>
@@ -618,6 +632,8 @@ function vKarne(){
         <td>${r.dogru}/${r.toplam}</td><td>${Math.round(r.dogru/r.toplam*100)}</td></tr>`).join("")+
       `</tbody></table>` : `<div class="sx-empty">Henüz sınav çözülmemiş.</div>`}
 
+    ${(SX.ogrYoklama&&SX.ogrYoklama.length)?`<h3 style="margin:20px 0 6px">Devam</h3>${devamOzeti(SX.ogrYoklama)}`:""}
+
     <div class="grid g2" style="margin-top:20px">
       <div><h3 style="margin-bottom:8px">Ödevler</h3>
         <p class="muted" style="font-size:14px">${od.length} ödevin ${bitenOdev} tanesi tamamlandı.</p>
@@ -639,4 +655,101 @@ function vKarne(){
     <button class="btn" data-sx="karneYazdir">Yazdır / PDF</button>
     <button class="btn ghost" data-sx="karneKapat">Geri</button>
   </div></section>`;
+}
+
+/* ======================= YOKLAMA ======================= */
+const YOK_DURUM = {geldi:"Geldi", gelmedi:"Gelmedi", izinli:"İzinli"};
+function bugun(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+function devamOzeti(kayitlar){
+  const k=(kayitlar||[]).slice().sort((a,b)=>(a.tarih<b.tarih?1:-1));
+  if(!k.length) return `<div class="sx-empty">Henüz yoklama kaydı yok.</div>`;
+  const geldi=k.filter(x=>x.durum==="geldi").length;
+  const izin=k.filter(x=>x.durum==="izinli").length;
+  const oran=Math.round(geldi/k.length*100);
+  return `<div class="sx-label" style="margin-top:14px">Devam durumu</div>
+    <div class="sx-stats" style="grid-template-columns:repeat(3,1fr)">
+      <div class="sx-stat"><b>${oran}%</b><span>devam</span></div>
+      <div class="sx-stat"><b>${k.length-geldi-izin}</b><span>devamsızlık</span></div>
+      <div class="sx-stat"><b>${izin}</b><span>izinli</span></div></div>
+    <div class="devam-serit">${k.slice(0,14).reverse().map(x=>
+      `<span class="devam-kutu ${esc(x.durum)}" title="${esc(x.tarih)}"></span>`).join("")}</div>`;
+}
+
+function sxYoklamaKutusu(){
+  const l=SX.ogrenciler||[];
+  if(!l.length) return "";
+  const secim=SX.yoklamaSecim||{};
+  return `<div class="toplu-odev" style="border-color:rgba(13,148,136,.35);background:rgba(13,148,136,.06)">
+    <div class="sx-label">Yoklama</div>
+    <div class="sx-row" style="margin:0 0 12px">
+      <input class="sx-in" id="yokTarih" type="date" value="${esc(SX.yoklamaTarih||bugun())}" style="max-width:190px">
+      <button class="btn ghost sm" data-sx="yoklamaYukle">Günü getir</button>
+      <button class="btn ghost sm" data-sx="yoklamaHepsi" data-v="geldi">Hepsi geldi</button>
+    </div>
+    ${l.map(o=>`<div class="yok-satir">
+      <span class="yok-ad">${esc(o.ad)}</span>
+      ${Object.keys(YOK_DURUM).map(d=>`<button class="chip yok-${d}" data-sx="yoklamaSec" data-v="${o.uid}" data-d="${d}"
+        aria-pressed="${secim[o.uid]===d}">${YOK_DURUM[d]}</button>`).join("")}
+    </div>`).join("")}
+    <button class="btn" data-sx="yoklamaKaydet" style="margin-top:12px">Yoklamayı kaydet</button>
+    <div class="sx-note" id="yokNot">Kaydedilen yoklama öğrencinin ve velisinin profilinde görünür.</div>
+  </div>`;
+}
+
+/* ======================= VELİ PROFİLİ ======================= */
+function sxVeliProfil(){
+  const u=SX.user;
+  const s=SX.ogrSonuc||[], o=SX.ogrOdev||[], c=SX.ogrSertifika||[], y=SX.ogrYoklama||[];
+  if(!u.cocuk) return `<section class="page"><div class="card pad" style="max-width:520px">
+    <div class="sx-user"><b>${esc(u.ad)}</b><span>${esc(u.mail)}</span><span class="sx-badge ok">veli</span>
+      <span style="margin-inline-start:auto"></span>
+      <button class="btn ghost sm" data-sx="cikis">Çıkış yap</button></div>
+    <h3 style="margin-bottom:6px">Çocuğunu bağla</h3>
+    <p class="muted" style="font-size:14px">Çocuğun kendi profilinde görünen altı haneli veli kodunu gir.</p>
+    <div class="sx-row" style="margin-top:12px">
+      <input class="sx-in" id="sxCocukKod" maxlength="6" placeholder="ABC123" style="max-width:180px;text-transform:uppercase">
+      <button class="btn" data-sx="cocugaBaglan">Bağlan</button></div>
+    <div class="sx-note" id="sxCocukNot"></div></div></section>`;
+
+  const ort=s.length?Math.round(s.reduce((a,r)=>a+r.dogru/r.toplam*100,0)/s.length):0;
+  const bekleyen=o.filter(x=>x.durum!=="tamamlandi");
+  return `<section class="page">
+    <div class="card pad">
+      <div class="sx-user"><b>${esc(u.ad)}</b><span>${esc(u.mail)}</span>
+        <span class="sx-badge ok">veli</span>
+        <span class="sx-badge">çocuk: ${esc(u.cocukAd||"")}</span>
+        <span style="margin-inline-start:auto"></span>
+        <button class="btn sm" data-sx="karneAc">Karne</button>
+        <button class="btn ghost sm" data-sx="cikis">Çıkış yap</button></div>
+      <div class="sx-stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="sx-stat"><b>${s.length}</b><span>sınav</span></div>
+        <div class="sx-stat"><b>${ort}%</b><span>ortalama</span></div>
+        <div class="sx-stat"><b>${bekleyen.length}</b><span>bekleyen ödev</span></div>
+        <div class="sx-stat"><b>${c.length}</b><span>sertifika</span></div></div>
+      ${devamOzeti(y)}
+    </div>
+
+    <div class="card pad" style="margin-top:14px">
+      <h3 style="margin-bottom:12px">Ödevler</h3>
+      ${o.length? o.sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,8).map(x=>`
+        <div class="sx-item"><div class="g"><b>${esc(x.baslik)}</b>
+          <div class="s">${x.sonTarih?"son tarih "+tarihKisa(x.sonTarih):tarihKisa(x.at)}</div></div>
+          <span class="sx-badge ${x.durum==="tamamlandi"?"ok":"wait"}">${x.durum==="tamamlandi"?"tamamlandı":"bekliyor"}</span></div>`).join("")
+        : `<div class="sx-empty">Henüz ödev verilmedi.</div>`}
+    </div>
+
+    <div class="card pad" style="margin-top:14px">
+      <h3 style="margin-bottom:12px">Sınav geçmişi</h3>
+      ${s.length? s.slice().sort((a,b)=>(b.at||0)-(a.at||0)).map(r=>`
+        <div class="sx-rank" style="cursor:default">
+          <span class="nm">${esc(r.sinavAd||"Sınav")}
+            <div class="s" style="font-family:var(--mono);font-size:11.5px;color:var(--gece-2);margin-top:3px">${tarihSaat(r.at)}</div>
+            <div class="sx-bar"><i style="width:${yuzde(r)}%"></i></div></span>
+          <span class="sc">${r.dogru}/${r.toplam}</span>
+          <span class="tm">${yuzde(r)}%</span></div>`).join("")
+        : `<div class="sx-empty">Henüz sınav çözülmemiş.</div>`}
+    </div>
+    ${dilSecici()}
+  </section>`;
 }

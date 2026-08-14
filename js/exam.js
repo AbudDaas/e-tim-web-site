@@ -169,6 +169,32 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    cocugaBaglan:async()=>{
+      const n=$("sxCocukNot"), kod=($("sxCocukKod").value||"").trim().toUpperCase();
+      if(kod.length<4){ n.innerHTML=`<span class="sx-warn">Kodu eksiksiz yaz.</span>`; return; }
+      const bag=await API.veliBagAl(kod);
+      if(!bag){ n.innerHTML=`<span class="sx-warn">Bu kodla öğrenci bulunamadı. Çocuğun profilindeki kodu kontrol et.</span>`; return; }
+      SX.user.cocuk=bag.ogrenci; SX.user.cocukAd=bag.ogrenciAd;
+      await API.hesapYaz(SX.user);
+      await veliVerileriYukle(); ciz(); toast("Çocuğuna bağlandın.");
+    },
+    yoklamaSec:()=>{ SX.yoklamaSecim=SX.yoklamaSecim||{}; SX.yoklamaSecim[v]=b.dataset.d; ciz(); },
+    yoklamaHepsi:()=>{ SX.yoklamaSecim={}; (SX.ogrenciler||[]).forEach(o=>SX.yoklamaSecim[o.uid]=v); ciz(); },
+    yoklamaYukle:async()=>{ SX.yoklamaTarih=$("yokTarih").value||bugun(); await yoklamaGunuYukle(); ciz(); },
+    yoklamaKaydet:async()=>{
+      const tarih=$("yokTarih").value||bugun();
+      const secim=SX.yoklamaSecim||{}, n=$("yokNot");
+      const uidler=Object.keys(secim);
+      if(!uidler.length){ toast("Önce öğrencileri işaretle."); return; }
+      if(n) n.textContent="Kaydediliyor…";
+      let ok=0;
+      for(const uid of uidler){
+        try{ await API.yoklamaYaz(uid,tarih,{durum:secim[uid],at:Date.now(),ogretmen:SX.user.uid}); ok++; }catch(err){}
+      }
+      SX.yoklamaTarih=tarih;
+      if(n) n.innerHTML=`<span class="sx-good">${tarih} için ${ok} öğrenci kaydedildi.</span>`;
+      toast("Yoklama kaydedildi.");
+    },
     tekrarOynat:()=>{ if(SX.alistirma) terimleriOynat(); },
     karneAc:async()=>{
       if(SX.user.rol==="ogrenci" && !SX.acikOgrenci) await ogrenciVerileriYukle(SX.user.uid);
@@ -258,8 +284,8 @@ document.addEventListener("click",async e=>{
     ogrenciAc:async()=>{
       const o=(SX.ogrenciler||[]).find(x=>x.uid===v); if(!o) return;
       SX.acikOgrenci=o; SX.pekran="ogrenci"; ciz();
-      const [s,od,c]=await Promise.all([API.ogrenciSonuclari(v),API.odevler(v),API.sertifikalar(v)]);
-      SX.ogrSonuc=s; SX.ogrOdev=od; SX.ogrSertifika=c; ciz();
+      const [s,od,c,y]=await Promise.all([API.ogrenciSonuclari(v),API.odevler(v),API.sertifikalar(v),API.yoklamalar(v)]);
+      SX.ogrSonuc=s; SX.ogrOdev=od; SX.ogrSertifika=c; SX.ogrYoklama=y; ciz();
     },
     odevVer:async()=>{
       const o=SX.acikOgrenci; if(!o) return;
@@ -313,7 +339,7 @@ document.addEventListener("click",async e=>{
     tekrar:()=>{ SX.sureBitti=false; cozBasla(sinavListesi()); },
     yanlislar:()=>{ if(SX._yanlis&&SX._yanlis.length){ SX.sureBitti=false; cozBasla(SX._yanlis.slice()); } },
     ptab2:()=>{ SX.pekran=v; ciz(); },
-    ptab:()=>{ SX.ptab=v; ciz(); },
+    ptab:async()=>{ SX.ptab=v; ciz(); if(v==="ogrenciler"){ await yoklamaGunuYukle(); ciz(); } },
     girisYap:girisYap, kayitOl:kayitOl,
     cikis:()=>{ Oturum.sil(); SX.user=null; SX.sinavlar=[]; SX.hesaplar=[]; FB.token=null; SX.pekran="giris"; ciz(); toast("Çıkış yapıldı."); },
     sifreUnuttum:async()=>{
@@ -429,6 +455,7 @@ async function kayitOl(){
   }catch(err){
     mesgul(b,false);
     const m=/MAIL_VAR/.test(err.message) ? "Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene."
+      : /VELI_KOD_YOK/.test(err.message) ? "Bu veli kodu bulunamadı. Çocuğun profilindeki kodu kontrol et."
       : /SINIF_YOK/.test(err.message) ? "Bu öğretmen kodu bulunamadı. Boş bırakıp sonra da ekleyebilirsin."
       : "Bağlantı kurulamadı, internetini kontrol et.";
     n.innerHTML=cevirHtml(`<span class="sx-warn">${m}</span>`);
@@ -440,6 +467,7 @@ async function girisSonrasi(u){
   try{ await API.girisIzi(u) }catch(err){}
   if(u.durum==="onayli"){
     if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+    else if(u.rol==="veli"){ await veliVerileriYukle(); }
     else {
       SX.pekran="panel"; SX.ptab="sinavlar";
       if(u.yonetici) await hesaplariYukle();
@@ -450,8 +478,23 @@ async function girisSonrasi(u){
   ciz();
 }
 async function ogrenciVerileriYukle(uid){
-  const [s,o,c]=await Promise.all([API.ogrenciSonuclari(uid),API.odevler(uid),API.sertifikalar(uid)]);
-  SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c;
+  const [s,o,c,y]=await Promise.all([API.ogrenciSonuclari(uid),API.odevler(uid),API.sertifikalar(uid),API.yoklamalar(uid)]);
+  SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c; SX.ogrYoklama=y;
+}
+async function veliVerileriYukle(){
+  if(!SX.user || !SX.user.cocuk) return;
+  await ogrenciVerileriYukle(SX.user.cocuk);
+}
+async function yoklamaGunuYukle(){
+  const tarih=SX.yoklamaTarih||bugun();
+  SX.yoklamaSecim={};
+  for(const o of (SX.ogrenciler||[])){
+    try{
+      const hepsi=await API.yoklamalar(o.uid);
+      const g=hepsi.find(x=>x.tarih===tarih);
+      if(g) SX.yoklamaSecim[o.uid]=g.durum;
+    }catch(e){}
+  }
 }
 async function ogrencileriYukle(){
   if(!SX.user||SX.user.rol==="ogrenci") return;
