@@ -466,3 +466,15 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
   body.karne-modu .karne{box-shadow:none;border:0;background:#fff;padding:0}
   body.karne-modu .sx-stat{border:1px solid #ddd}
 }
+
+/* --- flash anzan / sesli --- */
+.sx-flash{font-family:var(--disp);font-weight:800;font-size:clamp(56px,17vw,104px);line-height:1;
+  letter-spacing:-.03em;text-align:center;direction:ltr;min-height:1.15em;display:flex;
+  align-items:center;justify-content:center;color:var(--gece);user-select:none}
+.sx-flash.neg{color:#C0392B}
+.sx-flash.bekle{font-size:clamp(28px,7vw,40px);color:var(--gece-2);letter-spacing:.2em}
+.sx-flash.ses{font-size:clamp(44px,12vw,72px)}
+.sx-flash.bitti{color:var(--murekkep);opacity:.5}
+.sx-flash.gir{animation:flashGir .12s ease-out}
+@keyframes flashGir{from{opacity:.25;transform:scale(.94)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sx-flash.gir{animation:none}}

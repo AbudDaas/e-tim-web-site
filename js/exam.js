@@ -1,5 +1,59 @@
 /* Çözüm motoru, olaylar, sınav ve hesap işlemleri. */
 
+
+/* ---------- flash anzan ve sesli aritmetik ---------- */
+let flashZaman=null, flashJeton=0;
+function oynatmaDurdur(){
+  flashJeton++; clearTimeout(flashZaman);
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+}
+function seslendir(v){
+  try{
+    if(!window.speechSynthesis) return false;
+    const dil=(typeof aktifDil==="function")?aktifDil():"tr";
+    const on = v<0 ? (dil==="ar"?"ناقص ":dil==="en"?"minus ":"eksi ") : "";
+    const u=new SpeechSynthesisUtterance(on+Math.abs(v));
+    u.lang = dil==="ar" ? "ar-SA" : dil==="en" ? "en-US" : "tr-TR";
+    u.rate=1.05;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    return true;
+  }catch(e){ return false; }
+}
+function terimleriOynat(){
+  const q=SX.qs[SX.i], kip=SX.exam.kip||"liste", hiz=Math.max(250, +SX.exam.hiz || 900);
+  const kutu=$("sxStack"), cevap=$("sxCevap");
+  const jeton=++flashJeton; clearTimeout(flashZaman);
+  let i=0;
+  cevap.disabled=true;
+  kutu.innerHTML='<div class="sx-flash bekle" id="sxFlash">•••</div>';
+  const bitir2=()=>{
+    const f=$("sxFlash"); if(f){ f.textContent="?"; f.className="sx-flash bitti"; }
+    cevap.disabled=false;
+    if(window.innerWidth>760) cevap.focus();
+  };
+  const goster=()=>{
+    if(jeton!==flashJeton) return;
+    const f=$("sxFlash"); if(!f) return;
+    if(i>=q.t.length){ bitir2(); return; }
+    const v=q.t[i++];
+    if(kip==="sesli"){
+      f.textContent="🔊"; f.className="sx-flash ses";
+      if(!seslendir(v)){ f.textContent=sayiYaz(v,SX.exam.eksiSag); f.className="sx-flash"; }
+    } else {
+      f.textContent=sayiYaz(v,SX.exam.eksiSag);
+      f.className="sx-flash"+(v<0?" neg":"");
+      void f.offsetWidth; f.classList.add("gir");
+    }
+    flashZaman=setTimeout(()=>{
+      if(jeton!==flashJeton) return;
+      const f2=$("sxFlash");
+      if(f2 && kip==="flash"){ f2.textContent=""; f2.className="sx-flash"; }
+      flashZaman=setTimeout(goster, Math.max(110, Math.round(hiz*0.25)));
+    }, hiz);
+  };
+  flashZaman=setTimeout(goster, 700);
+}
+
 /* --- çözüm motoru --- */
 function sinavListesi(){
   const l=SX.exam.qs.slice();
@@ -7,6 +61,7 @@ function sinavListesi(){
   return l;
 }
 function cozBasla(liste){
+  oynatmaDurdur();
   SX.qs=liste; SX.answers=new Array(liste.length).fill(null); SX.times=new Array(liste.length).fill(0);
   SX.i=0; SX.sureBitti=false; SX._kaydedildi=false;
   SX.t0=Date.now(); SX.bitis=SX.exam.limit>0?SX.t0+SX.exam.limit*1000:0;
@@ -68,7 +123,7 @@ function cevapla(){
     if(SX.i>=SX.qs.length-1) bitir(); else { SX.i++; soruBoya(); } },bekle);
 }
 async function bitir(){
-  clearInterval(SX.tick);
+  clearInterval(SX.tick); oynatmaDurdur();
   if(SX.ekran==="sonuc") return;
   SX._sure=(SX.bitis&&SX.sureBitti)?SX.exam.limit*1000:Date.now()-SX.t0;
   SX._cevap=SX.answers.filter(a=>a!==null).length;
@@ -109,10 +164,12 @@ document.addEventListener("click",async e=>{
       const qs=taslakSorular(); if(!qs.length){ toast("En az bir soru gerekli."); return; }
       const d=SX.taslak;
       SX.exam={ad:"Serbest alıştırma",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
+        kip:d.kip||"liste", hiz:d.hiz||900,
         geriBildirim:d.geriBildirim,gosterYanlis:true,ses:d.ses};
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    tekrarOynat:()=>{ if(SX.alistirma) terimleriOynat(); },
     karneAc:async()=>{
       if(SX.user.rol==="ogrenci" && !SX.acikOgrenci) await ogrenciVerileriYukle(SX.user.uid);
       SX.karne=true; SX.pekran="karne"; ciz();
@@ -276,7 +333,8 @@ document.addEventListener("click",async e=>{
     duzenle:()=>{ const x=SX.sinavlar.find(s=>s.kod===v); if(!x)return;
       SX.taslak={ad:x.ad,kaynak:"elle",seviye:1,adet:x.qs.length,metin:sorulariYaz(x.qs),limit:x.limit,
         eksiSag:x.eksiSag,karistir:x.karistir,geriBildirim:x.geriBildirim!==false,
-        gosterYanlis:x.gosterYanlis!==false,ses:x.ses!==false,acik:x.acik!==false,kod:x.kod};
+        gosterYanlis:x.gosterYanlis!==false,ses:x.ses!==false,acik:x.acik!==false,kod:x.kod,
+        kip:x.kip||"liste", hiz:x.hiz||900};
       SX.pekran="editor"; ciz(); },
     sinavKaydet:sinavKaydet,
     acKapa:async()=>{ const x=SX.sinavlar.find(s=>s.kod===v); if(!x)return;
@@ -416,6 +474,7 @@ async function sinavKaydet(){
   if(!qs.length){ toast("En az bir soru gerekli."); return; }
   if(!d.kod) d.kod=yeniKod();
   const x={kod:d.kod,ad:d.ad.trim(),qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
+    kip:d.kip||"liste", hiz:d.hiz||900,
     geriBildirim:d.geriBildirim,gosterYanlis:d.gosterYanlis,ses:d.ses,acik:d.acik!==false,
     sahip:SX.user.uid,sahipAd:SX.user.ad,at:Date.now()};
   try{ await API.sinavYaz(x) }catch(e){ toast("Kaydedilemedi, bağlantını kontrol et."); return; }

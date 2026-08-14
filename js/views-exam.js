@@ -1,11 +1,11 @@
 /* Sınav ve profil sekmelerinin görünümleri, form üreteci. */
 
 /* --- taslak / form --- */
-function yeniTaslak(){ return {ad:"",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,
+function yeniTaslak(){ return {ad:"",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,kip:"liste",hiz:900,
   eksiSag:false,karistir:false,geriBildirim:true,gosterYanlis:true,ses:true,acik:true,kod:null} }
 function taslakYaz(k,v){
   const d=SX.taslak; if(!d) return;
-  if(["seviye","adet","limit"].includes(k)) d[k]=+v;
+  if(["seviye","adet","limit","hiz"].includes(k)) d[k]=+v;
   else if(["eksiSag","karistir","geriBildirim","gosterYanlis","ses"].includes(k)) d[k]=(v==="1");
   else d[k]=v;
 }
@@ -39,6 +39,14 @@ function sxForm(){
   <div class="sx-field"><div class="sx-label">Süre</div><div class="chips" style="margin:0">
     ${on.map(s=>sxChip("limit",s,s===0?"Süresiz":(s/60)+" dk",d.limit===s)).join("")}
     <input class="sx-mins" data-sxbind="limitDk" type="number" min="1" max="180" placeholder="özel" value="${ozel?d.limit/60:""}"></div></div>
+  <div class="sx-field"><div class="sx-label">Gösterim</div><div class="chips" style="margin:0">
+    ${sxChip("kip","liste","Alt alta",d.kip!=="flash"&&d.kip!=="sesli","hepsi bir arada")}
+    ${sxChip("kip","flash","Flash anzan",d.kip==="flash","tek tek yanıp söner")}
+    ${sxChip("kip","sesli","Sesli",d.kip==="sesli","sayılar okunur")}</div></div>
+  ${(d.kip==="flash"||d.kip==="sesli")?`
+  <div class="sx-field"><div class="sx-label">Sayı hızı</div><div class="chips" style="margin:0">
+    ${[1600,1200,900,700,500,350].map(h=>sxChip("hiz",h,(h/1000).toFixed(2).replace(/0$/,"")+" sn",d.hiz===h)).join("")}</div>
+    <div class="sx-note">Bir sayının ekranda kalma (ya da okunma) süresi. Başlangıç seviyesinde 1,2 saniye, yarışmada 0,5 saniye civarı kullanılır.</div></div>`:""}
   <div class="sx-field"><div class="sx-label">Eksi işareti</div><div class="chips" style="margin:0">
     ${sxChip("eksiSag","0","Solda −5",!d.eksiSag)}${sxChip("eksiSag","1","Sağda 5−",d.eksiSag)}</div></div>
   <div class="sx-field"><div class="sx-label">Seçenekler</div><div class="chips" style="margin:0">
@@ -94,6 +102,8 @@ function sxCozEkran(){
     <div class="card pad" style="max-width:560px;margin-inline:auto">
       <div class="sx-meta"><span id="sxIlerleme"></span><span id="sxClock">00:00</span></div>
       <div class="sx-stack" id="sxStack"></div>
+      ${(SX.exam && (SX.exam.kip==="flash"||SX.exam.kip==="sesli") && SX.alistirma)
+        ? `<div style="text-align:center;margin-top:-6px"><button class="btn ghost sm" data-sx="tekrarOynat">Tekrar göster</button></div>` : ""}
       <div class="sx-answer" id="sxCevapKutu">
         <input id="sxCevap" type="text" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="cevap">
         <button class="btn" data-sx="kontrol">Kontrol</button></div>
