@@ -93,14 +93,18 @@ function railBoya(){
 }
 function soruBoya(){
   SX.kilit=false;
-  const q=SX.qs[SX.i], sag=SX.exam.eksiSag;
+  const q=SX.qs[SX.i], sag=SX.exam.eksiSag, kip=SX.exam.kip||"liste";
   $("sxIlerleme").textContent=cevirHtml((SX.i+1)+" / "+SX.qs.length);
   $("sxHukum").textContent=""; $("sxHukum").className="sx-verdict";
   const g=$("sxCevap"); g.value=""; g.disabled=false;
+  railBoya(); SX.qt0=Date.now();
+
+  /* flash anzan ve sesli kip: sayılar tek tek gösterilir/okunur */
+  if(kip==="flash" || kip==="sesli"){ terimleriOynat(); return; }
+
   $("sxStack").innerHTML='<div class="rod"></div>'+
     q.t.map((v,i)=>`<div class="sx-term${v<0?" neg":""}" style="animation-delay:${i*45}ms">${sayiYaz(v,sag)}</div>`).join("")+
     '<div class="sx-sum"></div>';
-  railBoya(); SX.qt0=Date.now();
   if(window.innerWidth>760) g.focus();
 }
 function cevapla(){
