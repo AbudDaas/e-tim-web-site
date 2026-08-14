@@ -84,7 +84,10 @@ function vKesitler(){
     <div class="grid g3">${liste.map((v,i)=>`
       <button class="clip" data-video="${k.liste.indexOf(v)}">
         <div class="thumb">
-          ${v.yt?`<img loading="lazy" src="https://img.youtube.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="">`:""}
+          ${(()=>{ const kapak=ceviri(v.kapak);
+             if(kapak) return `<img loading="lazy" src="${esc(kapak)}" alt="${esc(ceviri(v.baslik))}">`;
+             if(v.yt)  return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="">`;
+             return ""; })()}
           <span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span>
         </div>
         <div class="body">

@@ -436,3 +436,7 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .item b,.sx-item b,.rank .nm,.sx-rank .nm,.miss,.sx-miss,.zaman-sat b,
 .stat span,.sx-stat span,.pod b,.pod .cls,.ep h3,.clip h3,.past,.value,.person,
 .yon-ozet,.hata-ic p,.kilit-liste li{unicode-bidi:plaintext}
+
+/* yönetim panelinde kapak önizlemesi */
+.yon-onizleme{width:100%;max-width:220px;aspect-ratio:16/10;object-fit:cover;border-radius:10px;
+  border:1px solid rgba(20,26,51,.12);margin-bottom:12px;display:block;background:var(--tatami-2,#eee)}

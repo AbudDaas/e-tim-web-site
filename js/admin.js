@@ -38,8 +38,9 @@ const YON_BOLUM = [
      {y:"kesitler.liste", ad:"Video kesitleri",
       alanlar:[{k:"baslik",ad:"Başlık"},{k:"kategori",ad:"Kategori"},{k:"sure",ad:"Süre"},
                {k:"ders",ad:"Ders bilgisi"},{k:"yt",ad:"YouTube kimliği",ipucu:"watch?v=XXXX kısmı"},
+               {k:"kapak",ad:"Kapak görseli",ipucu:"gorseller/kesit1.jpg  ya da  https://... .jpg — boş bırakırsan YouTube'un kapağı kullanılır"},
                {k:"ozet",ad:"Özet",tip:"uzun"}],
-      yeni:{baslik:"Yeni kesit",kategori:"Teknik",sure:"0:00",ders:"",yt:"",ozet:""}}
+      yeni:{baslik:"Yeni kesit",kategori:"Teknik",sure:"0:00",ders:"",yt:"",kapak:"",ozet:""}}
    ]},
 
  { k:"podcast", ad:"Podcastler",
@@ -161,6 +162,8 @@ function yonListe(l){
         <button class="btn ghost sm" data-sx="yonTasi" data-y="${l.y}" data-i="${i}" data-d="1" title="aşağı">↓</button>
         <button class="btn ghost sm" data-sx="yonSil" data-y="${l.y}" data-i="${i}">${t("sil")}</button>
       </div>
+      ${(function(){ const k=x.kapak?ceviri(x.kapak):""; const y=x.yt?`https://img.youtube.com/vi/${x.yt}/mqdefault.jpg`:"";
+          const src=k||y; return src?`<img class="yon-onizleme" src="${esc(src)}" alt="">`:""; })()}
       ${l.alanlar.map(a=>{
         const dd = ceviri(x[a.k]); const d = (dd===0?0:(dd||""));
         const yol=`${l.y}.${i}.${a.k}`;
