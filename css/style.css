@@ -515,3 +515,30 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .bildirim-ico{font-size:20px;flex:0 0 auto}
 .sx-item.yeni-bildirim{background:rgba(67,56,202,.06);border-radius:10px;padding-inline:10px}
 .sx-item.yeni-bildirim b{color:var(--murekkep)}
+
+/* --- ders programı --- */
+.prg-tablo{border:1px solid rgba(20,26,51,.1);border-radius:13px;overflow:hidden}
+.prg-satir{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(20,26,51,.07)}
+.prg-satir:last-child{border-bottom:0}
+.prg-satir:nth-child(odd){background:rgba(255,255,255,.5)}
+.prg-gun{font-family:var(--disp);font-weight:700;font-size:14px;min-width:96px}
+.prg-saat{font-family:var(--mono);font-size:13.5px;color:var(--murekkep);min-width:56px}
+.prg-grup{flex:1;font-size:14px;color:var(--gece-2)}
+
+/* --- genel soru tipleri (aritmetik dışı dersler) --- */
+.sx-soru{font-family:var(--disp);font-weight:700;font-size:clamp(19px,4.4vw,26px);line-height:1.35;
+  text-align:center;padding:10px 6px;unicode-bidi:plaintext}
+#sxSecenekler{display:grid;gap:9px;margin-top:6px}
+.sx-secenek{display:flex;align-items:center;gap:11px;width:100%;text-align:start;cursor:pointer;
+  font-family:var(--body);font-size:16px;padding:14px 15px;border-radius:14px;
+  border:1px solid rgba(20,26,51,.15);background:rgba(255,255,255,.75);color:var(--gece);
+  transition:border-color .15s,background .15s,transform .1s;unicode-bidi:plaintext}
+.sx-secenek:hover{border-color:var(--murekkep);background:#fff}
+.sx-secenek:active{transform:translateY(1px)}
+.sik-harf{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+  font-family:var(--mono);font-size:13px;background:rgba(67,56,202,.1);color:var(--murekkep)}
+.sx-secenek.kilit{pointer-events:none;opacity:.75}
+.sx-secenek.dogru{border-color:var(--turkuaz);background:rgba(13,148,136,.12);opacity:1}
+.sx-secenek.dogru .sik-harf{background:var(--turkuaz);color:#fff}
+.sx-secenek.yanlis{border-color:#C0392B;background:rgba(192,57,43,.1);opacity:1}
+.sx-secenek.yanlis .sik-harf{background:#C0392B;color:#fff}

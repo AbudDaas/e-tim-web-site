@@ -1,7 +1,7 @@
 /* Sınav ve profil sekmelerinin görünümleri, form üreteci. */
 
 /* --- taslak / form --- */
-function yeniTaslak(){ return {ad:"",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,kip:"liste",hiz:900,havuz:0,tekDeneme:false,
+function yeniTaslak(){ return {ad:"",ders:"aritmetik",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,kip:"liste",hiz:900,havuz:0,tekDeneme:false,
   eksiSag:false,karistir:false,geriBildirim:true,gosterYanlis:true,ses:true,acik:true,kod:null} }
 function taslakYaz(k,v){
   const d=SX.taslak; if(!d) return;
@@ -14,20 +14,43 @@ function taslakSorular(){ const d=SX.taslak;
   return Array.from({length:d.adet},()=>soruUret(SEVIYE[d.seviye])) }
 function notYenile(){
   const n=$("sxNot"); if(!n) return;
-  const {qs,hata}=soruAyikla(SX.taslak.metin);
+  const arit=aritmetikMi(SX.taslak);
+  const {qs,hata}= arit ? soruAyikla(SX.taslak.metin) : soruAyiklaGenel(SX.taslak.metin);
   let s=qs.length?`<span class="sx-good">${qs.length} soru hazır.</span>`:`<span class="sx-warn">Henüz soru yok.</span>`;
   if(hata.length) s+=` <span class="sx-warn">Anlaşılmayan satır: ${hata.join(", ")}</span>`;
-  n.innerHTML=cevirHtml(`Her satır bir soru. Sayıları boşlukla ayır. Eksi için <b>-3</b> ya da <b>3-</b>. Cevabı kendin vermek istersen satır sonuna <b>= 41</b> ekle. <b>#</b> ile başlayan satır atlanır.<br>${s}`);
+  const yardim = arit
+    ? `Her satır bir soru. Sayıları boşlukla ayır. Eksi için <b>-3</b> ya da <b>3-</b>. Cevabı kendin vermek istersen satır sonuna <b>= 41</b> ekle. <b>#</b> ile başlayan satır atlanır.`
+    : `Her satır bir soru. Üç biçim var:<br>
+       <b>Çoktan seçmeli:</b> Soru | şık | *doğru şık | şık &nbsp;(yıldız doğru cevabı işaretler)<br>
+       <b>Kısa cevap:</b> Soru = cevap = kabul edilen ikinci yazım<br>
+       <b>Doğru/yanlış:</b> Cümle = D &nbsp;ya da&nbsp; = Y<br>
+       Büyük-küçük harf, noktalama ve Arapça harekeler göz ardı edilir. <b>#</b> ile başlayan satır atlanır.`;
+  n.innerHTML=cevirHtml(yardim+"<br>"+s);
 }
 function sxChip(k,v,ad,acik,alt){
   return `<button class="chip" data-sx="chip" data-k="${k}" data-v="${v}" aria-pressed="${!!acik}">${ad}${alt?`<small style="display:block;font-family:var(--mono);font-size:10px;opacity:.7;margin-top:2px">${alt}</small>`:""}</button>`;
 }
+function dersBul(id){
+  const l=DATA.dersler||[];
+  return l.find(x=>x.id===id) || l[0] || {id:"aritmetik",ico:"🧮",tip:"aritmetik",ad:"Aritmetik"};
+}
+function aritmetikMi(d){ return dersBul(d&&d.ders).tip==="aritmetik"; }
+
 function sxForm(){
   const d=SX.taslak, on=[0,120,300,600], ozel=d.limit>0&&!on.includes(d.limit);
+  const arit=aritmetikMi(d);
   return `
+  <div class="sx-field"><div class="sx-label">Ders</div><div class="chips" style="margin:0">
+    ${(DATA.dersler||[]).map(x=>sxChip("ders",x.id,x.ico+" "+esc(ceviri(x.ad)),d.ders===x.id)).join("")}</div></div>
+  ${arit?"":`
+  <div class="sx-field"><div class="sx-label">Soruları yaz</div>
+    <textarea class="sx-ta" data-sxbind="metin" spellcheck="false" placeholder="Pencil ne demek? | kitap | *kalem | masa&#10;Apple = elma = alma&#10;Kur'an 114 sure içerir = D">${esc(d.metin)}</textarea>
+    <div class="sx-note" id="sxNot"></div>
+    <div class="chips" style="margin:10px 0 0">${sxChip("karistir",d.karistir?0:1,"Sırayı karıştır",d.karistir)}</div></div>`}
+  ${!arit?"":`
   <div class="sx-field"><div class="sx-label">Sorular</div><div class="chips" style="margin:0">
-    ${sxChip("kaynak","oto","Otomatik üret",d.kaynak==="oto")}${sxChip("kaynak","elle","Kendim yazacağım",d.kaynak==="elle")}</div></div>
-  ${d.kaynak==="oto"?`
+    ${sxChip("kaynak","oto","Otomatik üret",d.kaynak==="oto")}${sxChip("kaynak","elle","Kendim yazacağım",d.kaynak==="elle")}</div></div>`}
+  ${!arit?"":d.kaynak==="oto"?`
   <div class="sx-field"><div class="sx-label">Seviye</div><div class="chips" style="margin:0">
     ${SEVIYE_AD.map((a,i)=>sxChip("seviye",i,a,d.seviye===i,SEVIYE_NOT[i])).join("")}</div></div>
   <div class="sx-field"><div class="sx-label">Soru sayısı</div><div class="chips" style="margin:0">
@@ -39,6 +62,7 @@ function sxForm(){
   <div class="sx-field"><div class="sx-label">Süre</div><div class="chips" style="margin:0">
     ${on.map(s=>sxChip("limit",s,s===0?"Süresiz":(s/60)+" dk",d.limit===s)).join("")}
     <input class="sx-mins" data-sxbind="limitDk" type="number" min="1" max="180" placeholder="özel" value="${ozel?d.limit/60:""}"></div></div>
+  ${!arit?"":`
   <div class="sx-field"><div class="sx-label">Gösterim</div><div class="chips" style="margin:0">
     ${sxChip("kip","liste","Alt alta",d.kip!=="flash"&&d.kip!=="sesli","hepsi bir arada")}
     ${sxChip("kip","flash","Flash anzan",d.kip==="flash","tek tek yanıp söner")}
@@ -48,7 +72,7 @@ function sxForm(){
     ${[1600,1200,900,700,500,350].map(h=>sxChip("hiz",h,(h/1000).toFixed(2).replace(/0$/,"")+" sn",d.hiz===h)).join("")}</div>
     <div class="sx-note">Bir sayının ekranda kalma (ya da okunma) süresi. Başlangıç seviyesinde 1,2 saniye, yarışmada 0,5 saniye civarı kullanılır.</div></div>`:""}
   <div class="sx-field"><div class="sx-label">Eksi işareti</div><div class="chips" style="margin:0">
-    ${sxChip("eksiSag","0","Solda −5",!d.eksiSag)}${sxChip("eksiSag","1","Sağda 5−",d.eksiSag)}</div></div>
+    ${sxChip("eksiSag","0","Solda −5",!d.eksiSag)}${sxChip("eksiSag","1","Sağda 5−",d.eksiSag)}</div></div>`}
   <div class="sx-field"><div class="sx-label">Sınav güvenliği</div><div class="chips" style="margin:0">
     ${sxChip("tekDeneme",d.tekDeneme?0:1,"Tek deneme hakkı",d.tekDeneme,"giriş yapan öğrenci bir kez çözer")}</div>
     <div class="sx-label" style="margin-top:12px">Soru havuzu</div><div class="chips" style="margin:0">
@@ -107,6 +131,7 @@ function sxCozEkran(){
     <div class="card pad" style="max-width:560px;margin-inline:auto">
       <div class="sx-meta"><span id="sxIlerleme"></span><span id="sxClock">00:00</span></div>
       <div class="sx-stack" id="sxStack"></div>
+      <div id="sxSecenekler"></div>
       ${(SX.exam && (SX.exam.kip==="flash"||SX.exam.kip==="sesli") && SX.alistirma)
         ? `<div style="text-align:center;margin-top:-6px"><button class="btn ghost sm" data-sx="tekrarOynat">Tekrar göster</button></div>` : ""}
       <div class="sx-answer" id="sxCevapKutu">
@@ -255,6 +280,7 @@ function sxSinavListe(){
     ${l.length?l.map(x=>`
       <div class="sx-item"><div class="g"><b>${esc(x.ad)}</b>
         <div class="s">${x.qs.length} soru · ${x.limit?Math.round(x.limit/60)+" dk":"süresiz"} · ${x.acik===false?"kapalı":"açık"}</div></div>
+        <span class="sx-badge">${dersBul(x.ders).ico} ${esc(ceviri(dersBul(x.ders).ad))}</span>
         <span class="sx-pill">${x.kod}</span></div>
       <div class="sx-row" style="margin:-6px 0 14px">
         <button class="btn ghost sm" data-sx="sonucAc" data-v="${x.kod}">Sonuçlar</button>
@@ -825,7 +851,8 @@ function oyunKutusu(s,od,c){
 }
 
 /* ======================= EKSİK ANALİZİ ======================= */
-function eksikAnaliz(sonuclar){
+function eksikAnaliz(hepsi){
+  const sonuclar=(hepsi||[]).filter(r=>!r.ders||r.ders==="aritmetik");
   const k={
     "Çıkarma içeren":       {yanlis:0,toplam:0, ayar:{seviye:1}},
     "İki basamaklı":        {yanlis:0,toplam:0, ayar:{seviye:2}},

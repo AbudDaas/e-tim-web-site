@@ -43,3 +43,100 @@ function bip(f,d,tip){
     o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);
   }catch(e){}
 }
+
+/* ===================================================================
+   GENEL SORU AYIRICI — aritmetik dışındaki dersler için.
+   Öğretmen düz metin yazar, biçim şöyledir:
+
+   Çoktan seçmeli:  Soru metni | şık | *doğru şık | şık
+   Kısa cevap:      Soru metni = cevap = ikinci kabul edilen yazım
+   Doğru/yanlış:    Soru metni = D      (ya da = Y)
+
+   # ile başlayan satır atlanır, boş satır atlanır.
+   =================================================================== */
+function metniSadelestir(x){
+  return String(x==null?"":x).trim().toLowerCase()
+    .replace(/\s+/g," ")
+    .replace(/[.,;:!?'"’“”]/g,"")
+    .replace(/[İIıi]/g,"i").replace(/[Şş]/g,"s").replace(/[Ğğ]/g,"g")
+    .replace(/[Üü]/g,"u").replace(/[Öö]/g,"o").replace(/[Çç]/g,"c")
+    .replace(/[أإآا]/g,"ا").replace(/[ةه]/g,"ه").replace(/[ىي]/g,"ي")
+    .replace(/[\u064B-\u0652]/g,"");
+}
+function soruAyiklaGenel(metin, tip){
+  const qs=[], hata=[];
+  String(metin||"").split(/\r?\n/).forEach((satir,li)=>{
+    const s=satir.trim();
+    if(!s || s.startsWith("#")) return;
+
+    if(s.includes("|")){                       /* çoktan seçmeli */
+      const p=s.split("|").map(x=>x.trim()).filter(x=>x!=="");
+      if(p.length<3){ hata.push(li+1); return; }
+      const soru=p[0], sec=p.slice(1);
+      let dogru=sec.findIndex(x=>x.startsWith("*"));
+      if(dogru<0) dogru=0;
+      qs.push({tip:"secmeli", s:soru, sec:sec.map(x=>x.replace(/^\*/,"").trim()), d:dogru});
+      return;
+    }
+    if(s.includes("=")){
+      const i=s.indexOf("=");
+      const soru=s.slice(0,i).trim();
+      const kalan=s.slice(i+1).split("=").map(x=>x.trim()).filter(Boolean);
+      if(!soru || !kalan.length){ hata.push(li+1); return; }
+      const ilk=kalan[0].toUpperCase();
+      if(["D","Y","DOĞRU","YANLIŞ","TRUE","FALSE","صح","خطأ"].includes(ilk)){
+        qs.push({tip:"dv", s:soru, d:["D","DOĞRU","TRUE","صح"].includes(ilk)});
+      } else {
+        qs.push({tip:"yazili", s:soru, d:kalan[0], alt:kalan.slice(1)});
+      }
+      return;
+    }
+    hata.push(li+1);
+  });
+  return {qs,hata};
+}
+function cevapDogruMu(q,cevap){
+  if(!q) return false;
+  const tip=q.tip||"aritmetik";
+  if(tip==="aritmetik") return Number(cevap)===q.c;
+  if(tip==="secmeli")   return Number(cevap)===Number(q.d);
+  if(tip==="dv")        return Boolean(cevap)===Boolean(q.d);
+  if(tip==="yazili"){
+    const c=metniSadelestir(cevap);
+    if(!c) return false;
+    const kabul=[q.d].concat(q.alt||[]).map(metniSadelestir);
+    return kabul.includes(c);
+  }
+  return false;
+}
+function soruMetni(q,eksiSag){
+  const tip=q.tip||"aritmetik";
+  if(tip==="aritmetik") return q.t.map(v=>sayiYaz(v,eksiSag)).join(" ");
+  return q.s||"";
+}
+function dogruMetni(q){
+  const tip=q.tip||"aritmetik";
+  if(tip==="aritmetik") return String(q.c);
+  if(tip==="secmeli")   return (q.sec||[])[q.d]||"";
+  if(tip==="dv")        return q.d?"Doğru":"Yanlış";
+  return String(q.d||"");
+}
+function cevapMetni(q,cevap){
+  if(cevap===null||cevap===undefined||cevap==="") return null;
+  const tip=q.tip||"aritmetik";
+  if(tip==="secmeli") return (q.sec||[])[cevap]||String(cevap);
+  if(tip==="dv")      return cevap?"Doğru":"Yanlış";
+  return String(cevap);
+}
+
+/* Kaydedilmiş soruları yeniden düzenlenebilir metne çevirir. */
+function sorulariYazGenel(qs){
+  return (qs||[]).map(q=>{
+    const tip=q.tip||"aritmetik";
+    if(tip==="secmeli") return [q.s].concat((q.sec||[]).map((x,i)=>(i===q.d?"*":"")+x)).join(" | ");
+    if(tip==="dv")      return q.s+" = "+(q.d?"D":"Y");
+    if(tip==="yazili")  return [q.s,q.d].concat(q.alt||[]).join(" = ");
+    const s=q.t.reduce((a,b)=>a+b,0);
+    return q.t.join(" ")+(q.c!==s?" = "+q.c:"");
+  }).join("\n");
+}

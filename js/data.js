@@ -10,6 +10,19 @@ const DATA = {
     sinavLinki:"#/sinav"
   },
 
+  /* Branşlar. Yeni ders eklemek için buraya bir satır ekle ya da
+     Yönetim panelinden düzenle. tip: sınavlarda varsayılan soru biçimi. */
+  dersler:[
+    {id:"aritmetik", ico:"🧮", tip:"aritmetik",
+     ad:{ar:"الحساب الذهني", tr:"Zihinsel aritmetik", en:"Mental arithmetic"}},
+    {id:"ingilizce", ico:"🔤", tip:"secmeli",
+     ad:{ar:"الإنجليزية", tr:"İngilizce", en:"English"}},
+    {id:"arapca", ico:"📖", tip:"secmeli",
+     ad:{ar:"العربية", tr:"Arapça", en:"Arabic"}},
+    {id:"kuran", ico:"🕌", tip:"yazili",
+     ad:{ar:"القرآن الكريم", tr:"Kur'an", en:"Qur'an"}}
+  ],
+
   kurslar:[
     {ad:{ar:"المستوى ١ — التعرّف على المعداد", tr:"Seviye 1 — Abaküsle tanışma", en:"Level 1 — Meeting the abacus"},
      not:{ar:"قراءة الخرز، الجمع بخانة واحدة", tr:"Boncuk okuma, tek basamaklı toplama", en:"Reading beads, single-digit addition"}},

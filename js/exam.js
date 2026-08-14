@@ -83,7 +83,7 @@ function railBoya(){
     h+='<div class="sx-rod">';
     for(let b=0;b<Math.min(10,SX.qs.length-s*10);b++){
       const k=s*10+b; let c="sx-bead";
-      if(SX.answers[k]!==null) c+= SX.answers[k]===SX.qs[k].c?" ok":" no";
+      if(SX.answers[k]!==null && SX.answers[k]!==undefined) c+= cevapDogruMu(SX.qs[k],SX.answers[k])?" ok":" no";
       if(k===SX.i) c+=" now";
       h+=`<div class="${c}"></div>`;
     }
@@ -99,6 +99,29 @@ function soruBoya(){
   const g=$("sxCevap"); g.value=""; g.disabled=false;
   railBoya(); SX.qt0=Date.now();
 
+  const sec=$("sxSecenekler"); if(sec) sec.innerHTML="";
+  const tip=q.tip||"aritmetik";
+
+  /* aritmetik dışı sorular: metin + şıklar */
+  if(tip!=="aritmetik"){
+    $("sxStack").innerHTML=`<div class="sx-soru">${esc(q.s||"")}</div>`;
+    const kutu=$("sxCevapKutu");
+    if(tip==="secmeli"||tip==="dv"){
+      kutu.style.display="none";
+      const sik = tip==="dv" ? ["Doğru","Yanlış"] : (q.sec||[]);
+      if(sec) sec.innerHTML=cevirHtml(sik.map((x,i)=>
+        `<button class="sx-secenek" data-sx="sikSec" data-v="${i}">
+           <span class="sik-harf">${String.fromCharCode(65+i)}</span>${esc(x)}</button>`).join(""));
+    } else {
+      kutu.style.display="";
+      g.setAttribute("inputmode","text"); g.placeholder="…";
+      if(window.innerWidth>760) g.focus();
+    }
+    return;
+  }
+  const kutu2=$("sxCevapKutu"); if(kutu2) kutu2.style.display="";
+  g.setAttribute("inputmode","numeric"); g.placeholder="?";
+
   /* flash anzan ve sesli kip: sayılar tek tek gösterilir/okunur */
   if(kip==="flash" || kip==="sesli"){ terimleriOynat(); return; }
 
@@ -107,8 +130,38 @@ function soruBoya(){
     '<div class="sx-sum"></div>';
   if(window.innerWidth>760) g.focus();
 }
+function cevapVer(deger){
+  if(SX.kilit||SX.ekran!=="coz") return;
+  SX.kilit=true;
+  const q=SX.qs[SX.i], dogru=cevapDogruMu(q,deger);
+  SX.answers[SX.i]=deger; SX.times[SX.i]=Date.now()-SX.qt0;
+  $("sxCevap").disabled=true;
+  document.querySelectorAll(".sx-secenek").forEach((b,i)=>{
+    b.classList.add("kilit");
+    if(SX.exam.geriBildirim!==false){
+      if(cevapDogruMu(q,i)) b.classList.add("dogru");
+      else if(i===Number(deger)) b.classList.add("yanlis");
+    }
+  });
+  if(SX.exam.geriBildirim!==false){
+    $("sxHukum").textContent=cevirHtml(dogru?"Doğru":"Yanlış — doğrusu "+dogruMetni(q));
+    $("sxHukum").className="sx-verdict "+(dogru?"ok":"no");
+    bip(dogru?880:165, dogru? 0.09 : 0.16, dogru?"triangle":"square");
+  } else { $("sxHukum").textContent=cevirHtml("Cevap alındı"); bip(660,.07,"triangle"); }
+  railBoya();
+  const bekle=SX.exam.geriBildirim===false?300:(dogru?600:1300);
+  setTimeout(()=>{ if(SX.sureBitti) return;
+    if(SX.i>=SX.qs.length-1) bitir(); else { SX.i++; soruBoya(); } },bekle);
+}
 function cevapla(){
   if(SX.kilit||SX.ekran!=="coz") return;
+  const q0=SX.qs[SX.i], tip0=q0.tip||"aritmetik";
+  if(tip0==="yazili"){
+    const y=($("sxCevap").value||"").trim();
+    if(!y){ const k=$("sxCevapKutu"); k.classList.remove("shake"); void k.offsetWidth; k.classList.add("shake"); return; }
+    cevapVer(y); return;
+  }
+  if(tip0!=="aritmetik") return;
   const kutu=$("sxCevapKutu"), ham=($("sxCevap").value||"").trim().replace(/[−–]/g,"-");
   if(ham===""||isNaN(Number(ham))){ kutu.classList.remove("shake"); void kutu.offsetWidth; kutu.classList.add("shake"); return; }
   SX.kilit=true;
@@ -131,14 +184,15 @@ async function bitir(){
   if(SX.ekran==="sonuc") return;
   SX._sure=(SX.bitis&&SX.sureBitti)?SX.exam.limit*1000:Date.now()-SX.t0;
   SX._cevap=SX.answers.filter(a=>a!==null).length;
-  SX._dogru=SX.answers.filter((a,i)=>a!==null&&a===SX.qs[i].c).length;
-  SX._yanlis=SX.qs.filter((q,i)=>SX.answers[i]!==q.c);
+  SX._dogru=SX.answers.filter((a,i)=>a!==null&&a!==undefined&&cevapDogruMu(SX.qs[i],a)).length;
+  SX._yanlis=SX.qs.filter((q,i)=>!cevapDogruMu(q,SX.answers[i]));
   SX._kaydedildi=false;
   if(SX.alistirma && SX.user && SX.user.rol==="ogrenci"){
     try{
       await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:"", sinavAd:"Serbest alıştırma",
         dogru:SX._dogru, toplam:SX.qs.length, sure:SX._sure, at:Date.now(), ogretmenAd:"",
-        dokum:SX.qs.map((q,i)=>({q:q.t.map(x=>sayiYaz(x,SX.exam.eksiSag)).join(" "),a:SX.answers[i],c:q.c})) });
+        ders:SX.exam.ders||"aritmetik",
+        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]), c:dogruMetni(q)})) });
       await ogrenciVerileriYukle(SX.user.uid);
     }catch(err){}
   }
@@ -147,7 +201,8 @@ async function bitir(){
       await API.sonucYaz(SX.exam.kod,{ ad:SX.ogrenci, dogru:SX._dogru, toplam:SX.qs.length,
         cevaplanan:SX._cevap, sure:SX._sure, at:Date.now(), sureBitti:SX.sureBitti, sahip:SX.exam.sahip||"",
         ogrenciUid:(SX.user&&SX.user.rol==="ogrenci")?SX.user.uid:"",
-        dokum:SX.qs.map((q,i)=>({q:q.t.map(v=>sayiYaz(v,SX.exam.eksiSag)).join(" "),a:SX.answers[i],c:q.c})) });
+        ders:SX.exam.ders||"aritmetik",
+        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]), c:dogruMetni(q)})) });
       const oturumluOgrenci = SX.user && SX.user.rol==="ogrenci";
       if(oturumluOgrenci){
         await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:SX.exam.kod, sinavAd:SX.exam.ad,
@@ -175,12 +230,13 @@ document.addEventListener("click",async e=>{
     alistirmaBasla:()=>{
       const qs=taslakSorular(); if(!qs.length){ toast("En az bir soru gerekli."); return; }
       const d=SX.taslak;
-      SX.exam={ad:"Serbest alıştırma",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
+      SX.exam={ad:"Serbest alıştırma",ders:d.ders||"aritmetik",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
         kip:d.kip||"liste", hiz:d.hiz||900, havuz:+d.havuz||0, tekDeneme:!!d.tekDeneme,
         geriBildirim:d.geriBildirim,gosterYanlis:true,ses:d.ses};
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    sikSec:()=>{ const q=SX.qs[SX.i]; cevapVer((q.tip==="dv") ? (Number(v)===0) : Number(v)); },
     duyuruEkle:async()=>{
       const baslik=($("duyBaslik").value||"").trim();
       if(!baslik){ toast("Duyuru başlığı gerekli."); return; }
@@ -418,7 +474,7 @@ document.addEventListener("click",async e=>{
       await API.hesapSil(u); SX.hesaplar=SX.hesaplar.filter(x=>x.uid!==v); ciz(); },
     yeniSinav:()=>{ SX.taslak=yeniTaslak(); SX.pekran="editor"; ciz(); },
     duzenle:()=>{ const x=SX.sinavlar.find(s=>s.kod===v); if(!x)return;
-      SX.taslak={ad:x.ad,kaynak:"elle",seviye:1,adet:x.qs.length,metin:sorulariYaz(x.qs),limit:x.limit,
+      SX.taslak={ad:x.ad,ders:x.ders||"aritmetik",kaynak:"elle",seviye:1,adet:x.qs.length,metin:sorulariYazGenel(x.qs),limit:x.limit,
         eksiSag:x.eksiSag,karistir:x.karistir,geriBildirim:x.geriBildirim!==false,
         gosterYanlis:x.gosterYanlis!==false,ses:x.ses!==false,acik:x.acik!==false,kod:x.kod,
         kip:x.kip||"liste", hiz:x.hiz||900, havuz:+x.havuz||0, tekDeneme:!!x.tekDeneme};
@@ -589,7 +645,7 @@ async function sinavKaydet(){
   const qs=taslakSorular();
   if(!qs.length){ toast("En az bir soru gerekli."); return; }
   if(!d.kod) d.kod=yeniKod();
-  const x={kod:d.kod,ad:d.ad.trim(),qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
+  const x={kod:d.kod,ad:d.ad.trim(),ders:d.ders||"aritmetik",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
     kip:d.kip||"liste", hiz:d.hiz||900, havuz:+d.havuz||0, tekDeneme:!!d.tekDeneme,
     geriBildirim:d.geriBildirim,gosterYanlis:d.gosterYanlis,ses:d.ses,acik:d.acik!==false,
     sahip:SX.user.uid,sahipAd:SX.user.ad,at:Date.now()};
