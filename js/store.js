@@ -210,6 +210,31 @@ const API={
    return u;
  },
 
+ /* --- sınıf duyuruları --- */
+ async duyuruYaz(d){
+   d.id=d.id||yeniId();
+   bulut()? await FB.set("announcements/"+d.id,d) : await KV.set("sx:duyuru:"+d.id,d);
+   return d;
+ },
+ async duyurular(ogretmenUid){
+   try{
+     if(bulut()) return (await FB.list("announcements")).filter(x=>!ogretmenUid||x.sahip===ogretmenUid);
+     const ks=await KV.list("sx:duyuru:"); const o=[];
+     for(const k of ks){ const x=await KV.get(k); if(x&&(!ogretmenUid||x.sahip===ogretmenUid)) o.push(x) }
+     return o;
+   }catch(e){ return []; }
+ },
+ async duyuruSil(id){ try{ bulut()? await FB.del("announcements/"+id) : await KV.del("sx:duyuru:"+id) }catch(e){} },
+
+ /* --- ders programı --- */
+ async programYaz(uid,satirlar){
+   const d={sahip:uid,satirlar,at:Date.now()};
+   bulut()? await FB.set("schedule/"+uid,d) : await KV.set("sx:program:"+uid,d);
+ },
+ async programAl(uid){
+   try{ return bulut()? await FB.get("schedule/"+uid) : await KV.get("sx:program:"+uid) }catch(e){ return null }
+ },
+
  /* --- bildirimler --- */
  async bildirimYaz(uid,b){
    const id=yeniId(); const d=Object.assign({id,at:Date.now(),okundu:false},b);

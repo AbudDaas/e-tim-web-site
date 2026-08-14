@@ -1,12 +1,12 @@
 /* Sınav ve profil sekmelerinin görünümleri, form üreteci. */
 
 /* --- taslak / form --- */
-function yeniTaslak(){ return {ad:"",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,kip:"liste",hiz:900,
+function yeniTaslak(){ return {ad:"",kaynak:"oto",seviye:1,adet:20,metin:"",limit:300,kip:"liste",hiz:900,havuz:0,tekDeneme:false,
   eksiSag:false,karistir:false,geriBildirim:true,gosterYanlis:true,ses:true,acik:true,kod:null} }
 function taslakYaz(k,v){
   const d=SX.taslak; if(!d) return;
-  if(["seviye","adet","limit","hiz"].includes(k)) d[k]=+v;
-  else if(["eksiSag","karistir","geriBildirim","gosterYanlis","ses"].includes(k)) d[k]=(v==="1");
+  if(["seviye","adet","limit","hiz","havuz"].includes(k)) d[k]=+v;
+  else if(["eksiSag","karistir","geriBildirim","gosterYanlis","ses","tekDeneme"].includes(k)) d[k]=(v==="1");
   else d[k]=v;
 }
 function taslakSorular(){ const d=SX.taslak;
@@ -49,6 +49,11 @@ function sxForm(){
     <div class="sx-note">Bir sayının ekranda kalma (ya da okunma) süresi. Başlangıç seviyesinde 1,2 saniye, yarışmada 0,5 saniye civarı kullanılır.</div></div>`:""}
   <div class="sx-field"><div class="sx-label">Eksi işareti</div><div class="chips" style="margin:0">
     ${sxChip("eksiSag","0","Solda −5",!d.eksiSag)}${sxChip("eksiSag","1","Sağda 5−",d.eksiSag)}</div></div>
+  <div class="sx-field"><div class="sx-label">Sınav güvenliği</div><div class="chips" style="margin:0">
+    ${sxChip("tekDeneme",d.tekDeneme?0:1,"Tek deneme hakkı",d.tekDeneme,"giriş yapan öğrenci bir kez çözer")}</div>
+    <div class="sx-label" style="margin-top:12px">Soru havuzu</div><div class="chips" style="margin:0">
+      ${[0,10,15,20,25].map(h=>sxChip("havuz",h,h===0?"Kapalı":h+" soru sor",(d.havuz||0)===h)).join("")}</div>
+    <div class="sx-note">Havuz açıkken sorulardan rastgele bu kadarı seçilir; her öğrenciye farklı soru gelir.</div></div>
   <div class="sx-field"><div class="sx-label">Seçenekler</div><div class="chips" style="margin:0">
     ${sxChip("geriBildirim",d.geriBildirim?0:1,"Her soruda doğru/yanlış göster",d.geriBildirim)}
     ${sxChip("gosterYanlis",d.gosterYanlis?0:1,"Bitince yanlışları öğrenciye göster",d.gosterYanlis)}
@@ -216,6 +221,7 @@ function sxPanel(){
   const u=SX.user, yon=u.yonetici;
   const bekleyen=SX.hesaplar.filter(h=>h.durum==="bekliyor"&&h.rol!=="ogrenci").length;
   const govde = SX.ptab==="ogrenciler" ? sxOgrenciListe()
+              : SX.ptab==="sinif" ? (duyuruKutusu(true)+programKutusu(true))
               : (yon&&SX.ptab==="hesaplar") ? sxHesapListe()
               : sxSinavListe();
   return `<section class="page">
@@ -233,6 +239,7 @@ function sxPanel(){
       <div class="sx-tabs">
         <button data-sx="ptab" data-v="sinavlar" aria-pressed="${SX.ptab==="sinavlar"}">Sınavlarım</button>
         <button data-sx="ptab" data-v="ogrenciler" aria-pressed="${SX.ptab==="ogrenciler"}">Öğrencilerim${(SX.ogrenciler||[]).length?` (${SX.ogrenciler.length})`:""}</button>
+        <button data-sx="ptab" data-v="sinif" aria-pressed="${SX.ptab==="sinif"}">Duyuru ve program</button>
         ${yon?`<button data-sx="ptab" data-v="hesaplar" aria-pressed="${SX.ptab==="hesaplar"}">Hesaplar${bekleyen?` (${bekleyen})`:""}</button>`:""}
       </div>
       ${govde}
@@ -421,6 +428,8 @@ function sxOgrenciProfil(){
     </div>
 
     ${bildirimKutusu()}
+    ${duyuruKutusu(false)}
+    ${programKutusu(false)}
     ${oyunKutusu(s,o,c)}
 
     <div class="card pad" style="margin-top:14px">
@@ -747,6 +756,8 @@ function sxVeliProfil(){
         : `<div class="sx-empty">Henüz ödev verilmedi.</div>`}
     </div>
 
+    ${duyuruKutusu(false)}
+    ${programKutusu(false)}
     ${analizKutusu(s,false)}
 
     <div class="card pad" style="margin-top:14px">
@@ -868,5 +879,54 @@ function bildirimKutusu(){
       <span class="bildirim-ico">${x.tip==="odev"?"📚":x.tip==="sertifika"?"🎓":x.tip==="yoklama"?"📅":"🔔"}</span>
       <div class="g"><b>${esc(x.metin)}</b><div class="s">${tarihSaat(x.at)}</div></div></div>`).join("")}
     ${okunmamis?`<button class="btn ghost sm" data-sx="bildirimOku" style="margin-top:10px">Okundu işaretle</button>`:""}
+  </div>`;
+}
+
+/* ======================= DUYURU VE PROGRAM ======================= */
+const GUNLER = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+
+function duyuruKutusu(duzenlenebilir){
+  const d=(SX.duyurular||[]).slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:4px">Duyurular</h3>
+    <p class="muted" style="font-size:13.5px;margin-bottom:12px">
+      ${duzenlenebilir?"Yazdığın duyuru bütün öğrencilerinin ve velilerinin ekranında görünür."
+        :"Öğretmeninden gelen duyurular."}</p>
+    ${duzenlenebilir?`<div class="sx-field" style="margin-bottom:8px">
+      <input class="sx-in" id="duyBaslik" placeholder="Duyuru başlığı — ör. Cuma dersi 17:00'ye alındı"></div>
+      <div class="sx-row" style="margin:0 0 14px">
+        <input class="sx-in" id="duyMetin" placeholder="Açıklama (isteğe bağlı)">
+        <button class="btn" data-sx="duyuruEkle">Yayınla</button></div>`:""}
+    ${d.length? d.slice(0,10).map(x=>`<div class="sx-item">
+      <span class="bildirim-ico">📣</span>
+      <div class="g"><b>${esc(x.baslik)}</b>
+        <div class="s">${x.metin?esc(x.metin)+" · ":""}${tarihSaat(x.at)}</div></div>
+      ${duzenlenebilir?`<button class="btn ghost sm" data-sx="duyuruSil" data-v="${esc(x.id)}">Sil</button>`:""}</div>`).join("")
+      : `<div class="sx-empty">Henüz duyuru yok.</div>`}
+  </div>`;
+}
+
+function programKutusu(duzenlenebilir){
+  const p=(SX.program&&SX.program.satirlar)||[];
+  const sirali=p.slice().sort((a,b)=>(a.gun-b.gun)||String(a.saat).localeCompare(String(b.saat)));
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:4px">Ders programı</h3>
+    <p class="muted" style="font-size:13.5px;margin-bottom:12px">
+      ${duzenlenebilir?"Haftalık ders saatlerin. Öğrenciler ve veliler bu tabloyu görür."
+        :"Haftalık ders saatlerin."}</p>
+    ${duzenlenebilir?`<div class="sx-row" style="margin:0 0 14px">
+      <select class="sx-in" id="prgGun" style="max-width:150px">
+        ${GUNLER.map((g,i)=>`<option value="${i}">${g}</option>`).join("")}</select>
+      <input class="sx-in" id="prgSaat" type="time" style="max-width:130px" value="17:00">
+      <input class="sx-in" id="prgGrup" placeholder="grup — ör. Seviye 2" style="max-width:190px">
+      <button class="btn" data-sx="programEkle">Ekle</button></div>`:""}
+    ${sirali.length? `<div class="prg-tablo">${sirali.map((x,i)=>`
+      <div class="prg-satir">
+        <span class="prg-gun">${esc(GUNLER[x.gun]||"")}</span>
+        <span class="prg-saat">${esc(x.saat||"")}</span>
+        <span class="prg-grup">${esc(x.grup||"")}</span>
+        ${duzenlenebilir?`<button class="btn ghost sm" data-sx="programSil" data-v="${i}">Sil</button>`:""}
+      </div>`).join("")}</div>`
+      : `<div class="sx-empty">Program girilmemiş.</div>`}
   </div>`;
 }

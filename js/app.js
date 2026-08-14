@@ -174,9 +174,9 @@ KV.init();
     const u=await API.oturumTazele();
     if(u){ SX.user=u;
       if(u.durum==="onayli"){
-        if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+        if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); await sinifIcerikYukle(u.ogretmen); }
         else if(u.rol==="veli"){ await veliVerileriYukle(); }
-        else { SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); await ogrencileriYukle(); }
+        else { SX.pekran="panel"; if(u.yonetici) await hesaplariYukle(); await sinavlariYukle(); await ogrencileriYukle(); await sinifIcerikYukle(u.uid); }
       }
     }
   }catch(e){}

@@ -172,11 +172,40 @@ document.addEventListener("click",async e=>{
       const qs=taslakSorular(); if(!qs.length){ toast("En az bir soru gerekli."); return; }
       const d=SX.taslak;
       SX.exam={ad:"Serbest alıştırma",qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
-        kip:d.kip||"liste", hiz:d.hiz||900,
+        kip:d.kip||"liste", hiz:d.hiz||900, havuz:+d.havuz||0, tekDeneme:!!d.tekDeneme,
         geriBildirim:d.geriBildirim,gosterYanlis:true,ses:d.ses};
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    duyuruEkle:async()=>{
+      const baslik=($("duyBaslik").value||"").trim();
+      if(!baslik){ toast("Duyuru başlığı gerekli."); return; }
+      const d={baslik, metin:($("duyMetin").value||"").trim(), sahip:SX.user.uid,
+               sahipAd:SX.user.ad, at:Date.now()};
+      await API.duyuruYaz(d);
+      for(const o of (SX.ogrenciler||[])) await API.bildirimYaz(o.uid,{tip:"duyuru",metin:"Duyuru: "+baslik});
+      SX.duyurular=await API.duyurular(SX.user.uid); ciz(); toast("Duyuru yayınlandı.");
+    },
+    duyuruSil:async()=>{
+      if(!confirm("Duyuru silinsin mi?")) return;
+      await API.duyuruSil(v); SX.duyurular=await API.duyurular(SX.user.uid); ciz();
+    },
+    programEkle:async()=>{
+      const satir={gun:+$("prgGun").value, saat:$("prgSaat").value||"", grup:($("prgGrup").value||"").trim()};
+      if(!satir.saat){ toast("Saat gerekli."); return; }
+      const p=(SX.program&&SX.program.satirlar)||[];
+      p.push(satir);
+      await API.programYaz(SX.user.uid,p);
+      SX.program={sahip:SX.user.uid,satirlar:p}; ciz(); toast("Programa eklendi.");
+    },
+    programSil:async()=>{
+      const p=((SX.program&&SX.program.satirlar)||[]).slice();
+      const sirali=p.slice().sort((a,b)=>(a.gun-b.gun)||String(a.saat).localeCompare(String(b.saat)));
+      const hedef=sirali[+v]; if(!hedef) return;
+      const i=p.indexOf(hedef); if(i>=0) p.splice(i,1);
+      await API.programYaz(SX.user.uid,p);
+      SX.program={sahip:SX.user.uid,satirlar:p}; ciz();
+    },
     bildirimOku:async()=>{
       const hedef=(SX.user.rol==="veli"&&SX.user.cocuk)?SX.user.cocuk:SX.user.uid;
       for(const x of (SX.bildirim||[])) if(!x.okundu) await API.bildirimOku(hedef,x);
@@ -388,7 +417,7 @@ document.addEventListener("click",async e=>{
       SX.taslak={ad:x.ad,kaynak:"elle",seviye:1,adet:x.qs.length,metin:sorulariYaz(x.qs),limit:x.limit,
         eksiSag:x.eksiSag,karistir:x.karistir,geriBildirim:x.geriBildirim!==false,
         gosterYanlis:x.gosterYanlis!==false,ses:x.ses!==false,acik:x.acik!==false,kod:x.kod,
-        kip:x.kip||"liste", hiz:x.hiz||900};
+        kip:x.kip||"liste", hiz:x.hiz||900, havuz:+x.havuz||0, tekDeneme:!!x.tekDeneme};
       SX.pekran="editor"; ciz(); },
     sinavKaydet:sinavKaydet,
     acKapa:async()=>{ const x=SX.sinavlar.find(s=>s.kod===v); if(!x)return;
@@ -440,6 +469,10 @@ async function kodGir(){
   mesgul(b,false);
   if(!x){ $("sxKodNot").innerHTML=`<span class="sx-warn">Bu kodla sınav bulunamadı. Kodu öğretmeninle bir daha kontrol et.</span>`; return; }
   if(x.acik===false){ $("sxKodNot").innerHTML=`<span class="sx-warn">Bu sınav şu an kapalı.</span>`; return; }
+  if(x.tekDeneme && SX.user && SX.user.rol==="ogrenci"){
+    const cozulmus=(SX.ogrSonuc||[]).some(r=>r.sinavKod===x.kod);
+    if(cozulmus){ $("sxKodNot").innerHTML=`<span class="sx-warn">Bu sınavı zaten çözdün. Tek deneme hakkı var.</span>`; return; }
+  }
   SX.exam=x; SX.alistirma=false;
   if(SX.user&&SX.user.rol==="ogrenci"){ SX.ogrenci=SX.user.ad; }
   SX.ekran="isim"; ciz();
@@ -494,12 +527,12 @@ async function girisSonrasi(u){
   const geri=SX.geriYol; SX.geriYol=null;
   try{ await API.girisIzi(u) }catch(err){}
   if(u.durum==="onayli"){
-    if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); }
+    if(u.rol==="ogrenci"){ await ogrenciVerileriYukle(u.uid); await sinifIcerikYukle(u.ogretmen); }
     else if(u.rol==="veli"){ await veliVerileriYukle(); }
     else {
       SX.pekran="panel"; SX.ptab="sinavlar";
       if(u.yonetici) await hesaplariYukle();
-      await sinavlariYukle(); await ogrencileriYukle();
+      await sinavlariYukle(); await ogrencileriYukle(); await sinifIcerikYukle(u.uid);
     }
   }
   if(geri && geri!=="#/profil"){ location.hash=geri; toast("Hoş geldin, "+(u.ad||"").split(" ")[0]+"."); return; }
@@ -514,6 +547,7 @@ async function veliVerileriYukle(){
   if(!SX.user || !SX.user.cocuk) return;
   await ogrenciVerileriYukle(SX.user.cocuk);
   SX.bildirim=await API.bildirimler(SX.user.cocuk);
+  try{ const c=await API.ogrenciAl(SX.user.cocuk); if(c&&c.ogretmen) await sinifIcerikYukle(c.ogretmen); }catch(e){}
 }
 async function yoklamaGunuYukle(){
   const tarih=SX.yoklamaTarih||bugun();
@@ -525,6 +559,11 @@ async function yoklamaGunuYukle(){
       if(g) SX.yoklamaSecim[o.uid]=g.durum;
     }catch(e){}
   }
+}
+async function sinifIcerikYukle(ogretmenUid){
+  if(!ogretmenUid) return;
+  SX.duyurular=await API.duyurular(ogretmenUid);
+  SX.program=await API.programAl(ogretmenUid);
 }
 async function ogrencileriYukle(){
   if(!SX.user||SX.user.rol==="ogrenci") return;
@@ -547,7 +586,7 @@ async function sinavKaydet(){
   if(!qs.length){ toast("En az bir soru gerekli."); return; }
   if(!d.kod) d.kod=yeniKod();
   const x={kod:d.kod,ad:d.ad.trim(),qs,limit:d.limit,eksiSag:d.eksiSag,karistir:d.karistir,
-    kip:d.kip||"liste", hiz:d.hiz||900,
+    kip:d.kip||"liste", hiz:d.hiz||900, havuz:+d.havuz||0, tekDeneme:!!d.tekDeneme,
     geriBildirim:d.geriBildirim,gosterYanlis:d.gosterYanlis,ses:d.ses,acik:d.acik!==false,
     sahip:SX.user.uid,sahipAd:SX.user.ad,at:Date.now()};
   try{ await API.sinavYaz(x) }catch(e){ toast("Kaydedilemedi, bağlantını kontrol et."); return; }
