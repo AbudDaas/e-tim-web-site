@@ -113,6 +113,39 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    karneAc:async()=>{
+      if(SX.user.rol==="ogrenci" && !SX.acikOgrenci) await ogrenciVerileriYukle(SX.user.uid);
+      SX.karne=true; SX.pekran="karne"; ciz();
+    },
+    karneKapat:()=>{ SX.karne=false; SX.pekran=SX.acikOgrenci?"ogrenci":"panel"; ciz(); },
+    karneYazdir:()=>{
+      document.body.classList.add("karne-modu");
+      setTimeout(()=>{ window.print(); document.body.classList.remove("karne-modu"); },80);
+    },
+    gururHesapla:gururHesapla,
+    topluOdev:async()=>{
+      const liste=SX.ogrenciler||[];
+      const n=$("topNot");
+      const baslik=($("topBaslik").value||"").trim();
+      if(!baslik){ toast("Ödev başlığı gerekli."); return; }
+      if(!liste.length){ toast("Bağlı öğrenci yok."); return; }
+      if(!confirm(liste.length+" öğrenciye bu ödev gönderilsin mi?")) return;
+      const kod=($("topKod").value||"").trim().toUpperCase(), sonTarih=$("topTarih").value||"";
+      if(n) n.textContent="Gönderiliyor…";
+      let ok=0, hata=0;
+      for(const o of liste){
+        try{
+          await API.odevYaz(o.uid,{ baslik, aciklama:"", sinavKodu:kod, sonTarih,
+            durum:"verildi", at:Date.now(), veren:SX.user.uid, verenAd:SX.user.ad });
+          ok++;
+        }catch(err){ hata++; }
+      }
+      $("topBaslik").value=""; $("topKod").value="";
+      if(n) n.innerHTML = hata
+        ? `<span class="sx-warn">${ok} öğrenciye gitti, ${hata} tanesinde hata oldu.</span>`
+        : `<span class="sx-good">${ok} öğrenciye gönderildi.</span>`;
+      toast(ok+" öğrenciye ödev gönderildi.");
+    },
     yoneticiAc:async()=>{
       const n=$("sxDurumNot"); if(n) n.textContent="Yönetici yetkisi veriliyor…";
       try{

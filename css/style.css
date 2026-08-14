@@ -440,3 +440,29 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 /* yönetim panelinde kapak önizlemesi */
 .yon-onizleme{width:100%;max-width:220px;aspect-ratio:16/10;object-fit:cover;border-radius:10px;
   border:1px solid rgba(20,26,51,.12);margin-bottom:12px;display:block;background:var(--tatami-2,#eee)}
+
+/* --- karne --- */
+.karne-ust{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+  border-bottom:1px solid rgba(20,26,51,.12);padding-bottom:14px;margin-bottom:16px}
+.karne-ad{text-align:end}
+.karne-ad b{font-family:var(--disp);font-size:19px;display:block}
+.karne-grafik{width:100%;height:auto;border:1px solid rgba(20,26,51,.1);border-radius:12px;
+  background:rgba(255,255,255,.6);padding:6px}
+.karne-tablo{width:100%;border-collapse:collapse;font-size:14px}
+.karne-tablo th{text-align:start;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gece-2);padding:8px 6px;border-bottom:1px solid rgba(20,26,51,.14)}
+.karne-tablo td{padding:9px 6px;border-bottom:1px solid rgba(20,26,51,.07)}
+.karne-tablo td:last-child,.karne-tablo th:last-child{text-align:end;font-family:var(--mono)}
+.karne-imza{display:flex;gap:40px;margin-top:28px;padding-top:10px}
+.karne-imza>div{flex:1}
+.imza-cizgi{border-bottom:1px solid rgba(20,26,51,.35);height:34px}
+.toplu-odev{border:1px solid rgba(67,56,202,.25);background:rgba(67,56,202,.05);
+  border-radius:14px;padding:14px;margin:6px 0 18px}
+
+/* karne yazdırma */
+@media print{
+  body.karne-modu .top,body.karne-modu footer.site,body.karne-modu .sx-row,
+  body.karne-modu .player,body.karne-modu .toast{display:none!important}
+  body.karne-modu .karne{box-shadow:none;border:0;background:#fff;padding:0}
+  body.karne-modu .sx-stat{border:1px solid #ddd}
+}

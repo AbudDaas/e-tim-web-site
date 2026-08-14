@@ -68,7 +68,7 @@ const YON_BOLUM = [
       yeni:{tarih:"",ad:"",not:""}}
    ]},
 
- { k:"gurur", ad:"Gurur tablomuz",
+ { k:"gurur", ad:"Gurur tablomuz", otomatik:true,
    alanlar:[
      {y:"gurur.donem", ad:"Dönem", ipucu:"Temmuz 2026"},
      {y:"gurur.metin", ad:"Açıklama", tip:"uzun"}
@@ -125,6 +125,17 @@ function vYonetim(){
         ${YON_BOLUM.map(x=>`<button data-sx="yonTab" data-v="${x.k}" aria-pressed="${b.k===x.k}">${x.ad}</button>`).join("")}
       </div>
 
+      ${b.otomatik?`<div class="uyari" style="cursor:default;border-color:rgba(13,148,136,.4);background:rgba(13,148,136,.09)">
+        <span class="uyari-nokta" style="background:var(--turkuaz);box-shadow:0 0 0 4px rgba(13,148,136,.18)"></span>
+        <div style="flex:1"><b>Sınav sonuçlarından doldur</b>
+          <div class="s">Kendi sınavlarının sonuçlarını tarar, ortalamaya göre sıralar, isimleri "Elif Y." biçiminde kısaltır.</div>
+          <div class="sx-row" style="margin-top:10px">
+            <select class="sx-in" id="gururGun" style="max-width:170px">
+              <option value="30">son 30 gün</option><option value="60">son 60 gün</option>
+              <option value="90">son 90 gün</option><option value="365">son 1 yıl</option></select>
+            <button class="btn sm" data-sx="gururHesapla">Hesapla</button></div>
+          <div class="sx-note" id="gururNot"></div>
+        </div></div>`:""}
       ${(b.alanlar||[]).map(a=>yonAlan(a)).join("")}
       ${(b.listeler||[]).map(l=>yonListe(l)).join("")}
 
@@ -185,6 +196,54 @@ function yonListe(l){
 function yonListeBul(yol){
   for(const b of YON_BOLUM) for(const l of (b.listeler||[])) if(l.y===yol) return l;
   return null;
+}
+
+/* --- gurur tablosunu sınav sonuçlarından doldur --- */
+function kisaAd(t){
+  const p=String(t||"").trim().split(/\s+/);
+  if(p.length<2) return p[0]||"";
+  return p[0]+" "+p[p.length-1][0].toUpperCase()+".";
+}
+async function gururHesapla(){
+  const n=$("gururNot");
+  const gun=+($("gururGun")?$("gururGun").value:30) || 30;
+  const sinir=Date.now()-gun*864e5;
+  if(n) n.textContent="Sonuçlar taranıyor…";
+  try{
+    if(!SX.sinavlar || !SX.sinavlar.length) await sinavlariYukle();
+    const toplam={};
+    for(const s of SX.sinavlar){
+      const sonuclar=await API.sonuclar(s.kod);
+      for(const r of sonuclar){
+        if(!r.at || r.at<sinir || !r.toplam) continue;
+        const ad=kisaAd(r.ad);
+        if(!ad) continue;
+        const t=toplam[ad] || (toplam[ad]={ad, sinav:0, yuzde:0});
+        t.sinav++; t.yuzde += r.dogru/r.toplam*100;
+      }
+    }
+    const dizi=Object.values(toplam)
+      .map(x=>({ad:x.ad, sinav:x.sinav, ort:Math.round(x.yuzde/x.sinav)}))
+      .sort((a,b)=> b.ort-a.ort || b.sinav-a.sinav);
+    if(!dizi.length){
+      if(n) n.innerHTML=`<span class="sx-warn">Bu aralıkta sonuç yok. Gün sayısını artır ya da önce sınav yaptır.</span>`;
+      return;
+    }
+    const kutu=x=>({
+      ad:x.ad,
+      sinif:{tr:x.sinav+" sınav", en:x.sinav+" exams", ar:x.sinav+" اختبار"},
+      puan:x.ort+"%"
+    });
+    DATA.gurur.ilkUc = dizi.slice(0,3).map(kutu);
+    DATA.gurur.liste = dizi.slice(3,13).map(kutu);
+    const ay=new Date().toLocaleDateString("tr-TR",{month:"long",year:"numeric"});
+    DATA.gurur.donem = {tr:ay, en:new Date().toLocaleDateString("en-GB",{month:"long",year:"numeric"}),
+                        ar:new Date().toLocaleDateString("ar-EG",{month:"long",year:"numeric"})};
+    SX.yonKirli=true; ciz();
+    toast(dizi.length+" öğrenci sıralandı. Yayınla demeyi unutma.");
+  }catch(e){
+    if(n) n.innerHTML=`<span class="sx-warn">Hesaplanamadı: ${String(e.message||e)}</span>`;
+  }
 }
 
 /* --- veri bağlama --- */

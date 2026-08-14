@@ -135,6 +135,7 @@ function sxSonucEkran(){
 function vProfil(){
   if(!SX.user) return sxGirisEkran();
   if(SX.user.durum!=="onayli") return sxBekleEkran();
+  if(SX.karne) return vKarne();
   if(SX.user.rol==="ogrenci") return sxOgrenciProfil();
   if(SX.pekran==="editor") return sxEditor();
   if(SX.pekran==="yayin") return sxYayin();
@@ -378,6 +379,7 @@ function sxOgrenciProfil(){
         <span class="sx-badge ok">öğrenci</span>
         ${u.ogretmenAd?`<span class="sx-badge">öğretmen: ${esc(u.ogretmenAd)}</span>`:`<span class="sx-badge wait">öğretmen bağlı değil</span>`}
         <span style="margin-inline-start:auto"></span>
+        <button class="btn sm" data-sx="karneAc">Karnem</button>
         <button class="btn ghost sm" data-sx="cikis">Çıkış yap</button></div>
 
       <div class="sx-stats" style="grid-template-columns:repeat(4,1fr)">
@@ -466,6 +468,15 @@ function sxOgrenciListe(){
     <div class="sx-item" style="border:0;padding-top:0">
       <div class="g"><b>Sınıf kodun</b><div class="s">Öğrencilerine bu kodu ver</div></div>
       <span class="sx-pill">${esc(u.sinifKodu||"—")}</span></div>
+    <div class="toplu-odev">
+      <div class="sx-label">Tüm sınıfa ödev ver</div>
+      <div class="sx-field" style="margin-bottom:8px"><input class="sx-in" id="topBaslik" placeholder="Ödev başlığı — ör. 20 soruluk hız denemesi"></div>
+      <div class="sx-row" style="margin:0">
+        <input class="sx-in" id="topKod" maxlength="6" placeholder="sınav kodu" style="max-width:150px;text-transform:uppercase">
+        <input class="sx-in" id="topTarih" type="date" style="max-width:190px">
+        <button class="btn" data-sx="topluOdev">${(SX.ogrenciler||[]).length} öğrenciye gönder</button></div>
+      <div class="sx-note" id="topNot">Aynı ödev bağlı bütün öğrencilere tek seferde gider.</div>
+    </div>
     ${l.length? l.map(o=>{
       const say=(SX.ogrOzet&&SX.ogrOzet[o.uid])||{sinav:0,ort:0,odev:0};
       return `<div class="sx-item"><div class="g"><b>${esc(o.ad)}</b>
@@ -490,6 +501,7 @@ function sxOgrenciDetay(){
   return `<section class="page"><div class="card pad">
     <div class="sx-user"><b>${esc(o.ad)}</b><span>${esc(o.mail)}</span>
       <span style="margin-inline-start:auto"></span>
+      <button class="btn sm" data-sx="karneAc">Karne</button>
       <button class="btn ghost sm" data-sx="panel">Geri</button></div>
     <div class="sx-stats" style="grid-template-columns:repeat(4,1fr)">
       <div class="sx-stat"><b>${s.length}</b><span>sınav</span></div>
@@ -529,5 +541,92 @@ function sxOgrenciDetay(){
       <div class="zaman-sat"><span class="zaman-nokta ${h.tip==="sınav"?"s":h.tip==="belge"?"b":""}"></span>
         <div><b>${esc(h.metin)}</b><div class="s">${tarihSaat(h.t)}</div></div></div>`).join("")+`</div>`
       : `<div class="sx-empty">Hareket kaydı yok.</div>`}
+  </div></section>`;
+}
+
+/* ======================= KARNE ======================= */
+function grafikCiz(sonuclar){
+  const s=(sonuclar||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));
+  if(s.length<2) return `<div class="sx-empty">Grafik için en az iki sınav gerekir.</div>`;
+  const G=560, Y=170, sol=34, alt=24;
+  const nokta=s.map((r,i)=>{
+    const x=sol+(G-sol-10)*(s.length===1?0.5:i/(s.length-1));
+    const yz=Math.round(r.dogru/r.toplam*100);
+    const y=10+(Y-alt-10)*(1-yz/100);
+    return {x,y,yz,r};
+  });
+  const cizgi=nokta.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
+  const alan=cizgi+` L${nokta[nokta.length-1].x.toFixed(1)},${Y-alt} L${nokta[0].x.toFixed(1)},${Y-alt} Z`;
+  const yatay=[0,25,50,75,100].map(v=>{
+    const y=10+(Y-alt-10)*(1-v/100);
+    return `<line x1="${sol}" y1="${y}" x2="${G-10}" y2="${y}" stroke="rgba(20,26,51,.10)" stroke-width="1"/>
+            <text x="4" y="${y+4}" font-size="9" fill="#6C645C" font-family="monospace">${v}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${G} ${Y}" class="karne-grafik" role="img" aria-label="sınav grafiği">
+    ${yatay}
+    <path d="${alan}" fill="rgba(67,56,202,.10)"/>
+    <path d="${cizgi}" fill="none" stroke="#4338CA" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${nokta.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#fff" stroke="#4338CA" stroke-width="2.5"/>
+      <text x="${p.x.toFixed(1)}" y="${(p.y-10).toFixed(1)}" font-size="10" text-anchor="middle" fill="#241E1B" font-family="monospace">${p.yz}</text>`).join("")}
+  </svg>`;
+}
+
+function vKarne(){
+  const o = SX.acikOgrenci || SX.user;
+  const s = (SX.ogrSonuc||[]).slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  const od = SX.ogrOdev||[], c = SX.ogrSertifika||[];
+  const ort = s.length? Math.round(s.reduce((a,r)=>a+r.dogru/r.toplam*100,0)/s.length) : 0;
+  const ilk = s.length? Math.round(s[s.length-1].dogru/s[s.length-1].toplam*100) : 0;
+  const son = s.length? Math.round(s[0].dogru/s[0].toplam*100) : 0;
+  const fark = son-ilk;
+  const bitenOdev = od.filter(x=>x.durum==="tamamlandi").length;
+  const hizlar = s.filter(r=>r.sure&&r.toplam).map(r=>r.sure/r.toplam/1000);
+  const ortHiz = hizlar.length? (hizlar.reduce((a,b)=>a+b,0)/hizlar.length).toFixed(1)+"s" : "—";
+
+  return `<section class="page"><div class="card pad karne" id="karneKagit">
+    <div class="karne-ust">
+      <div><div class="eyebrow">${esc(ceviri(DATA.marka.ad))}</div>
+        <h2 style="margin:6px 0 2px">Öğrenci karnesi</h2>
+        <div class="muted" style="font-size:13.5px">${new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</div></div>
+      <div class="karne-ad"><b>${esc(o.ad||"")}</b><div class="muted" style="font-size:12.5px">${esc(o.mail||"")}</div></div>
+    </div>
+
+    <div class="sx-stats" style="grid-template-columns:repeat(5,1fr)">
+      <div class="sx-stat"><b>${s.length}</b><span>sınav</span></div>
+      <div class="sx-stat"><b>${ort}%</b><span>ortalama</span></div>
+      <div class="sx-stat"><b>${son}%</b><span>son sınav</span></div>
+      <div class="sx-stat"><b>${fark>0?"+"+fark:fark}</b><span>gelişim</span></div>
+      <div class="sx-stat"><b>${ortHiz}</b><span>soru başına</span></div>
+    </div>
+
+    <h3 style="margin:18px 0 10px">Gelişim eğrisi</h3>
+    ${grafikCiz(s)}
+
+    <h3 style="margin:20px 0 10px">Sınavlar</h3>
+    ${s.length? `<table class="karne-tablo"><thead><tr><th>Tarih</th><th>Sınav</th><th>Sonuç</th><th>%</th></tr></thead><tbody>`+
+      s.map(r=>`<tr><td>${tarihKisa(r.at)}</td><td>${esc(r.sinavAd||"—")}</td>
+        <td>${r.dogru}/${r.toplam}</td><td>${Math.round(r.dogru/r.toplam*100)}</td></tr>`).join("")+
+      `</tbody></table>` : `<div class="sx-empty">Henüz sınav çözülmemiş.</div>`}
+
+    <div class="grid g2" style="margin-top:20px">
+      <div><h3 style="margin-bottom:8px">Ödevler</h3>
+        <p class="muted" style="font-size:14px">${od.length} ödevin ${bitenOdev} tanesi tamamlandı.</p>
+        ${od.slice(0,5).map(x=>`<div class="sx-item" style="padding:8px 0"><div class="g"><b style="font-size:14px">${esc(x.baslik)}</b>
+          <div class="s">${x.durum==="tamamlandi"?"tamamlandı "+tarihKisa(x.tamamlandiAt||x.at):"bekliyor"}</div></div></div>`).join("")}
+      </div>
+      <div><h3 style="margin-bottom:8px">Sertifikalar</h3>
+        ${c.length? c.map(x=>`<div class="sx-item" style="padding:8px 0"><div class="g"><b style="font-size:14px">${esc(ceviri(x.kurs))}</b>
+          <div class="s">${tarihKisa(x.at)}</div></div></div>`).join("") : `<div class="sx-empty">Henüz sertifika yok.</div>`}
+      </div>
+    </div>
+
+    <div class="karne-imza">
+      <div><div class="muted" style="font-size:12px">Eğitmen</div><div class="imza-cizgi"></div></div>
+      <div><div class="muted" style="font-size:12px">Veli</div><div class="imza-cizgi"></div></div>
+    </div>
+  </div>
+  <div class="sx-row" style="margin-top:12px">
+    <button class="btn" data-sx="karneYazdir">Yazdır / PDF</button>
+    <button class="btn ghost" data-sx="karneKapat">Geri</button>
   </div></section>`;
 }
