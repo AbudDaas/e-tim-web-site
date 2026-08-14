@@ -189,6 +189,8 @@ function sxBekleEkran(){
       <span class="sx-badge ${kapali?"no":"wait"}">${kapali?"kapalı":"bekliyor"}</span></div>
     <div class="sx-row">
       <button class="btn" data-sx="durumKontrol">Durumu kontrol et</button>
+      ${(ADMIN_EMAIL && String(SX.user.mail||"").trim().toLowerCase()===String(ADMIN_EMAIL).trim().toLowerCase())
+        ? `<button class="btn" data-sx="yoneticiAc">Yönetici olarak aç</button>` : ""}
       <button class="btn ghost" data-sx="cikis">Çıkış yap</button></div>
     <div class="sx-note" id="sxDurumNot">Yönetici onayladıysa bu düğme seni panele alır.</div>
     </div></section>`;

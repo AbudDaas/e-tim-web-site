@@ -48,7 +48,7 @@ const Oturum={
    yanlış rolle kayıt olunsa ya da onay beklemede kalsa bile. */
 async function yoneticiKontrol(u){
   if(!u || !ADMIN_EMAIL) return u;
-  if((u.mail||"").toLowerCase() !== ADMIN_EMAIL.trim().toLowerCase()) return u;
+  if(String(u.mail||"").trim().toLowerCase() !== String(ADMIN_EMAIL).trim().toLowerCase()) return u;
   if(u.yonetici && u.durum==="onayli" && u.rol!=="ogrenci") return u;
   u.yonetici=true; u.durum="onayli"; u.rol="ogretmen";
   if(!u.sinifKodu) u.sinifKodu=yeniKod();
@@ -163,6 +163,17 @@ const API={
    u.rol=rol;
    if(rol==="ogretmen"){ u.durum="onayli"; if(!u.sinifKodu){ u.sinifKodu=yeniKod(); await this.sinifYaz(u.sinifKodu,u.uid,u.ad); } }
    await this.hesapYaz(u); return u;
+ },
+ /* Yönetici yükseltmesini elle tetikler ve hatayı gizlemez. */
+ async yoneticiZorla(u){
+   if(!ADMIN_EMAIL) throw new Error("ADMIN_EMAIL boş — js/config.js dosyasına yaz.");
+   const a=String(ADMIN_EMAIL).trim().toLowerCase(), m=String(u.mail||"").trim().toLowerCase();
+   if(a!==m) throw new Error("Giriş yapılan adres ("+m+") ADMIN_EMAIL ("+a+") ile aynı değil.");
+   u.yonetici=true; u.durum="onayli"; u.rol="ogretmen";
+   if(!u.sinifKodu) u.sinifKodu=yeniKod();
+   await this.hesapYaz(u);
+   try{ await this.sinifYaz(u.sinifKodu,u.uid,u.ad); }catch(e){}
+   return u;
  },
  async ogrenciAl(uid){ return bulut()? await FB.get("users/"+uid) : await KV.get("sx:user:"+uid) },
  async girisIzi(u){ u.sonGiris=Date.now(); try{ await this.hesapYaz(u) }catch(e){} },

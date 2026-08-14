@@ -113,6 +113,15 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    yoneticiAc:async()=>{
+      const n=$("sxDurumNot"); if(n) n.textContent="Yönetici yetkisi veriliyor…";
+      try{
+        const u=await API.yoneticiZorla(SX.user);
+        await girisSonrasi(u); toast("Yönetici hesabı açıldı.");
+      }catch(err){
+        if(n) n.innerHTML=`<span class="sx-warn">Olmadı: ${String(err.message||err)}</span>`;
+      }
+    },
     dilSec:()=>{ dilAyarla(v); ciz(); toast(t("dilDegisti")); },
     yonTab:()=>{ SX.yonTab=v; ciz(); },
     yonKaydet:yonKaydet, yonYedek:yonYedek, yonSifirla:yonSifirla,
