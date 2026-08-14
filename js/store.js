@@ -210,6 +210,23 @@ const API={
    return u;
  },
 
+ /* --- bildirimler --- */
+ async bildirimYaz(uid,b){
+   const id=yeniId(); const d=Object.assign({id,at:Date.now(),okundu:false},b);
+   try{ bulut()? await FB.set("students/"+uid+"/notif/"+id,d) : await KV.set("sx:bildirim:"+uid+":"+id,d); }catch(e){}
+ },
+ async bildirimler(uid){
+   try{
+     if(bulut()) return await FB.list("students/"+uid+"/notif");
+     const ks=await KV.list("sx:bildirim:"+uid+":"); const o=[];
+     for(const k of ks){ const x=await KV.get(k); if(x) o.push(x) } return o;
+   }catch(e){ return []; }
+ },
+ async bildirimOku(uid,b){
+   b.okundu=true;
+   try{ bulut()? await FB.set("students/"+uid+"/notif/"+b.id,b) : await KV.set("sx:bildirim:"+uid+":"+b.id,b); }catch(e){}
+ },
+
  /* --- yoklama --- */
  async yoklamaYaz(uid,tarih,kayit){
    const d=Object.assign({tarih},kayit);

@@ -492,3 +492,26 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .devam-kutu.geldi{background:var(--turkuaz)}
 .devam-kutu.gelmedi{background:#C0392B}
 .devam-kutu.izinli{background:var(--kehribar)}
+
+/* --- seri ve rozetler --- */
+.seri-kutu{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;
+  border:1px solid rgba(20,26,51,.12);background:rgba(255,255,255,.6);margin-bottom:14px}
+.seri-kutu.yanik{border-color:rgba(224,160,32,.5);background:linear-gradient(100deg,rgba(224,160,32,.12),rgba(192,57,43,.08))}
+.seri-alev{font-size:30px;filter:grayscale(1);opacity:.4}
+.seri-kutu.yanik .seri-alev{filter:none;opacity:1}
+.seri-kutu b{font-family:var(--disp);font-size:22px;display:block;line-height:1.1}
+.seri-kutu .s{font-size:12.5px;color:var(--gece-2);margin-top:2px}
+.seri-rozet{margin-inline-start:auto;font-family:var(--mono);font-size:11.5px;color:var(--gece-2)}
+.rozet-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
+.rozet{border:1px solid rgba(20,26,51,.1);border-radius:13px;padding:12px 10px;text-align:center;
+  background:rgba(255,255,255,.45);opacity:.45;filter:grayscale(1)}
+.rozet.acik{opacity:1;filter:none;border-color:rgba(67,56,202,.3);
+  background:linear-gradient(150deg,rgba(67,56,202,.09),rgba(13,148,136,.09))}
+.rozet-ico{font-size:24px;display:block;margin-bottom:6px}
+.rozet b{font-family:var(--disp);font-size:13.5px;display:block}
+.rozet .s{font-size:11px;color:var(--gece-2);display:block;margin-top:3px;line-height:1.4}
+
+/* --- bildirimler --- */
+.bildirim-ico{font-size:20px;flex:0 0 auto}
+.sx-item.yeni-bildirim{background:rgba(67,56,202,.06);border-radius:10px;padding-inline:10px}
+.sx-item.yeni-bildirim b{color:var(--murekkep)}

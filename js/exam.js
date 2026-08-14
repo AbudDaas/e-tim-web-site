@@ -130,6 +130,14 @@ async function bitir(){
   SX._dogru=SX.answers.filter((a,i)=>a!==null&&a===SX.qs[i].c).length;
   SX._yanlis=SX.qs.filter((q,i)=>SX.answers[i]!==q.c);
   SX._kaydedildi=false;
+  if(SX.alistirma && SX.user && SX.user.rol==="ogrenci"){
+    try{
+      await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:"", sinavAd:"Serbest alıştırma",
+        dogru:SX._dogru, toplam:SX.qs.length, sure:SX._sure, at:Date.now(), ogretmenAd:"",
+        dokum:SX.qs.map((q,i)=>({q:q.t.map(x=>sayiYaz(x,SX.exam.eksiSag)).join(" "),a:SX.answers[i],c:q.c})) });
+      await ogrenciVerileriYukle(SX.user.uid);
+    }catch(err){}
+  }
   if(!SX.alistirma&&SX.exam.kod){
     try{
       await API.sonucYaz(SX.exam.kod,{ ad:SX.ogrenci, dogru:SX._dogru, toplam:SX.qs.length,
@@ -169,6 +177,17 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    bildirimOku:async()=>{
+      const hedef=(SX.user.rol==="veli"&&SX.user.cocuk)?SX.user.cocuk:SX.user.uid;
+      for(const x of (SX.bildirim||[])) if(!x.okundu) await API.bildirimOku(hedef,x);
+      SX.bildirim=await API.bildirimler(hedef); ciz();
+    },
+    zayifCalis:()=>{
+      SX.taslak=yeniTaslak();
+      SX.taslak.seviye=+v || 1; SX.taslak.adet=20; SX.taslak.limit=300;
+      SX.ekran="ayar"; location.hash="#/sinav";
+      toast("Zorlandığın tipe göre alıştırma hazırlandı, Başla'ya bas.");
+    },
     cocugaBaglan:async()=>{
       const n=$("sxCocukNot"), kod=($("sxCocukKod").value||"").trim().toUpperCase();
       if(kod.length<4){ n.innerHTML=`<span class="sx-warn">Kodu eksiksiz yaz.</span>`; return; }
@@ -189,7 +208,11 @@ document.addEventListener("click",async e=>{
       if(n) n.textContent="Kaydediliyor…";
       let ok=0;
       for(const uid of uidler){
-        try{ await API.yoklamaYaz(uid,tarih,{durum:secim[uid],at:Date.now(),ogretmen:SX.user.uid}); ok++; }catch(err){}
+        try{
+          await API.yoklamaYaz(uid,tarih,{durum:secim[uid],at:Date.now(),ogretmen:SX.user.uid});
+          if(secim[uid]==="gelmedi") await API.bildirimYaz(uid,{tip:"yoklama",metin:tarih+" dersine gelinmedi"});
+          ok++;
+        }catch(err){}
       }
       SX.yoklamaTarih=tarih;
       if(n) n.innerHTML=`<span class="sx-good">${tarih} için ${ok} öğrenci kaydedildi.</span>`;
@@ -220,6 +243,7 @@ document.addEventListener("click",async e=>{
         try{
           await API.odevYaz(o.uid,{ baslik, aciklama:"", sinavKodu:kod, sonTarih,
             durum:"verildi", at:Date.now(), veren:SX.user.uid, verenAd:SX.user.ad });
+          await API.bildirimYaz(o.uid,{tip:"odev",metin:"Yeni ödev: "+baslik});
           ok++;
         }catch(err){ hata++; }
       }
@@ -295,7 +319,9 @@ document.addEventListener("click",async e=>{
         sinavKodu:($("odKod").value||"").trim().toUpperCase(),
         sonTarih:$("odTarih").value||"", durum:"verildi", at:Date.now(),
         veren:SX.user.uid, verenAd:SX.user.ad };
-      try{ await API.odevYaz(o.uid,odev); }catch(err){ toast("Kaydedilemedi."); return; }
+      try{ await API.odevYaz(o.uid,odev);
+        await API.bildirimYaz(o.uid,{tip:"odev",metin:"Yeni ödev: "+odev.baslik});
+      }catch(err){ toast("Kaydedilemedi."); return; }
       SX.ogrOdev=await API.odevler(o.uid); ciz(); toast("Ödev gönderildi.");
     },
     odevKaldir:async()=>{
@@ -306,7 +332,9 @@ document.addEventListener("click",async e=>{
       const o=SX.acikOgrenci; if(!o) return;
       const s={ kurs:$("sertKurs").value, not:($("sertNot").value||"").trim(),
         at:Date.now(), veren:SX.user.uid, verenAd:SX.user.ad };
-      try{ await API.sertifikaYaz(o.uid,s); }catch(err){ toast("Kaydedilemedi."); return; }
+      try{ await API.sertifikaYaz(o.uid,s);
+        await API.bildirimYaz(o.uid,{tip:"sertifika",metin:"Sertifika verildi: "+ceviri(s.kurs)});
+      }catch(err){ toast("Kaydedilemedi."); return; }
       SX.ogrSertifika=await API.sertifikalar(o.uid); ciz(); toast("Sertifika verildi.");
     },
     sertKaldir:async()=>{
@@ -480,10 +508,12 @@ async function girisSonrasi(u){
 async function ogrenciVerileriYukle(uid){
   const [s,o,c,y]=await Promise.all([API.ogrenciSonuclari(uid),API.odevler(uid),API.sertifikalar(uid),API.yoklamalar(uid)]);
   SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c; SX.ogrYoklama=y;
+  if(SX.user && SX.user.uid===uid) SX.bildirim=await API.bildirimler(uid);
 }
 async function veliVerileriYukle(){
   if(!SX.user || !SX.user.cocuk) return;
   await ogrenciVerileriYukle(SX.user.cocuk);
+  SX.bildirim=await API.bildirimler(SX.user.cocuk);
 }
 async function yoklamaGunuYukle(){
   const tarih=SX.yoklamaTarih||bugun();

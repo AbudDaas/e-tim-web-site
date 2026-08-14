@@ -237,6 +237,7 @@ function sxPanel(){
       </div>
       ${govde}
     </div>
+    ${bildirimKutusu()}
     ${SX.ptab==="sinavlar"?dilSecici():""}
     </section>`;
 }
@@ -419,6 +420,9 @@ function sxOgrenciProfil(){
       ${devamOzeti(SX.ogrYoklama)}
     </div>
 
+    ${bildirimKutusu()}
+    ${oyunKutusu(s,o,c)}
+
     <div class="card pad" style="margin-top:14px">
       <h3 style="margin-bottom:4px">Ödevlerim</h3>
       <p class="muted" style="font-size:13.5px;margin-bottom:12px">${bekleyen.length?`${bekleyen.length} ödev bekliyor.`:"Bekleyen ödevin yok."}</p>
@@ -456,6 +460,8 @@ function sxOgrenciProfil(){
       ${c.length? `<div class="grid g2">`+c.map(x=>sertifikaKarti(x,u)).join("")+`</div>`
         : `<div class="sx-empty">Henüz sertifikan yok.</div>`}
     </div>
+
+    ${analizKutusu(s,true)}
 
     <div class="card pad" style="margin-top:14px">
       <h3 style="margin-bottom:12px">Kurs ilerlemem</h3>
@@ -559,6 +565,8 @@ function sxOgrenciDetay(){
       <div class="s">${tarihKisa(x.at)}${x.not?" · "+esc(x.not):""}</div></div>
       <button class="btn ghost sm" data-sx="sertKaldir" data-v="${x.id}">Sil</button></div>`).join("")
       : `<div class="sx-empty">Henüz sertifika verilmedi.</div>`}
+
+    ${analizKutusu(s,false)}
 
     <h3 style="margin:22px 0 10px">Hareketler</h3>
     ${hareket.length? `<div class="zaman">`+hareket.map(h=>`
@@ -739,6 +747,8 @@ function sxVeliProfil(){
         : `<div class="sx-empty">Henüz ödev verilmedi.</div>`}
     </div>
 
+    ${analizKutusu(s,false)}
+
     <div class="card pad" style="margin-top:14px">
       <h3 style="margin-bottom:12px">Sınav geçmişi</h3>
       ${s.length? s.slice().sort((a,b)=>(b.at||0)-(a.at||0)).map(r=>`
@@ -752,4 +762,111 @@ function sxVeliProfil(){
     </div>
     ${dilSecici()}
   </section>`;
+}
+
+/* ======================= OYUNLAŞTIRMA ======================= */
+function gunAnahtar(t){ const d=new Date(t); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
+function seriHesapla(sonuclar){
+  const gunler=new Set((sonuclar||[]).map(r=>gunAnahtar(r.at)));
+  if(!gunler.size) return {seri:0, bugunVar:false};
+  let seri=0; const d=new Date();
+  const bugunVar=gunler.has(gunAnahtar(d.getTime()));
+  if(!bugunVar) d.setDate(d.getDate()-1);       // dün de sayılır, seri bugün henüz kırılmadı
+  while(gunler.has(gunAnahtar(d.getTime()))){ seri++; d.setDate(d.getDate()-1); }
+  return {seri, bugunVar};
+}
+function rozetler(s,od,c){
+  const n=s.length;
+  const ort=n?Math.round(s.reduce((a,r)=>a+r.dogru/r.toplam*100,0)/n):0;
+  const tamPuan=s.some(r=>r.dogru===r.toplam);
+  const {seri}=seriHesapla(s);
+  const bitenOdev=(od||[]).filter(x=>x.durum==="tamamlandi").length;
+  const hizli=s.some(r=>r.sure&&r.toplam&&(r.sure/r.toplam/1000)<3);
+  return [
+    {ad:"İlk adım",     not:"İlk sınavını çözdün",        ico:"🌱", acik:n>=1},
+    {ad:"Onluk",        not:"10 sınav tamamladın",         ico:"🔟", acik:n>=10},
+    {ad:"Ellilik",      not:"50 sınav tamamladın",         ico:"🏵️", acik:n>=50},
+    {ad:"Kusursuz",     not:"Bir sınavı tam puanla bitirdin", ico:"🎯", acik:tamPuan},
+    {ad:"İstikrar",     not:"Ortalaman %80'in üstünde",    ico:"📈", acik:ort>=80},
+    {ad:"Haftalık seri",not:"7 gün üst üste çalıştın",     ico:"🔥", acik:seri>=7},
+    {ad:"Aylık seri",   not:"30 gün üst üste çalıştın",    ico:"🏆", acik:seri>=30},
+    {ad:"Hızlı el",     not:"Soru başına 3 saniyenin altı", ico:"⚡", acik:hizli},
+    {ad:"Ödevsever",    not:"10 ödev tamamladın",          ico:"📚", acik:bitenOdev>=10},
+    {ad:"Belgeli",      not:"İlk sertifikanı aldın",       ico:"🎓", acik:(c||[]).length>=1}
+  ];
+}
+function oyunKutusu(s,od,c){
+  const {seri,bugunVar}=seriHesapla(s);
+  const r=rozetler(s,od,c), acik=r.filter(x=>x.acik).length;
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:4px">Seri ve rozetler</h3>
+    <p class="muted" style="font-size:13.5px;margin-bottom:14px">Her gün en az bir sınav ya da alıştırma çözersen serin büyür.</p>
+    <div class="seri-kutu ${seri?"yanik":""}">
+      <div class="seri-alev">🔥</div>
+      <div><b>${seri} gün</b><div class="s">${bugunVar?"Bugünü tamamladın":"Bugün henüz çalışmadın"}</div></div>
+      <div class="seri-rozet">${acik}/${r.length} rozet</div>
+    </div>
+    <div class="rozet-izgara">
+      ${r.map(x=>`<div class="rozet ${x.acik?"acik":""}" title="${esc(x.not)}">
+        <span class="rozet-ico">${x.ico}</span>
+        <b>${esc(x.ad)}</b><span class="s">${esc(x.not)}</span></div>`).join("")}
+    </div></div>`;
+}
+
+/* ======================= EKSİK ANALİZİ ======================= */
+function eksikAnaliz(sonuclar){
+  const k={
+    "Çıkarma içeren":       {yanlis:0,toplam:0, ayar:{seviye:1}},
+    "İki basamaklı":        {yanlis:0,toplam:0, ayar:{seviye:2}},
+    "Uzun dizi (5+ sayı)":  {yanlis:0,toplam:0, ayar:{seviye:3}},
+    "Kısa dizi (3-4 sayı)": {yanlis:0,toplam:0, ayar:{seviye:1}}
+  };
+  (sonuclar||[]).forEach(r=>{
+    (Array.isArray(r.dokum)?r.dokum:[]).forEach(d=>{
+      const sayilar=String(d.q||"").split(/\s+/).filter(Boolean);
+      const neg=/[-−]/.test(String(d.q||""));
+      const iki=sayilar.some(x=>x.replace(/[^0-9]/g,"").length>=2);
+      const uzun=sayilar.length>=5;
+      const yanlis=(d.a===null||d.a===undefined||d.a!==d.c)?1:0;
+      if(neg){ k["Çıkarma içeren"].toplam++; k["Çıkarma içeren"].yanlis+=yanlis; }
+      if(iki){ k["İki basamaklı"].toplam++;  k["İki basamaklı"].yanlis+=yanlis; }
+      if(uzun){ k["Uzun dizi (5+ sayı)"].toplam++; k["Uzun dizi (5+ sayı)"].yanlis+=yanlis; }
+      else { k["Kısa dizi (3-4 sayı)"].toplam++; k["Kısa dizi (3-4 sayı)"].yanlis+=yanlis; }
+    });
+  });
+  return Object.entries(k)
+    .filter(([,v])=>v.toplam>=3)
+    .map(([ad,v])=>({ad, toplam:v.toplam, yanlis:v.yanlis, oran:Math.round(v.yanlis/v.toplam*100), ayar:v.ayar}))
+    .sort((a,b)=>b.oran-a.oran);
+}
+function analizKutusu(sonuclar, kendisiMi){
+  const a=eksikAnaliz(sonuclar);
+  if(!a.length) return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:6px">Zorlanılan konular</h3>
+    <div class="sx-empty">Analiz için birkaç sınav daha gerekiyor. En az üç soruluk veri biriktiğinde burada çıkar.</div></div>`;
+  const enZor=a[0];
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:4px">Zorlanılan konular</h3>
+    <p class="muted" style="font-size:13.5px;margin-bottom:12px">Yanlış cevaplar soru tipine göre ayrıştırıldı.</p>
+    ${a.map(x=>`<div class="sx-item"><div class="g"><b>${esc(x.ad)}</b>
+      <div class="s">${x.yanlis} yanlış / ${x.toplam} soru</div>
+      <div class="sx-bar" style="margin-top:6px"><i style="width:${x.oran}%;background:${x.oran>30?"#C0392B":x.oran>15?"var(--kehribar)":"var(--turkuaz)"}"></i></div></div>
+      <span class="sx-badge ${x.oran>30?"no":x.oran>15?"wait":"ok"}">%${x.oran}</span></div>`).join("")}
+    ${kendisiMi?`<button class="btn" data-sx="zayifCalis" data-v="${esc(enZor.ayar.seviye)}" style="margin-top:14px">
+      "${esc(enZor.ad)}" için alıştırma üret</button>`:""}
+  </div>`;
+}
+
+/* ======================= BİLDİRİMLER ======================= */
+function bildirimKutusu(){
+  const b=(SX.bildirim||[]).slice().sort((a,b)=>(b.at||0)-(a.at||0));
+  if(!b.length) return "";
+  const okunmamis=b.filter(x=>!x.okundu).length;
+  return `<div class="card pad" style="margin-top:14px">
+    <h3 style="margin-bottom:10px">Bildirimler${okunmamis?` <span class="sx-badge wait">${okunmamis} yeni</span>`:""}</h3>
+    ${b.slice(0,8).map(x=>`<div class="sx-item ${x.okundu?"":"yeni-bildirim"}">
+      <span class="bildirim-ico">${x.tip==="odev"?"📚":x.tip==="sertifika"?"🎓":x.tip==="yoklama"?"📅":"🔔"}</span>
+      <div class="g"><b>${esc(x.metin)}</b><div class="s">${tarihSaat(x.at)}</div></div></div>`).join("")}
+    ${okunmamis?`<button class="btn ghost sm" data-sx="bildirimOku" style="margin-top:10px">Okundu işaretle</button>`:""}
+  </div>`;
 }
