@@ -1,8 +1,27 @@
-/* Firebase ayarları. Boş bırakılırsa veriler yalnız açıldığı tarayıcıda kalır. */
+/* Firebase ayarları.
+   Bu iki değeri doldurmadan site "deneme modu"nda çalışır:
+   hesaplar yalnız kaydolunan tarayıcıda kalır, başka cihazdan girilemez.
 
-const FIREBASE   = { projectId:"", apiKey:"" };
+   Değerleri nereden alacaksın:
+   Firebase Console → projeni aç → sol üstteki dişli (Project settings)
+   → General sekmesi → aşağıda "Your apps" → Web app (</> simgesi)
+   → firebaseConfig bloğunda apiKey ve projectId yazıyor.
+
+   Örnek görünüm:
+     apiKey: "AIzaSyBjemD2ll...",
+     projectId: "huda-math-egtin-sitesi",
+*/
+
+const FIREBASE = {
+  projectId: "huda-math-egtin-sitesi",   // ör. "huda-math-egtin-sitesi"
+  apiKey:    "AIzaSyBjemD2llIDz22g8ZXIOAVpxWwziRjLEzU"    // ör. "AIzaSyBjemD2ll..."
+};
+
+/* Yönetici hesabı. Bu adresle kayıt olan (ya da giren) hesap
+   otomatik olarak onaylı yönetici olur.
+   Firestore kurallarındaki ADMIN_EMAIL ile birebir aynı olmalı. */
 const ADMIN_EMAIL = "abdulrazakdaas01@gmail.com";
 
 /* Dosyaları her güncellediğinde index.html içindeki ?v= değerini değiştir,
    böylece kimse eski kopyayla kalmaz. */
-const SURUM="20260813a";
+const SURUM = "20260814e";
