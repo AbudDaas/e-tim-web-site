@@ -13,18 +13,38 @@ const DATA = {
   /* Branşlar. Yeni ders eklemek için buraya bir satır ekle ya da
      Yönetim panelinden düzenle. tip: sınavlarda varsayılan soru biçimi. */
   dersler:[
-    {id:"aritmetik", ico:"🧮", tip:"aritmetik",
-     ad:{ar:"الحساب الذهني", tr:"Zihinsel aritmetik", en:"Mental arithmetic"}},
-    {id:"ingilizce", ico:"🔤", tip:"secmeli",
-     ad:{ar:"الإنجليزية", tr:"İngilizce", en:"English"}},
-    {id:"arapca", ico:"📖", tip:"secmeli",
-     ad:{ar:"العربية", tr:"Arapça", en:"Arabic"}},
-    {id:"kuran", ico:"🕌", tip:"yazili",
-     ad:{ar:"القرآن الكريم", tr:"Kur'an", en:"Qur'an"}}
+    {id:"aritmetik", ico:"🧮", tip:"aritmetik", renk:"#4338CA",
+     ad:{ar:"الحساب الذهني", tr:"Zihinsel aritmetik", en:"Mental arithmetic"},
+     ozet:{ar:"المعداد والحساب الذهني من ٧ إلى ١٤ سنة.", tr:"7–14 yaş için abaküs ve zihinden işlem.", en:"Abacus and mental calculation, ages 7–14."}},
+    {id:"ingilizce", ico:"🔤", tip:"secmeli", renk:"#0D9488",
+     ad:{ar:"الإنجليزية", tr:"İngilizce", en:"English"},
+     ozet:{ar:"مفردات ومحادثة للمبتدئين.", tr:"Kelime ve konuşma, başlangıç seviyesi.", en:"Vocabulary and speaking for beginners."}},
+    {id:"arapca", ico:"📖", tip:"secmeli", renk:"#7C3AED",
+     ad:{ar:"العربية", tr:"Arapça", en:"Arabic"},
+     ozet:{ar:"القراءة والقواعد والتعبير.", tr:"Okuma, dil bilgisi ve ifade.", en:"Reading, grammar and expression."}},
+    {id:"kuran", ico:"🕌", tip:"yazili", renk:"#B08442",
+     ad:{ar:"القرآن الكريم", tr:"Kur'an", en:"Qur'an"},
+     ozet:{ar:"التلاوة والتجويد والحفظ.", tr:"Tilavet, tecvid ve ezber.", en:"Recitation, tajweed and memorisation."}}
+  ],
+
+  /* Kayıtlı ders videoları. Her satır bir ders; ders alanı branşı belirler. */
+  kayitliDersler:[
+    {ders:"aritmetik", sira:1, sure:"18:40", yt:"", kapak:"",
+     ad:{ar:"الدرس ١ — التعرّف على المعداد", tr:"Ders 1 — Abaküsle tanışma", en:"Lesson 1 — Meeting the abacus"},
+     ozet:{ar:"أسماء الخرز وطريقة الإمساك والجلسة الصحيحة.", tr:"Boncukların adları, tutuş ve doğru oturuş.", en:"Bead names, grip and correct posture."}},
+    {ders:"aritmetik", sira:2, sure:"21:05", yt:"", kapak:"",
+     ad:{ar:"الدرس ٢ — الجمع بخانة واحدة", tr:"Ders 2 — Tek basamaklı toplama", en:"Lesson 2 — Single-digit addition"},
+     ozet:{ar:"تمارين الجمع البسيط بإيقاع ثابت.", tr:"Sabit ritimle basit toplama alıştırmaları.", en:"Simple addition drills at a steady rhythm."}},
+    {ders:"ingilizce", sira:1, sure:"14:20", yt:"", kapak:"",
+     ad:{ar:"الوحدة ١ — التحية والتعريف بالنفس", tr:"Ünite 1 — Selamlaşma ve tanışma", en:"Unit 1 — Greetings and introductions"},
+     ozet:{ar:"عبارات يومية قصيرة مع النطق.", tr:"Kısa günlük kalıplar ve telaffuz.", en:"Short daily phrases with pronunciation."}},
+    {ders:"kuran", sira:1, sure:"25:10", yt:"", kapak:"",
+     ad:{ar:"مخارج الحروف — الجزء الأول", tr:"Harflerin mahreçleri — 1. bölüm", en:"Articulation points — part 1"},
+     ozet:{ar:"مواضع الحروف في الفم والحلق.", tr:"Harflerin ağız ve boğazdaki çıkış yerleri.", en:"Where each letter is formed in the mouth and throat."}}
   ],
 
   kurslar:[
-    {ad:{ar:"المستوى ١ — التعرّف على المعداد", tr:"Seviye 1 — Abaküsle tanışma", en:"Level 1 — Meeting the abacus"},
+    {ders:"aritmetik", ad:{ar:"المستوى ١ — التعرّف على المعداد", tr:"Seviye 1 — Abaküsle tanışma", en:"Level 1 — Meeting the abacus"},
      not:{ar:"قراءة الخرز، الجمع بخانة واحدة", tr:"Boncuk okuma, tek basamaklı toplama", en:"Reading beads, single-digit addition"}},
     {ad:{ar:"المستوى ٢ — خانتان", tr:"Seviye 2 — İki basamak", en:"Level 2 — Two digits"},
      not:{ar:"مكمّلات الخمسة والعشرة، الطرح", tr:"Beş ve on tamamlayanlar, çıkarma", en:"Complements of five and ten, subtraction"}},
@@ -63,32 +83,32 @@ const DATA = {
     ],
     liste:[
       {baslik:{ar:"قراءة خمس خرزات بحركة واحدة", tr:"Beş boncuğu tek harekette okumak", en:"Reading five beads in one motion"},
-       kategori:{ar:"تقنيات", tr:"Teknik", en:"Technique"}, sure:"6:12",
+       ders:"aritmetik", kategori:{ar:"تقنيات", tr:"Teknik", en:"Technique"}, sure:"6:12",
        ders:{ar:"المستوى ٢ · الحصة ١٤", tr:"Seviye 2 · Ders 14", en:"Level 2 · Lesson 14"}, yt:"",
        ozet:{ar:"عرضنا بالتصوير البطيء كيف تتحرك اليد على المعداد.", tr:"Elin abaküs üzerinde nasıl gezindiğini yavaşlatarak gösterdik.", en:"Slowed down to show how the hand travels across the abacus."}},
 
       {baslik:{ar:"الإيقاع في جمع خانتين", tr:"İki basamaklı toplamada ritim", en:"Rhythm in two-digit addition"},
-       kategori:{ar:"الجمع", tr:"Toplama", en:"Addition"}, sure:"4:48",
+       ders:"aritmetik", kategori:{ar:"الجمع", tr:"Toplama", en:"Addition"}, sure:"4:48",
        ders:{ar:"المستوى ٣ · الحصة ٦", tr:"Seviye 3 · Ders 6", en:"Level 3 · Lesson 6"}, yt:"",
        ozet:{ar:"قراءة الأرقام في مجموعات ثنائية بدل قراءتها فرادى.", tr:"Sayıları tek tek değil, ikişerli gruplar hâlinde okumak.", en:"Reading numbers in pairs instead of one by one."}},
 
       {baslik:{ar:"الطرح دون النزول تحت الصفر", tr:"Eksiye düşmeden çıkarma", en:"Subtracting without going below zero"},
-       kategori:{ar:"الطرح", tr:"Çıkarma", en:"Subtraction"}, sure:"7:30",
+       ders:"aritmetik", kategori:{ar:"الطرح", tr:"Çıkarma", en:"Subtraction"}, sure:"7:30",
        ders:{ar:"المستوى ٣ · الحصة ٩", tr:"Seviye 3 · Ders 9", en:"Level 3 · Lesson 9"}, yt:"",
        ozet:{ar:"كيف نتقدّم دون أن يهبط المجموع الجزئي تحت الصفر.", tr:"Ara toplam sıfırın altına inmeden nasıl ilerlenir.", en:"How to move on without the running total dropping below zero."}},
 
       {baslik:{ar:"عشرة أرقام ذهنيًا: تجربة مباشرة", tr:"Zihinden 10 sayı: canlı deneme", en:"Ten numbers in the head: a live drill"},
-       kategori:{ar:"تقنيات", tr:"Teknik", en:"Technique"}, sure:"9:05",
+       ders:"aritmetik", kategori:{ar:"تقنيات", tr:"Teknik", en:"Technique"}, sure:"9:05",
        ders:{ar:"المستوى ٤ · الحصة ٢", tr:"Seviye 4 · Ders 2", en:"Level 4 · Lesson 2"}, yt:"",
        ozet:{ar:"حلّ الجميع أرقام السبورة العشرة دون استخدام الورقة.", tr:"Tahtadaki 10 sayıyı kimse kâğıt kullanmadan çözdü.", en:"Everyone solved the ten numbers on the board without paper."}},
 
       {baslik:{ar:"كيف نتعامل مع الطفل البطيء في التعلّم", tr:"Yavaş öğrenen çocuğa nasıl davranmalı", en:"How to treat a child who learns slowly"},
-       kategori:{ar:"تحفيز", tr:"Motivasyon", en:"Motivation"}, sure:"5:20",
+       ders:"aritmetik", kategori:{ar:"تحفيز", tr:"Motivasyon", en:"Motivation"}, sure:"5:20",
        ders:{ar:"لقاء أولياء الأمور", tr:"Veli sohbeti", en:"Parents' talk"}, yt:"",
        ozet:{ar:"ماذا يفعل الطفل الذي لا تزيد سرعته فعلًا.", tr:"Hızlanmayan çocuğun aslında ne yaptığını anlatıyoruz.", en:"What the child who isn't speeding up is actually doing."}},
 
       {baslik:{ar:"أسبوع التخلّي عن العدّ بالأصابع", tr:"Parmak alışkanlığını bırakma haftası", en:"The week of dropping finger counting"},
-       kategori:{ar:"تحفيز", tr:"Motivasyon", en:"Motivation"}, sure:"3:58",
+       ders:"aritmetik", kategori:{ar:"تحفيز", tr:"Motivasyon", en:"Motivation"}, sure:"3:58",
        ders:{ar:"المستوى ١ · الحصة ١١", tr:"Seviye 1 · Ders 11", en:"Level 1 · Lesson 11"}, yt:"",
        ozet:{ar:"أكثر العقبات شيوعًا عند الانتقال إلى المعداد الذهني.", tr:"Hayalî abaküse geçerken yaşanan en sık takılma.", en:"The most common snag when moving to the mental abacus."}}
     ]
@@ -119,6 +139,7 @@ const DATA = {
 
   yarismalar:{
     aktif:{
+      ders:"aritmetik",
       ad:{ar:"بطولة آب للسرعة", tr:"Ağustos Hız Turnuvası", en:"August Speed Tournament"},
       tarih:"2026-08-30T10:00:00",
       yer:{ar:"مركز شاهين بيك الثقافي · غازي عنتاب", tr:"Şahinbey Kültür Merkezi · Gaziantep", en:"Şahinbey Cultural Centre · Gaziantep"},
@@ -141,6 +162,7 @@ const DATA = {
   },
 
   gurur:{
+    ders:"aritmetik",
     donem:{ar:"تموز ٢٠٢٦", tr:"Temmuz 2026", en:"July 2026"},
     metin:{ar:"بحسب متوسط الاختبارات خلال الشهر. تُحدَّث القائمة مطلع كل شهر.",
            tr:"Ay boyunca yapılan denemelerin ortalamasına göre. Liste her ayın başında yenilenir.",

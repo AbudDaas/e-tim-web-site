@@ -3,6 +3,7 @@
 /* ---------------- sekmeler ---------------- */
 const SAYFALAR = [
   {yol:"/",        ad:()=>t("anaSayfa"),      gor:vAna},
+  {yol:"/dersler", ad:()=>t("dersler2"),      gor:vDersler},
   {yol:"/kesitler",ad:()=>t("dersKesitleri"), gor:vKesitler},
   {yol:"/podcast", ad:()=>t("podcastler"),   gor:vPodcast},
   {yol:"/yarisma", ad:()=>t("yarismalar"),   gor:vYarisma},
@@ -64,6 +65,12 @@ window.addEventListener("hashchange",()=>{
 
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{
+  const dd=e.target.closest("[data-ders]");
+  if(dd){ SITE.ders=dd.dataset.ders||null; ciz(); window.scrollTo(0,0); return; }
+  const kd=e.target.closest("[data-kders]");
+  if(kd){ SITE.kesitDers=kd.dataset.kders||null; filtre=0; ciz(); return; }
+  const ky=e.target.closest("[data-kayit]");
+  if(ky){ acKayitliDers(ky.dataset.kayit, ky.dataset.dersId||SITE.ders); return; }
   const f=e.target.closest("[data-filtre]");
   if(f){ filtre=+f.dataset.filtre; ciz(); return; }
   const v=e.target.closest("[data-video]");
@@ -71,6 +78,33 @@ document.addEventListener("click",e=>{
   const p=e.target.closest("[data-ep]");
   if(p){ calBolum(+p.dataset.ep); return; }
 });
+function acKayitliDers(i,ders){
+  const liste=(DATA.kayitliDersler||[]).filter(k=>k.ders===ders).sort((a,b)=>(a.sira||0)-(b.sira||0));
+  const k=liste[+i]; if(!k) return;
+  /* kayıtlı dersler üyelere açık: giriş yoksa profile yönlendir */
+  if(typeof girisliMi==="function" && !girisliMi()){
+    SX.geriYol=location.hash||"#/dersler"; SX.pekran="giris";
+    location.hash="#/profil"; toast("Kayıtlı dersler üyelere açık, önce giriş yap.");
+    return;
+  }
+  videoKutusu(ceviri(k.ad), ceviri(k.ozet), k.yt);
+}
+function videoKutusu(baslik,alt,yt){
+  $("lb").innerHTML=`<div class="lightbox" id="lbBox">
+    <div class="box" role="dialog" aria-label="${esc(baslik)}">
+      ${yt?`<iframe src="https://www.youtube.com/embed/${esc(yt)}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+        :`<div style="aspect-ratio:16/9;display:grid;place-items:center;background:linear-gradient(140deg,#4338CA,#7C3AED 60%,#0D9488);color:#fff;text-align:center;padding:24px">
+           <div><b style="font-family:var(--disp);font-size:19px">Video henüz bağlanmadı</b>
+           <p style="opacity:.85;font-size:14px;margin-top:8px">Yönetim panelinden bu dersin YouTube kimliğini gir.</p></div></div>`}
+      <div class="cap"><div><b style="font-family:var(--disp)">${esc(baslik)}</b>
+        <div class="muted" style="font-size:13px">${esc(alt||"")}</div></div>
+        <button class="close" id="lbClose" aria-label="kapat">×</button></div></div></div>`;
+  document.body.style.overflow="hidden";
+  const kapat=()=>{ $("lb").innerHTML=""; document.body.style.overflow="" };
+  $("lbClose").onclick=kapat;
+  $("lbBox").onclick=ev=>{ if(ev.target.id==="lbBox") kapat() };
+  document.addEventListener("keydown",function k2(ev){ if(ev.key==="Escape"){kapat();document.removeEventListener("keydown",k2)} });
+}
 function acVideo(i){
   const v=DATA.kesitler.liste[i];
   $("lb").innerHTML=`<div class="lightbox" id="lbBox">

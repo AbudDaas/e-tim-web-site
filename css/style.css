@@ -542,3 +542,19 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .sx-secenek.dogru .sik-harf{background:var(--turkuaz);color:#fff}
 .sx-secenek.yanlis{border-color:#C0392B;background:rgba(192,57,43,.1);opacity:1}
 .sx-secenek.yanlis .sik-harf{background:#C0392B;color:#fff}
+
+/* --- ders kartları --- */
+.ders-kart{display:flex;flex-direction:column;gap:6px;text-align:start;cursor:pointer;padding:22px;
+  border-radius:var(--r);border:1px solid var(--cam-kenar);background:var(--cam);box-shadow:var(--golge);
+  backdrop-filter:blur(12px);font:inherit;color:inherit;position:relative;overflow:hidden;transition:transform .2s}
+.ders-kart::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:5px;background:var(--dr)}
+.ders-kart:hover{transform:translateY(-3px)}
+.ders-ico{font-size:30px}
+.ders-kart b{font-family:var(--disp);font-size:19px;margin-top:4px}
+.ders-ozet{font-size:14px;color:var(--gece-2);line-height:1.5}
+.ders-sayac{font-family:var(--mono);font-size:11.5px;color:var(--dr);margin-top:6px}
+.ders-baslik{display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:var(--r);
+  border:1px solid var(--cam-kenar);background:var(--cam);box-shadow:var(--golge)}
+.ders-baslik::before{content:"";width:5px;align-self:stretch;border-radius:3px;background:var(--dr)}
+.ders-rozet{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
+  padding:4px 9px;border-radius:999px;background:color-mix(in srgb,var(--dr) 14%,transparent);color:var(--dr)}

@@ -2,7 +2,8 @@
 
 const $=i=>document.getElementById(i);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let filtre="Tümü";
+let filtre=0;                                  /* seçili kesit kategorisi (sıra no) */
+const SITE={ ders:null, kesitDers:null };      /* site tarafı seçimleri */
 
 const SEVIYE=[{min:3,max:3,lo:1,hi:9,neg:0},{min:3,max:4,lo:1,hi:9,neg:.35},
  {min:4,max:5,lo:1,hi:59,neg:.4},{min:5,max:6,lo:1,hi:79,neg:.45},{min:6,max:8,lo:2,hi:99,neg:.45}];

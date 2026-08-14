@@ -74,11 +74,17 @@ function vKesitler(){
     "Derslerden alınan kısa video parçaları. Çocuğunun hangi tekniği öğrendiğini görmenin en kolay yolu.",
     ["Tüm seviyelerin ders kesitleri","Yeni kesitler eklendikçe erişim","Sınav geçmişi ve ödev takibi"]);
   const k=DATA.kesitler;
-  const liste=k.liste.filter(x=> filtre===0 || ceviri(x.kategori)===ceviri(k.kategoriler[filtre]));
+  const liste=k.liste
+    .filter(x=> !SITE.kesitDers || x.ders===SITE.kesitDers)
+    .filter(x=> filtre===0 || ceviri(x.kategori)===ceviri(k.kategoriler[filtre]));
   return `<section class="page">
     <div class="eyebrow">Arşiv</div>
     <h2 style="margin:10px 0 8px">Canlı ders kesitleri</h2>
     <p class="muted" style="max-width:52ch">Derslerden kısa parçalar. Çocuğunuzun hangi tekniği öğrendiğini görmek için en kolay yol.</p>
+    <div class="chips" style="margin-bottom:0">
+      <button class="chip" data-kders="" aria-pressed="${!SITE.kesitDers}">Tüm dersler</button>
+      ${(DATA.dersler||[]).map(x=>`<button class="chip" data-kders="${esc(x.id)}" aria-pressed="${SITE.kesitDers===x.id}">${x.ico} ${esc(ceviri(x.ad))}</button>`).join("")}
+    </div>
     <div class="chips">${k.kategoriler.map((c,i)=>
       `<button class="chip" data-filtre="${i}" aria-pressed="${i===filtre}">${esc(ceviri(c))}</button>`).join("")}</div>
     <div class="grid g3">${liste.map((v,i)=>`
@@ -91,7 +97,7 @@ function vKesitler(){
           <span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span>
         </div>
         <div class="body">
-          <span class="tag">${esc(ceviri(v.kategori))}</span>
+          <span class="tag">${esc(ceviri(v.kategori))}</span> ${dersRozeti(v.ders)}
           <h3 style="margin:10px 0 5px">${esc(ceviri(v.baslik))}</h3>
           <p class="muted" style="font-size:13.5px">${esc(ceviri(v.ozet))}</p>
           <p class="muted" style="font-size:12.5px;margin-top:8px;font-family:var(--mono)">${esc(ceviri(v.ders))}</p>
@@ -136,6 +142,7 @@ function vYarisma(){
     <div class="card contest">
       <span class="tag teal">Kayıtlar açık</span>
       <h3 style="font-size:26px;margin:12px 0 6px">${esc(ceviri(y.aktif.ad))}</h3>
+      ${dersRozeti(y.aktif.ders)}
       <p class="muted">${esc(ceviri(y.aktif.yer))} · ${esc(ceviri(y.aktif.katilimci))}</p>
       <div class="count" id="sayac"></div>
       <p style="max-width:56ch">${esc(ceviri(y.aktif.metin))}</p>
@@ -159,6 +166,7 @@ function vGurur(){
   return `<section class="page">
     <div class="eyebrow">${esc(ceviri(g.donem))}</div>
     <h2 style="margin:10px 0 8px">Gurur tablomuz</h2>
+    ${dersRozeti(g.ders)}
     <p class="muted" style="max-width:52ch">${esc(ceviri(g.metin))}</p>
     ${g.ilkUc.length?`<div class="podium">${pod(b,"two","2")}${pod(a,"one","1")}${pod(c,"three","3")}</div>`
       :`<div class="card pad" style="margin:22px 0"><p class="muted">Bu dönemin listesi henüz açıklanmadı. Ayın sonunda burada olacak.</p></div>`}
@@ -209,5 +217,98 @@ function vHakkinda(){
           <div class="ans">${esc(ceviri(f.c))}</div></details>`).join("")}
       </div>
     </div>
+  </section>`;
+}
+
+/* ======================= DERSLER ======================= */
+function dersRenk(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return (d&&d.renk)||"#4338CA"; }
+function dersAd(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return d?ceviri(d.ad):""; }
+function dersIco(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return d?d.ico:"📘"; }
+function dersRozeti(id){
+  if(!id) return "";
+  return `<span class="ders-rozet" style="--dr:${dersRenk(id)}">${dersIco(id)} ${esc(dersAd(id))}</span>`;
+}
+
+function vDersler(){
+  const secili=SITE.ders;
+  if(secili) return vDersDetay(secili);
+  const d=DATA.dersler||[];
+  return `<section class="page">
+    <div class="eyebrow">Branşlar</div>
+    <h2 style="margin:10px 0 8px">Dersler</h2>
+    <p class="muted" style="max-width:52ch">Her branşın kendi kayıtlı dersleri, ders kesitleri, yarışmaları ve gurur tablosu var.</p>
+    <div class="grid g2" style="margin-top:24px">
+      ${d.map(x=>{
+        const ders=x.id;
+        const kayit=(DATA.kayitliDersler||[]).filter(k=>k.ders===ders).length;
+        const kesit=(DATA.kesitler.liste||[]).filter(k=>k.ders===ders).length;
+        return `<button class="ders-kart" data-ders="${esc(ders)}" style="--dr:${x.renk||"#4338CA"}">
+          <span class="ders-ico">${x.ico||"📘"}</span>
+          <b>${esc(ceviri(x.ad))}</b>
+          <span class="ders-ozet">${esc(ceviri(x.ozet)||"")}</span>
+          <span class="ders-sayac">${kayit} kayıtlı ders · ${kesit} kesit</span>
+        </button>`;
+      }).join("")}
+    </div></section>`;
+}
+
+function vDersDetay(id){
+  const d=(DATA.dersler||[]).find(x=>x.id===id);
+  if(!d) return vDersler();
+  const kayit=(DATA.kayitliDersler||[]).filter(k=>k.ders===id).sort((a,b)=>(a.sira||0)-(b.sira||0));
+  const kesit=(DATA.kesitler.liste||[]).filter(k=>k.ders===id);
+  const yar=(DATA.yarismalar.aktif&&DATA.yarismalar.aktif.ders===id)?DATA.yarismalar.aktif:null;
+  const gurur=(DATA.gurur.ders===id)?DATA.gurur:null;
+  const kurs=(DATA.kurslar||[]).filter(k=>k.ders===id);
+  return `<section class="page">
+    <button class="btn ghost sm" data-ders="" style="margin-bottom:16px">← Tüm dersler</button>
+    <div class="ders-baslik" style="--dr:${d.renk||"#4338CA"}">
+      <span class="ders-ico">${d.ico||"📘"}</span>
+      <div><h2 style="margin:0">${esc(ceviri(d.ad))}</h2>
+        <p class="muted" style="margin-top:4px">${esc(ceviri(d.ozet)||"")}</p></div>
+    </div>
+
+    <h3 style="margin:26px 0 12px">Kayıtlı dersler</h3>
+    ${kayit.length? `<div class="grid g2">${kayit.map((k,i)=>`
+      <button class="clip" data-kayit="${i}" data-ders="${esc(id)}">
+        <div class="thumb">
+          ${(()=>{ const kp=ceviri(k.kapak); if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
+             if(k.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(k.yt)}/hqdefault.jpg" alt="">`; return ""; })()}
+          <span class="play"></span><span class="dur">${esc(ceviri(k.sure)||"")}</span>
+        </div>
+        <div class="body">
+          <span class="tag">Ders ${k.sira||""}</span>
+          <h3 style="margin:10px 0 5px">${esc(ceviri(k.ad))}</h3>
+          <p class="muted" style="font-size:13.5px">${esc(ceviri(k.ozet)||"")}</p>
+        </div></button>`).join("")}</div>`
+      : `<div class="card pad muted">Bu branşta henüz kayıtlı ders yok.</div>`}
+
+    ${kurs.length? `<h3 style="margin:30px 0 12px">Seviyeler</h3>
+      <div class="card">${kurs.map(k=>`<div class="past"><div class="grow" style="flex:1">
+        <b style="font-family:var(--disp)">${esc(ceviri(k.ad))}</b>
+        <div class="muted" style="font-size:13.5px">${esc(ceviri(k.not)||"")}</div></div></div>`).join("")}</div>`:""}
+
+    ${kesit.length? `<h3 style="margin:30px 0 12px">Ders kesitleri</h3>
+      <div class="grid g3">${kesit.slice(0,3).map(v=>`
+        <button class="clip" data-video="${DATA.kesitler.liste.indexOf(v)}">
+          <div class="thumb">
+            ${(()=>{ const kp=ceviri(v.kapak); if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
+               if(v.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="">`; return ""; })()}
+            <span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span></div>
+          <div class="body"><h3 style="margin:0 0 5px;font-size:16px">${esc(ceviri(v.baslik))}</h3>
+            <p class="muted" style="font-size:13px">${esc(ceviri(v.ders_ozet||v.ozet))}</p></div></button>`).join("")}</div>
+      <a class="btn ghost sm" href="#/kesitler" style="margin-top:12px">Tüm kesitler</a>`:""}
+
+    ${yar? `<h3 style="margin:30px 0 12px">Yaklaşan yarışma</h3>
+      <div class="card pad"><b style="font-family:var(--disp);font-size:18px">${esc(ceviri(yar.ad))}</b>
+        <p class="muted" style="margin-top:6px">${esc(ceviri(yar.yer))}</p>
+        <a class="btn sm" href="#/yarisma" style="margin-top:12px">Detaya bak</a></div>`:""}
+
+    ${gurur? `<h3 style="margin:30px 0 12px">Gurur tablomuz</h3>
+      <div class="card">${(gurur.ilkUc||[]).map((x,i)=>`<div class="past">
+        <span class="date">${i+1}.</span>
+        <div class="grow" style="flex:1"><b style="font-family:var(--disp)">${esc(ceviri(x.ad))}</b>
+          <div class="muted" style="font-size:13.5px">${esc(ceviri(x.sinif))}</div></div>
+        <span class="tag">${esc(ceviri(x.puan))}</span></div>`).join("")}</div>`:""}
   </section>`;
 }
