@@ -39,6 +39,9 @@ function ciz(){
   if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
   if(y==="/profil"&&SX.pekran==="editor") notYenile();
   if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();
+  $("brandName").textContent=ceviri(DATA.marka.ad);
+  $("brandSub").textContent=ceviri(DATA.marka.alt);
+  altBilgiCiz();
   if(typeof menuOlc==="function") menuOlc();
   }catch(hata){
     console.error("çizim hatası:",hata);
@@ -143,14 +146,17 @@ function menuOlc(){
 })();
 
 /* ---------------- açılış ---------------- */
-$("brandName").textContent=cevirHtml(DATA.marka.ad);
-$("brandSub").textContent=cevirHtml(DATA.marka.alt);
-$("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(DATA.marka.ad)}</b>
-  <span>${esc(DATA.hakkimizda.iletisim.adres)}</span>
+$("brandName").textContent=ceviri(DATA.marka.ad);
+$("brandSub").textContent=ceviri(DATA.marka.alt);
+function altBilgiCiz(){
+  $("foot").innerHTML=`<b style="font-family:var(--disp);color:var(--gece)">${esc(ceviri(DATA.marka.ad))}</b>
+  <span>${esc(ceviri(DATA.hakkimizda.iletisim.adres))}</span>
   <a href="mailto:${esc(DATA.hakkimizda.iletisim.mail)}">${esc(DATA.hakkimizda.iletisim.mail)}</a>
   <a href="#/gizlilik">Gizlilik ve KVKK</a>
   <a href="#/sinav">Sınava gir</a>
-  <span style="margin-inline-start:auto">© ${new Date().getFullYear()} ${esc(DATA.marka.ad)}</span>`;
+  <span style="margin-inline-start:auto">© ${new Date().getFullYear()} ${esc(ceviri(DATA.marka.ad))}</span>`;
+}
+altBilgiCiz();
 KV.init();
 (async function ac(){
   /* Yönetim panelinden yayınlanan içerik dosyadakinin yerine geçer.

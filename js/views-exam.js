@@ -335,9 +335,9 @@ function vGizlilik(){
     <h3>18 yaş altı</h3>
     <p>Öğrencilerimiz çocuk olduğu için kayıt sırasında yalnız ad bilgisi istenir; telefon, adres, fotoğraf gibi veriler toplanmaz. Velinin açık rızası kayıt formunda alınır.</p>
     <h3>Haklarınız</h3>
-    <p>KVKK 11. madde kapsamında verilerinizin silinmesini, düzeltilmesini veya bir kopyasını isteyebilirsiniz. Talebinizi <a href="mailto:${esc(i.mail)}">${esc(i.mail)}</a> adresine yazmanız yeterli; en geç 30 gün içinde dönüş yapılır.</p>
+    <p>KVKK 11. madde kapsamında verilerinizin silinmesini, düzeltilmesini veya bir kopyasını isteyebilirsiniz. Talebinizi <a href="mailto:${esc(ceviri(i.mail))}">${esc(ceviri(i.mail))}</a> adresine yazmanız yeterli; en geç 30 gün içinde dönüş yapılır.</p>
     <h3>İletişim</h3>
-    <p>${esc(DATA.marka.ad)} · ${esc(i.adres)} · ${esc(i.telefon)}</p>
+    <p>${esc(ceviri(DATA.marka.ad))} · ${esc(ceviri(i.adres))} · ${esc(ceviri(i.telefon))}</p>
     <a class="btn ghost sm" href="#/" style="margin-top:14px">Ana sayfaya dön</a>
   </div></section>`;
 }
@@ -429,9 +429,10 @@ function sxOgrenciProfil(){
     <div class="card pad" style="margin-top:14px">
       <h3 style="margin-bottom:12px">Kurs ilerlemem</h3>
       ${(DATA.kurslar||[]).map(k=>{
-        const bitti=c.some(x=>x.kurs===k.ad);
-        return `<div class="sx-item"><div class="g"><b>${esc(k.ad)}</b>
-          <div class="s">${esc(k.not||"")}</div>
+        const kad=ceviri(k.ad);
+        const bitti=c.some(x=>ceviri(x.kurs)===kad);
+        return `<div class="sx-item"><div class="g"><b>${esc(kad)}</b>
+          <div class="s">${esc(ceviri(k.not)||"")}</div>
           <div class="sx-bar" style="margin-top:6px"><i style="width:${bitti?100:0}%"></i></div></div>
           <span class="sx-badge ${bitti?"ok":""}">${bitti?"tamamlandı":"devam ediyor"}</span></div>`;
       }).join("")}
@@ -509,7 +510,7 @@ function sxOgrenciDetay(){
     <h3 style="margin:22px 0 10px">Sertifika ver</h3>
     <div class="sx-row" style="margin-bottom:14px">
       <select class="sx-in" id="sertKurs" style="max-width:240px">
-        ${(DATA.kurslar||[]).map(k=>`<option>${esc(k.ad)}</option>`).join("")}</select>
+        ${(DATA.kurslar||[]).map(k=>`<option>${esc(ceviri(k.ad))}</option>`).join("")}</select>
       <input class="sx-in" id="sertNot" placeholder="not (isteğe bağlı)" style="max-width:220px">
       <button class="btn" data-sx="sertVer">Sertifikayı ver</button></div>
     ${c.length? c.map(x=>`<div class="sx-item"><div class="g"><b>${esc(x.kurs)}</b>

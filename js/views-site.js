@@ -35,7 +35,7 @@ function vAna(){
         <p class="lede">${esc(ceviri(a.metin))}</p>
         <div class="acts">
           <a class="btn" href="${esc(DATA.marka.sinavLinki)}">Sınava gir</a>
-          <a class="btn ghost" href="https://wa.me/${DATA.hakkimizda.iletisim.telefon.replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
+          <a class="btn ghost" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
           <a class="btn ghost" href="#/kesitler">Ders kesitlerini izle</a>
         </div>
       </div>
@@ -55,9 +55,9 @@ function vAna(){
     <h2 style="margin:44px 0 6px">Bu hafta</h2>
     <p class="muted" style="margin-bottom:18px">Sitede yeni olan üç şey.</p>
     <div class="grid g3">
-      ${DATA.kesitler.liste[0]?kartOzet("Son ders kesiti", DATA.kesitler.liste[0].baslik, DATA.kesitler.liste[0].ders, "#/kesitler","Kesitlere git"):""}
-      ${DATA.podcast.bolumler[0]?kartOzet("Son podcast", DATA.podcast.bolumler[0].baslik, "Bölüm "+DATA.podcast.bolumler[0].no+" · "+DATA.podcast.bolumler[0].sure, "#/podcast","Bölümü aç"):""}
-      ${DATA.yarismalar.aktif?kartOzet("Yaklaşan yarışma", DATA.yarismalar.aktif.ad, DATA.yarismalar.aktif.yer, "#/yarisma","Detaya bak"):kartOzet("Sınav","Kodla sınava gir","Öğretmeninin verdiği kodu yaz","#/sinav","Sınava git")}
+      ${DATA.kesitler.liste[0]?kartOzet("Son ders kesiti", ceviri(DATA.kesitler.liste[0].baslik), ceviri(DATA.kesitler.liste[0].ders), "#/kesitler","Kesitlere git"):""}
+      ${DATA.podcast.bolumler[0]?kartOzet("Son podcast", ceviri(DATA.podcast.bolumler[0].baslik), "Bölüm "+DATA.podcast.bolumler[0].no+" · "+ceviri(DATA.podcast.bolumler[0].sure), "#/podcast","Bölümü aç"):""}
+      ${DATA.yarismalar.aktif?kartOzet("Yaklaşan yarışma", ceviri(DATA.yarismalar.aktif.ad), ceviri(DATA.yarismalar.aktif.yer), "#/yarisma","Detaya bak"):kartOzet("Sınav","Kodla sınava gir","Öğretmeninin verdiği kodu yaz","#/sinav","Sınava git")}
     </div>
   </section>`;
 }
@@ -189,7 +189,7 @@ function vHakkinda(){
     <h3 style="margin:36px 0 14px">Ekip</h3>
     <div class="grid g3">
       ${h.ekip.map(p=>`<div class="card person">
-        <div class="av">${esc(p.ad.split(" ").map(w=>w[0]).join("").slice(0,2))}</div>
+        <div class="av">${esc(String(ceviri(p.ad)).split(" ").map(w=>w[0]).join("").slice(0,2))}</div>
         <div><b style="font-family:var(--disp)">${esc(ceviri(p.ad))}</b>
         <div class="muted" style="font-size:13.5px">${esc(ceviri(p.rol))}</div></div></div>`).join("")}
     </div>
