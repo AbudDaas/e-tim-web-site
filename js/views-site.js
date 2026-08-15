@@ -38,10 +38,10 @@ function vAna(){
           <a class="btn ghost" href="#/sinav">Sınava gir</a>
         </div>
       </div>
-      <div class="card pad" style="display:flex;flex-direction:column;justify-content:center">
-        <div class="eyebrow" style="margin-bottom:10px">Dokunarak dene</div>
-        ${(()=>{ if(!ABK.durum.length) abkKur(7); return abakusKutusu(); })()}
-        <div class="eyebrow" style="margin-top:12px">${esc(ceviri(a.duyuru))}</div>
+      <div class="card abacus">
+        ${[7,5,6,4,7,5].map((n,r)=>`<div class="wire">${Array.from({length:n},(_,i)=>
+          `<i style="animation-delay:${(r*.18+i*.06).toFixed(2)}s"></i>`).join("")}</div>`).join("")}
+        <div class="eyebrow" style="margin-top:10px">${esc(ceviri(a.duyuru))}</div>
       </div>
     </div>
 
@@ -265,7 +265,8 @@ function dersSekmeleri(id){
     {k:"gurur",    ad:"Gurur tablosu"},
     {k:"sinav",    ad:"Sınav ve ödev",   nokta:dersOdevVar(id)}
   ];
-  if(d && d.tip==="aritmetik") s.splice(1,0,{k:"abakus", ad:"Abaküs"});
+  const arac=aracTanim(d&&d.arac);
+  if(arac) s.splice(1,0,{k:"arac", ad:arac.ad});
   return s;
 }
 
@@ -281,7 +282,7 @@ function vDers(){
     podcast: ()=>bolumPodcast(id),
     yarisma: ()=>bolumYarisma(id),
     gurur:   ()=>bolumGurur(id),
-    abakus:  ()=>bolumAbakus(id),
+    arac:    ()=>aracBolumu(id),
     sinav:   ()=>bolumSinav(id)
   }[sekme] || (()=>bolumHakkinda(id));
 

@@ -235,6 +235,18 @@ const API={
    try{ return bulut()? await FB.get("schedule/"+uid) : await KV.get("sx:program:"+uid) }catch(e){ return null }
  },
 
+ /* --- ezber takibi --- */
+ async ezberYaz(uid,durum){
+   const d={durum,at:Date.now()};
+   bulut()? await FB.set("students/"+uid+"/hifz/durum",d) : await KV.set("sx:ezber:"+uid,d);
+ },
+ async ezberAl(uid){
+   try{
+     const d= bulut()? await FB.get("students/"+uid+"/hifz/durum") : await KV.get("sx:ezber:"+uid);
+     return d ? (d.durum||{}) : {};
+   }catch(e){ return {}; }
+ },
+
  /* --- bildirimler --- */
  async bildirimYaz(uid,b){
    const id=yeniId(); const d=Object.assign({id,at:Date.now(),okundu:false},b);

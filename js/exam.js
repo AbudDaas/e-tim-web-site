@@ -603,6 +603,7 @@ async function ogrenciVerileriYukle(uid){
   const [s,o,c,y]=await Promise.all([API.ogrenciSonuclari(uid),API.odevler(uid),API.sertifikalar(uid),API.yoklamalar(uid)]);
   SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c; SX.ogrYoklama=y;
   if(SX.user && SX.user.uid===uid) SX.bildirim=await API.bildirimler(uid);
+  if(typeof ezberYukle==="function") await ezberYukle(uid);
 }
 async function veliVerileriYukle(){
   if(!SX.user || !SX.user.cocuk) return;

@@ -13,16 +13,16 @@ const DATA = {
   /* Branşlar. Yeni ders eklemek için buraya bir satır ekle ya da
      Yönetim panelinden düzenle. tip: sınavlarda varsayılan soru biçimi. */
   dersler:[
-    {id:"aritmetik", ico:"🧮", tip:"aritmetik", renk:"#4338CA",
+    {id:"aritmetik", ico:"🧮", tip:"aritmetik", renk:"#4338CA", arac:"abakus",
      ad:{ar:"الحساب الذهني", tr:"Zihinsel aritmetik", en:"Mental arithmetic"},
      ozet:{ar:"المعداد والحساب الذهني من ٧ إلى ١٤ سنة.", tr:"7–14 yaş için abaküs ve zihinden işlem.", en:"Abacus and mental calculation, ages 7–14."}},
-    {id:"ingilizce", ico:"🔤", tip:"secmeli", renk:"#0D9488",
+    {id:"ingilizce", ico:"🔤", tip:"secmeli", renk:"#0D9488", arac:"kartlar",
      ad:{ar:"الإنجليزية", tr:"İngilizce", en:"English"},
      ozet:{ar:"مفردات ومحادثة للمبتدئين.", tr:"Kelime ve konuşma, başlangıç seviyesi.", en:"Vocabulary and speaking for beginners."}},
-    {id:"arapca", ico:"📖", tip:"secmeli", renk:"#7C3AED",
+    {id:"arapca", ico:"📖", tip:"secmeli", renk:"#7C3AED", arac:"harfler",
      ad:{ar:"العربية", tr:"Arapça", en:"Arabic"},
      ozet:{ar:"القراءة والقواعد والتعبير.", tr:"Okuma, dil bilgisi ve ifade.", en:"Reading, grammar and expression."}},
-    {id:"kuran", ico:"🕌", tip:"yazili", renk:"#B08442",
+    {id:"kuran", ico:"🕌", tip:"yazili", renk:"#B08442", arac:"ezber",
      ad:{ar:"القرآن الكريم", tr:"Kur'an", en:"Qur'an"},
      ozet:{ar:"التلاوة والتجويد والحفظ.", tr:"Tilavet, tecvid ve ezber.", en:"Recitation, tajweed and memorisation."}}
   ],
@@ -41,6 +41,18 @@ const DATA = {
     {ders:"kuran", sira:1, sure:"25:10", yt:"", kapak:"",
      ad:{ar:"مخارج الحروف — الجزء الأول", tr:"Harflerin mahreçleri — 1. bölüm", en:"Articulation points — part 1"},
      ozet:{ar:"مواضع الحروف في الفم والحلق.", tr:"Harflerin ağız ve boğazdaki çıkış yerleri.", en:"Where each letter is formed in the mouth and throat."}}
+  ],
+
+  /* Kelime kartları — İngilizce (ve istersen başka dil) dersinin aracı. */
+  kartlar:[
+    {ders:"ingilizce", on:"pencil", arka:{ar:"قلم رصاص", tr:"kalem", en:"pencil"}, ipucu:"school"},
+    {ders:"ingilizce", on:"book", arka:{ar:"كتاب", tr:"kitap", en:"book"}, ipucu:"school"},
+    {ders:"ingilizce", on:"teacher", arka:{ar:"معلّم", tr:"öğretmen", en:"teacher"}, ipucu:"school"},
+    {ders:"ingilizce", on:"water", arka:{ar:"ماء", tr:"su", en:"water"}, ipucu:"daily"},
+    {ders:"ingilizce", on:"bread", arka:{ar:"خبز", tr:"ekmek", en:"bread"}, ipucu:"daily"},
+    {ders:"ingilizce", on:"house", arka:{ar:"بيت", tr:"ev", en:"house"}, ipucu:"daily"},
+    {ders:"ingilizce", on:"friend", arka:{ar:"صديق", tr:"arkadaş", en:"friend"}, ipucu:"people"},
+    {ders:"ingilizce", on:"morning", arka:{ar:"صباح", tr:"sabah", en:"morning"}, ipucu:"time"}
   ],
 
   kurslar:[

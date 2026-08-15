@@ -609,3 +609,52 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .abk-cubuk-sec{margin-inline-start:auto;display:flex;gap:5px}
 .abk-cubuk-sec .chip{padding:6px 11px;font-family:var(--mono);font-size:12px}
 @media(max-width:600px){ .abk-deger{font-size:30px;min-width:90px} }
+
+/* --- kelime kartları --- */
+.krt-sayac{font-family:var(--mono);font-size:12px;color:var(--gece-2);text-align:center;margin-bottom:10px}
+.krt-kart{display:block;width:100%;max-width:420px;margin:0 auto;aspect-ratio:5/3;perspective:1000px;
+  border:0;background:none;padding:0;cursor:pointer;position:relative}
+.krt-yuz{position:absolute;inset:0;border-radius:20px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;backface-visibility:hidden;
+  transition:transform .5s cubic-bezier(.3,.8,.4,1);box-shadow:var(--golge);padding:18px;text-align:center}
+.krt-on{background:linear-gradient(150deg,#fff,#F2F1FA);border:1px solid var(--cam-kenar)}
+.krt-arka{background:linear-gradient(150deg,var(--murekkep),var(--menekse));color:#fff;transform:rotateY(180deg)}
+.krt-kart.acik .krt-on{transform:rotateY(-180deg)}
+.krt-kart.acik .krt-arka{transform:rotateY(0)}
+.krt-yuz b{font-family:var(--disp);font-weight:800;font-size:clamp(26px,6vw,38px);unicode-bidi:plaintext}
+.krt-etiket{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--murekkep)}
+.krt-ipucu{font-size:12.5px;opacity:.65}
+
+/* --- harf tahtası --- */
+.hrf-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+.hrf{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px;cursor:pointer;
+  border:1px solid rgba(20,26,51,.12);border-radius:13px;background:rgba(255,255,255,.7);color:var(--gece)}
+.hrf:hover{border-color:var(--menekse)}
+.hrf.secili{background:linear-gradient(150deg,rgba(124,58,237,.14),rgba(67,56,202,.1));border-color:var(--menekse)}
+.hrf-harf{font-size:30px;line-height:1;font-family:"IBM Plex Sans Arabic",serif}
+.hrf-ad{font-family:var(--mono);font-size:10.5px;color:var(--gece-2)}
+.hrf-detay{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:16px;padding:16px;
+  border-radius:16px;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2)}
+.hrf-buyuk{font-size:72px;line-height:1;font-family:"IBM Plex Sans Arabic",serif;color:var(--menekse)}
+.hrf-bicim{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+.hrf-bicim div{text-align:center}
+.hrf-bicim span{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--gece-2)}
+.hrf-bicim b{font-size:26px;font-family:"IBM Plex Sans Arabic",serif}
+.hrf-hareke{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.hrf-hrk{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.7);
+  border:1px solid rgba(20,26,51,.1);text-align:center}
+.hrf-hrk b{display:block;font-size:26px;font-family:"IBM Plex Sans Arabic",serif}
+.hrf-hrk span{font-family:var(--mono);font-size:10.5px;color:var(--gece-2)}
+
+/* --- ezber takibi --- */
+.ezb-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.ezb{display:flex;flex-direction:column;gap:2px;padding:11px 9px;cursor:pointer;text-align:start;
+  border:1px solid rgba(20,26,51,.12);border-radius:13px;background:rgba(255,255,255,.7);color:var(--gece)}
+.ezb:hover{border-color:var(--kehribar)}
+.ezb-no{font-family:var(--mono);font-size:10px;color:var(--gece-2)}
+.ezb-ar{font-size:19px;font-family:"IBM Plex Sans Arabic",serif;line-height:1.2}
+.ezb-ad{font-size:12.5px;font-weight:600}
+.ezb-ayet{font-family:var(--mono);font-size:10px;color:var(--gece-2)}
+.ezb.calisiyor{background:rgba(224,160,32,.13);border-color:rgba(224,160,32,.5)}
+.ezb.bitti{background:rgba(13,148,136,.13);border-color:rgba(13,148,136,.5)}
+.ezb.bitti .ezb-ad::after{content:" ✓";color:var(--turkuaz)}
