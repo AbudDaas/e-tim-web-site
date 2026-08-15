@@ -578,3 +578,34 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
   .ders-sekme{border-radius:16px}
   .ders-sekme button{font-size:13px;padding:8px 11px}
 }
+
+/* --- sanal abaküs --- */
+.abk-kutu{border:1px solid rgba(20,26,51,.12);border-radius:18px;padding:16px;
+  background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(244,245,252,.75))}
+.abk-ust{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.abk-deger{font-family:var(--disp);font-weight:800;font-size:clamp(30px,7vw,44px);letter-spacing:-.02em;
+  line-height:1;direction:ltr;color:var(--murekkep);min-width:120px}
+.abk-kip{margin-inline-start:auto;display:flex;gap:6px}
+.abk-hedef{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:12px;
+  border-radius:12px;background:rgba(67,56,202,.07);border:1px solid rgba(67,56,202,.18)}
+.abk-hedef span{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gece-2)}
+.abk-hedef b{font-family:var(--disp);font-size:24px;direction:ltr}
+.abk-hedef.dogru{background:rgba(13,148,136,.1);border-color:rgba(13,148,136,.4)}
+.abk-hedef.yanlis{background:rgba(192,57,43,.08);border-color:rgba(192,57,43,.35)}
+.abk-mesaj{margin-inline-start:auto;font-family:var(--mono);font-size:12px!important;text-transform:none!important;letter-spacing:0!important}
+.abk-mesaj.ok{color:var(--turkuaz)}
+.abk-mesaj.no{color:#C0392B}
+.abk-svg{width:100%;height:auto;display:block;touch-action:manipulation;direction:ltr}
+.abk-cerceve{fill:#F7F4EE;stroke:#B08442;stroke-width:3}
+.abk-tel{stroke:#C9BFAE;stroke-width:3;stroke-linecap:round}
+.abk-ayirac{stroke:#B08442;stroke-width:4;stroke-linecap:round}
+.abk-boncuk ellipse{fill:#E8E6EF;stroke:#8E88A8;stroke-width:1.5;cursor:pointer;
+  transition:fill .12s,stroke .12s,transform .13s cubic-bezier(.3,.8,.4,1)}
+.abk-boncuk:hover ellipse{fill:#D8D5E6}
+.abk-boncuk.acik ellipse{fill:url(#none);fill:#5B4BC4;stroke:#3A2E96}
+.abk-boncuk{transition:transform .13s}
+.abk-basamak{font-family:var(--mono);font-size:10px;fill:#8E8878;text-anchor:middle}
+.abk-alt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.abk-cubuk-sec{margin-inline-start:auto;display:flex;gap:5px}
+.abk-cubuk-sec .chip{padding:6px 11px;font-family:var(--mono);font-size:12px}
+@media(max-width:600px){ .abk-deger{font-size:30px;min-width:90px} }

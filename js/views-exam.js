@@ -138,6 +138,10 @@ function sxCozEkran(){
         <input id="sxCevap" type="text" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="cevap">
         <button class="btn" data-sx="kontrol">Kontrol</button></div>
       <div class="sx-verdict" id="sxHukum"></div>
+      ${(SX.alistirma && (SX.exam&&(SX.exam.ders||"aritmetik")==="aritmetik"))?`
+        <div style="text-align:center;margin-top:10px">
+          <button class="btn ghost sm" data-sx="abakusAc">${ABK.goster?"Abaküsü gizle":"Abaküsü göster"}</button></div>
+        ${ABK.goster?`<div style="margin-top:12px">${abakusKutusu()}</div>`:""}`:""}
       <div class="sx-pad" id="sxPad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}
         <button data-k="-">−</button><button data-k="0">0</button><button class="w" data-k="sil">⌫</button></div>
     </div>

@@ -236,6 +236,7 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    abakusAc:()=>{ ABK.goster=!ABK.goster; if(ABK.goster&&!ABK.durum.length) abkKur(ABK.cubuk); ciz(); },
     sikSec:()=>{ const q=SX.qs[SX.i]; cevapVer((q.tip==="dv") ? (Number(v)===0) : Number(v)); },
     duyuruEkle:async()=>{
       const baslik=($("duyBaslik").value||"").trim();
@@ -330,7 +331,7 @@ document.addEventListener("click",async e=>{
       let ok=0, hata=0;
       for(const o of liste){
         try{
-          await API.odevYaz(o.uid,{ baslik, aciklama:"", sinavKodu:kod, sonTarih,
+          await API.odevYaz(o.uid,{ baslik, ders:($("topDers")?$("topDers").value:"aritmetik"), aciklama:"", sinavKodu:kod, sonTarih,
             durum:"verildi", at:Date.now(), veren:SX.user.uid, verenAd:SX.user.ad });
           await API.bildirimYaz(o.uid,{tip:"odev",metin:"Yeni ödev: "+baslik});
           ok++;
@@ -404,7 +405,7 @@ document.addEventListener("click",async e=>{
       const o=SX.acikOgrenci; if(!o) return;
       const baslik=($("odBaslik").value||"").trim();
       if(!baslik){ toast("Ödev başlığı gerekli."); return; }
-      const odev={ baslik, aciklama:($("odAciklama").value||"").trim(),
+      const odev={ baslik, ders:($("odDers")?$("odDers").value:"aritmetik"), aciklama:($("odAciklama").value||"").trim(),
         sinavKodu:($("odKod").value||"").trim().toUpperCase(),
         sonTarih:$("odTarih").value||"", durum:"verildi", at:Date.now(),
         veren:SX.user.uid, verenAd:SX.user.ad };
