@@ -34,30 +34,33 @@ function vAna(){
         <h1>${ceviri(a.baslik)}</h1>
         <p class="lede">${esc(ceviri(a.metin))}</p>
         <div class="acts">
-          <a class="btn" href="${esc(DATA.marka.sinavLinki)}">Sınava gir</a>
-          <a class="btn ghost" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
-          <a class="btn ghost" href="#/kesitler">Ders kesitlerini izle</a>
+          <a class="btn" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
+          <a class="btn ghost" href="#/sinav">Sınava gir</a>
         </div>
       </div>
       <div class="card abacus">
         ${[7,5,6,4,7,5].map((n,r)=>`<div class="wire">${Array.from({length:n},(_,i)=>
           `<i style="animation-delay:${(r*.18+i*.06).toFixed(2)}s"></i>`).join("")}</div>`).join("")}
-        <div class="eyebrow" style="margin-top:10px">her ders bir tel, her tel bir alışkanlık</div>
+        <div class="eyebrow" style="margin-top:10px">${esc(ceviri(a.duyuru))}</div>
       </div>
     </div>
 
-    <div class="grid g4" style="margin-top:16px">
-      ${a.istatistik.map(s=>`<div class="card stat"><b>${esc(ceviri(s.sayi))}</b><span>${esc(ceviri(s.ad))}</span></div>`).join("")}
+    <h2 style="margin:38px 0 6px">Dersler</h2>
+    <p class="muted" style="margin-bottom:18px">Her dersin kendi kayıtlı dersleri, kesitleri, yarışmaları ve sınavları var.</p>
+    <div class="grid g2">
+      ${(DATA.dersler||[]).map(x=>{
+        const c=dersIcerik(x.id);
+        return `<button class="ders-kart" data-ders="${esc(x.id)}" style="--dr:${x.renk||"#4338CA"}">
+          <span class="ders-ico">${x.ico||"📘"}</span>
+          <b>${esc(ceviri(x.ad))}</b>
+          <span class="ders-ozet">${esc(ceviri(x.ozet)||"")}</span>
+          <span class="ders-sayac">${c.kayit.length} kayıtlı ders · ${c.kesit.length} kesit · ${c.kurs.length} seviye</span>
+        </button>`;
+      }).join("")}
     </div>
 
-    <div class="card strip"><span class="dot"></span><span>${esc(ceviri(a.duyuru))}</span></div>
-
-    <h2 style="margin:44px 0 6px">Bu hafta</h2>
-    <p class="muted" style="margin-bottom:18px">Sitede yeni olan üç şey.</p>
-    <div class="grid g3">
-      ${DATA.kesitler.liste[0]?kartOzet("Son ders kesiti", ceviri(DATA.kesitler.liste[0].baslik), ceviri(DATA.kesitler.liste[0].ders), "#/kesitler","Kesitlere git"):""}
-      ${DATA.podcast.bolumler[0]?kartOzet("Son podcast", ceviri(DATA.podcast.bolumler[0].baslik), "Bölüm "+DATA.podcast.bolumler[0].no+" · "+ceviri(DATA.podcast.bolumler[0].sure), "#/podcast","Bölümü aç"):""}
-      ${DATA.yarismalar.aktif?kartOzet("Yaklaşan yarışma", ceviri(DATA.yarismalar.aktif.ad), ceviri(DATA.yarismalar.aktif.yer), "#/yarisma","Detaya bak"):kartOzet("Sınav","Kodla sınava gir","Öğretmeninin verdiği kodu yaz","#/sinav","Sınava git")}
+    <div class="grid g4" style="margin-top:26px">
+      ${a.istatistik.map(s=>`<div class="card stat"><b>${esc(ceviri(s.sayi))}</b><span>${esc(ceviri(s.ad))}</span></div>`).join("")}
     </div>
   </section>`;
 }
@@ -220,95 +223,237 @@ function vHakkinda(){
   </section>`;
 }
 
-/* ======================= DERSLER ======================= */
-function dersRenk(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return (d&&d.renk)||"#4338CA"; }
-function dersAd(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return d?ceviri(d.ad):""; }
-function dersIco(id){ const d=(DATA.dersler||[]).find(x=>x.id===id); return d?d.ico:"📘"; }
+
+/* ===================================================================
+   DERS MERKEZLİ YAPI
+   Menüde her ders bir sekme. Ders sayfası kendi alt sekmelerine sahip:
+   hakkında · kayıtlı dersler · kesitler · podcast · yarışma · gurur · sınav
+   =================================================================== */
+function dersListe(){ return DATA.dersler||[]; }
+function dersBul2(id){ return dersListe().find(x=>x.id===id)||null; }
+function dersRenk(id){ const d=dersBul2(id); return (d&&d.renk)||"#4338CA"; }
+function dersAd(id){ const d=dersBul2(id); return d?ceviri(d.ad):""; }
+function dersIco(id){ const d=dersBul2(id); return d?d.ico:"📘"; }
 function dersRozeti(id){
   if(!id) return "";
   return `<span class="ders-rozet" style="--dr:${dersRenk(id)}">${dersIco(id)} ${esc(dersAd(id))}</span>`;
 }
-
-function vDersler(){
-  const secili=SITE.ders;
-  if(secili) return vDersDetay(secili);
-  const d=DATA.dersler||[];
-  return `<section class="page">
-    <div class="eyebrow">Branşlar</div>
-    <h2 style="margin:10px 0 8px">Dersler</h2>
-    <p class="muted" style="max-width:52ch">Her branşın kendi kayıtlı dersleri, ders kesitleri, yarışmaları ve gurur tablosu var.</p>
-    <div class="grid g2" style="margin-top:24px">
-      ${d.map(x=>{
-        const ders=x.id;
-        const kayit=(DATA.kayitliDersler||[]).filter(k=>k.ders===ders).length;
-        const kesit=(DATA.kesitler.liste||[]).filter(k=>k.ders===ders).length;
-        return `<button class="ders-kart" data-ders="${esc(ders)}" style="--dr:${x.renk||"#4338CA"}">
-          <span class="ders-ico">${x.ico||"📘"}</span>
-          <b>${esc(ceviri(x.ad))}</b>
-          <span class="ders-ozet">${esc(ceviri(x.ozet)||"")}</span>
-          <span class="ders-sayac">${kayit} kayıtlı ders · ${kesit} kesit</span>
-        </button>`;
-      }).join("")}
-    </div></section>`;
+function dersIcerik(id){
+  return {
+    kayit:  (DATA.kayitliDersler||[]).filter(k=>k.ders===id).sort((a,b)=>(a.sira||0)-(b.sira||0)),
+    kesit:  ((DATA.kesitler&&DATA.kesitler.liste)||[]).filter(k=>k.ders===id),
+    bolum:  ((DATA.podcast&&DATA.podcast.bolumler)||[]).filter(k=>!k.ders||k.ders===id),
+    kurs:   (DATA.kurslar||[]).filter(k=>k.ders===id),
+    yarisma:(DATA.yarismalar&&DATA.yarismalar.aktif&&DATA.yarismalar.aktif.ders===id)?DATA.yarismalar.aktif:null,
+    gecmis: ((DATA.yarismalar&&DATA.yarismalar.gecmis)||[]).filter(k=>!k.ders||k.ders===id),
+    gurur:  (DATA.gurur&&(DATA.gurur.ders===id))?DATA.gurur:null
+  };
+}
+/* o derste bekleyen ödev var mı — menüde nokta için */
+function dersOdevVar(id){
+  return (SX.ogrOdev||[]).some(x=>x.durum!=="tamamlandi" && (x.ders===id));
+}
+function dersSekmeleri(id){
+  const c=dersIcerik(id);
+  const s=[
+    {k:"hakkinda", ad:"Ders hakkında"},
+    {k:"kayit",    ad:"Kayıtlı dersler", sayi:c.kayit.length},
+    {k:"kesit",    ad:"Ders kesitleri",  sayi:c.kesit.length},
+    {k:"podcast",  ad:"Podcast",         sayi:c.bolum.length},
+    {k:"yarisma",  ad:"Yarışmalar",      sayi:(c.yarisma?1:0)+c.gecmis.length},
+    {k:"gurur",    ad:"Gurur tablosu"},
+    {k:"sinav",    ad:"Sınav ve ödev",   nokta:dersOdevVar(id)}
+  ];
+  return s;
 }
 
-function vDersDetay(id){
-  const d=(DATA.dersler||[]).find(x=>x.id===id);
-  if(!d) return vDersler();
-  const kayit=(DATA.kayitliDersler||[]).filter(k=>k.ders===id).sort((a,b)=>(a.sira||0)-(b.sira||0));
-  const kesit=(DATA.kesitler.liste||[]).filter(k=>k.ders===id);
-  const yar=(DATA.yarismalar.aktif&&DATA.yarismalar.aktif.ders===id)?DATA.yarismalar.aktif:null;
-  const gurur=(DATA.gurur.ders===id)?DATA.gurur:null;
-  const kurs=(DATA.kurslar||[]).filter(k=>k.ders===id);
+function vDers(){
+  const id=SITE.ders || (dersListe()[0]||{}).id;
+  const d=dersBul2(id);
+  if(!d) return `<section class="page"><div class="card pad">Ders bulunamadı.</div></section>`;
+  const sekme=SITE.dersSekme||"hakkinda";
+  const govde={
+    hakkinda:()=>bolumHakkinda(id),
+    kayit:   ()=>bolumKayitli(id),
+    kesit:   ()=>bolumKesit(id),
+    podcast: ()=>bolumPodcast(id),
+    yarisma: ()=>bolumYarisma(id),
+    gurur:   ()=>bolumGurur(id),
+    sinav:   ()=>bolumSinav(id)
+  }[sekme] || (()=>bolumHakkinda(id));
+
   return `<section class="page">
-    <button class="btn ghost sm" data-ders="" style="margin-bottom:16px">← Tüm dersler</button>
     <div class="ders-baslik" style="--dr:${d.renk||"#4338CA"}">
       <span class="ders-ico">${d.ico||"📘"}</span>
-      <div><h2 style="margin:0">${esc(ceviri(d.ad))}</h2>
+      <div style="flex:1"><h2 style="margin:0">${esc(ceviri(d.ad))}</h2>
         <p class="muted" style="margin-top:4px">${esc(ceviri(d.ozet)||"")}</p></div>
     </div>
-
-    <h3 style="margin:26px 0 12px">Kayıtlı dersler</h3>
-    ${kayit.length? `<div class="grid g2">${kayit.map((k,i)=>`
-      <button class="clip" data-kayit="${i}" data-ders="${esc(id)}">
-        <div class="thumb">
-          ${(()=>{ const kp=ceviri(k.kapak); if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
-             if(k.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(k.yt)}/hqdefault.jpg" alt="">`; return ""; })()}
-          <span class="play"></span><span class="dur">${esc(ceviri(k.sure)||"")}</span>
-        </div>
-        <div class="body">
-          <span class="tag">Ders ${k.sira||""}</span>
-          <h3 style="margin:10px 0 5px">${esc(ceviri(k.ad))}</h3>
-          <p class="muted" style="font-size:13.5px">${esc(ceviri(k.ozet)||"")}</p>
-        </div></button>`).join("")}</div>`
-      : `<div class="card pad muted">Bu branşta henüz kayıtlı ders yok.</div>`}
-
-    ${kurs.length? `<h3 style="margin:30px 0 12px">Seviyeler</h3>
-      <div class="card">${kurs.map(k=>`<div class="past"><div class="grow" style="flex:1">
-        <b style="font-family:var(--disp)">${esc(ceviri(k.ad))}</b>
-        <div class="muted" style="font-size:13.5px">${esc(ceviri(k.not)||"")}</div></div></div>`).join("")}</div>`:""}
-
-    ${kesit.length? `<h3 style="margin:30px 0 12px">Ders kesitleri</h3>
-      <div class="grid g3">${kesit.slice(0,3).map(v=>`
-        <button class="clip" data-video="${DATA.kesitler.liste.indexOf(v)}">
-          <div class="thumb">
-            ${(()=>{ const kp=ceviri(v.kapak); if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
-               if(v.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(v.yt)}/hqdefault.jpg" alt="">`; return ""; })()}
-            <span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span></div>
-          <div class="body"><h3 style="margin:0 0 5px;font-size:16px">${esc(ceviri(v.baslik))}</h3>
-            <p class="muted" style="font-size:13px">${esc(ceviri(v.ders_ozet||v.ozet))}</p></div></button>`).join("")}</div>
-      <a class="btn ghost sm" href="#/kesitler" style="margin-top:12px">Tüm kesitler</a>`:""}
-
-    ${yar? `<h3 style="margin:30px 0 12px">Yaklaşan yarışma</h3>
-      <div class="card pad"><b style="font-family:var(--disp);font-size:18px">${esc(ceviri(yar.ad))}</b>
-        <p class="muted" style="margin-top:6px">${esc(ceviri(yar.yer))}</p>
-        <a class="btn sm" href="#/yarisma" style="margin-top:12px">Detaya bak</a></div>`:""}
-
-    ${gurur? `<h3 style="margin:30px 0 12px">Gurur tablomuz</h3>
-      <div class="card">${(gurur.ilkUc||[]).map((x,i)=>`<div class="past">
-        <span class="date">${i+1}.</span>
-        <div class="grow" style="flex:1"><b style="font-family:var(--disp)">${esc(ceviri(x.ad))}</b>
-          <div class="muted" style="font-size:13.5px">${esc(ceviri(x.sinif))}</div></div>
-        <span class="tag">${esc(ceviri(x.puan))}</span></div>`).join("")}</div>`:""}
+    <div class="ders-sekme" style="--dr:${d.renk||"#4338CA"}">
+      ${dersSekmeleri(id).map(s=>`<button data-dsekme="${s.k}" aria-pressed="${sekme===s.k}">
+        ${esc(s.ad)}${s.sayi?`<span class="sekme-sayi">${s.sayi}</span>`:""}${s.nokta?`<span class="sekme-nokta"></span>`:""}</button>`).join("")}
+    </div>
+    ${govde()}
   </section>`;
+}
+
+/* ---- ders hakkında ---- */
+function bolumHakkinda(id){
+  const c=dersIcerik(id), d=dersBul2(id), i=DATA.hakkimizda.iletisim;
+  const tel=String(ceviri(i.telefon)||"").replace(/[^0-9]/g,"");
+  return `
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card pad">
+      <div class="eyebrow">Ders hakkında</div>
+      <h3 style="margin:10px 0 8px">${esc(ceviri(d.ad))} programı</h3>
+      <p class="muted" style="font-size:15px;line-height:1.6">${esc(ceviri(d.aciklama)||ceviri(d.ozet)||"")}</p>
+      <div class="sx-row" style="margin-top:18px">
+        <a class="btn" href="https://wa.me/${tel}?text=${encodeURIComponent(ceviri(d.ad)+" dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
+        <button class="btn ghost" data-dsekme="kayit">Kayıtlı dersleri gör</button>
+      </div>
+    </div>
+    <div class="card pad">
+      <div class="eyebrow">İçerik</div>
+      <div class="sx-stats" style="grid-template-columns:repeat(2,1fr);margin-top:12px">
+        <div class="sx-stat"><b>${c.kayit.length}</b><span>kayıtlı ders</span></div>
+        <div class="sx-stat"><b>${c.kesit.length}</b><span>kesit</span></div>
+        <div class="sx-stat"><b>${c.bolum.length}</b><span>podcast</span></div>
+        <div class="sx-stat"><b>${c.kurs.length}</b><span>seviye</span></div>
+      </div>
+    </div>
+  </div>
+  ${c.kurs.length?`<h3 style="margin:26px 0 12px">Seviyeler</h3>
+    <div class="card">${c.kurs.map(k=>`<div class="past"><div class="grow" style="flex:1">
+      <b style="font-family:var(--disp)">${esc(ceviri(k.ad))}</b>
+      <div class="muted" style="font-size:13.5px">${esc(ceviri(k.not)||"")}</div></div></div>`).join("")}</div>`:""}`;
+}
+
+/* ---- kayıtlı dersler ---- */
+function bolumKayitli(id){
+  const c=dersIcerik(id);
+  if(!c.kayit.length) return `<div class="card pad muted" style="margin-top:18px">Bu derste henüz kayıtlı ders yok.</div>`;
+  return `<div class="grid g3" style="margin-top:18px">${c.kayit.map((k,idx)=>`
+    <button class="clip" data-kayit="${idx}" data-kders="${esc(id)}">
+      <div class="thumb">${gorselEtiketi(k)}<span class="play"></span><span class="dur">${esc(ceviri(k.sure)||"")}</span></div>
+      <div class="body"><span class="tag">Ders ${k.sira||idx+1}</span>
+        <h3 style="margin:10px 0 5px">${esc(ceviri(k.ad))}</h3>
+        <p class="muted" style="font-size:13.5px">${esc(ceviri(k.ozet)||"")}</p></div>
+    </button>`).join("")}</div>`;
+}
+function gorselEtiketi(k){
+  const kp=ceviri(k.kapak);
+  if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
+  if(k.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(k.yt)}/hqdefault.jpg" alt="">`;
+  return "";
+}
+
+/* ---- kesitler ---- */
+function bolumKesit(id){
+  const c=dersIcerik(id);
+  if(!girisliMi()) return kilitliEkran("Ders kesitleri",
+    "Derslerden alınan kısa video parçaları.",
+    ["Bu dersin tüm kesitleri","Yeni kesitler eklendikçe erişim","Sınav geçmişi ve ödev takibi"]);
+  const kats=(DATA.kesitler.kategoriler||[]);
+  const liste=c.kesit.filter(x=>filtre===0||ceviri(x.kategori)===ceviri(kats[filtre]));
+  return `<div class="chips" style="margin:18px 0">${kats.map((k,i)=>
+      `<button class="chip" data-filtre="${i}" aria-pressed="${i===filtre}">${esc(ceviri(k))}</button>`).join("")}</div>
+    <div class="grid g3">${liste.length?liste.map(v=>`
+      <button class="clip" data-video="${DATA.kesitler.liste.indexOf(v)}">
+        <div class="thumb">${gorselEtiketi(v)}<span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span></div>
+        <div class="body"><span class="tag">${esc(ceviri(v.kategori))}</span>
+          <h3 style="margin:10px 0 5px">${esc(ceviri(v.baslik))}</h3>
+          <p class="muted" style="font-size:13.5px">${esc(ceviri(v.ozet))}</p>
+          <p class="muted" style="font-size:12.5px;margin-top:8px;font-family:var(--mono)">${esc(ceviri(v.ders_bilgi||v.ders_ad||""))}</p></div>
+      </button>`).join(""):`<div class="card pad muted">Bu başlıkta kesit yok.</div>`}</div>`;
+}
+
+/* ---- podcast ---- */
+function bolumPodcast(id){
+  const c=dersIcerik(id);
+  if(!girisliMi()) return kilitliEkran("Podcast bölümleri",
+    "Velilerle ve eğitmenlerle yaptığımız sohbetler.",
+    ["Bütün bölümler ve yeni yayınlar","İndirilebilir ses dosyaları","Sınav geçmişi ve ödev takibi"]);
+  if(!c.bolum.length) return `<div class="card pad muted" style="margin-top:18px">Bu derste henüz bölüm yok.</div>`;
+  return `<div class="card" style="margin-top:18px">${c.bolum.map(b=>`
+    <div class="ep"><span class="n">#${b.no}</span>
+      <div class="grow"><h3>${esc(ceviri(b.baslik))}</h3>
+        <div class="sub">${esc(ceviri(b.ozet))}</div>
+        <div class="sub" style="font-family:var(--mono);font-size:12px;margin-top:5px">${esc(ceviri(b.tarih))} · ${esc(ceviri(b.sure))}</div></div>
+      <button class="pbtn" data-ep="${DATA.podcast.bolumler.indexOf(b)}" aria-label="çal">▶</button></div>`).join("")}</div>`;
+}
+
+/* ---- yarışmalar ---- */
+function bolumYarisma(id){
+  const c=dersIcerik(id);
+  if(!c.yarisma && !c.gecmis.length) return `<div class="card pad muted" style="margin-top:18px">Bu derste planlanmış yarışma yok.</div>`;
+  return `${c.yarisma?`<div class="card contest" style="margin-top:18px">
+      <span class="tag teal">Kayıtlar açık</span>
+      <h3 style="font-size:26px;margin:12px 0 6px">${esc(ceviri(c.yarisma.ad))}</h3>
+      <p class="muted">${esc(ceviri(c.yarisma.yer))} · ${esc(ceviri(c.yarisma.katilimci))}</p>
+      <div class="count" id="sayac"></div>
+      <p style="max-width:56ch">${esc(ceviri(c.yarisma.metin))}</p>
+      <div class="sx-row" style="margin-top:20px">
+        ${c.yarisma.kod?`<button class="btn" data-dsekme="sinav">Yarışma sınavına gir</button>`
+          :`<a class="btn" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}" target="_blank" rel="noopener">Kayıt için yaz</a>`}
+      </div></div>`:""}
+    ${c.gecmis.length?`<h3 style="margin:30px 0 12px">Geçmiş yarışmalar</h3>
+      <div class="card">${c.gecmis.map(g=>`<div class="past">
+        <span class="date">${esc(ceviri(g.tarih))}</span>
+        <div class="grow" style="flex:1"><b style="font-family:var(--disp)">${esc(ceviri(g.ad))}</b>
+          <div class="muted" style="font-size:13.5px">${esc(ceviri(g.not))}</div></div></div>`).join("")}</div>`:""}`;
+}
+
+/* ---- gurur tablosu ---- */
+function bolumGurur(id){
+  const g=dersIcerik(id).gurur;
+  if(!g) return `<div class="card pad muted" style="margin-top:18px">Bu dersin listesi henüz açıklanmadı.</div>`;
+  const [a,b,c]=g.ilkUc||[];
+  return `<div class="eyebrow" style="margin-top:18px">${esc(ceviri(g.donem))}</div>
+    <p class="muted" style="max-width:52ch;margin-top:6px">${esc(ceviri(g.metin))}</p>
+    <div class="podium">${pod(b,"two","2")}${pod(a,"one","1")}${pod(c,"three","3")}</div>
+    <div class="card">${(g.liste||[]).map((x,i)=>`<div class="trow">
+      <span class="rk">${i+4}</span><span class="nm">${esc(ceviri(x.ad))}</span>
+      <span class="cl">${esc(ceviri(x.sinif))}</span><span class="pt">${esc(ceviri(x.puan))}</span></div>`).join("")}</div>`;
+}
+
+/* ---- sınav ve ödev ---- */
+function bolumSinav(id){
+  const sonuc=(SX.ogrSonuc||[]).filter(r=>(r.ders||"aritmetik")===id);
+  const odev=(SX.ogrOdev||[]).filter(x=>x.ders===id);
+  const bekleyen=odev.filter(x=>x.durum!=="tamamlandi");
+  const ort=sonuc.length?Math.round(sonuc.reduce((s,r)=>s+r.dogru/r.toplam*100,0)/sonuc.length):0;
+  return `
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card pad">
+      <div class="eyebrow">Sınav</div>
+      <h3 style="margin:10px 0 8px">Kodla sınava gir</h3>
+      <p class="muted" style="font-size:14px">Öğretmeninin verdiği altı haneli kodu yaz.</p>
+      <a class="btn" href="#/sinav" style="margin-top:14px">Sınav ekranına git</a>
+    </div>
+    <div class="card pad">
+      <span class="tag teal">Kodsuz</span>
+      <h3 style="margin:12px 0 8px">Serbest alıştırma</h3>
+      <p class="muted" style="font-size:14px">Bu dersten kendine soru üret, sonuç kimseye gitmez.</p>
+      <button class="btn ghost" data-alistir="${esc(id)}" style="margin-top:14px">Alıştırmayı kur</button>
+    </div>
+  </div>
+  ${girisliMi()?`
+  <h3 style="margin:26px 0 12px">Ödevlerim</h3>
+  ${odev.length? odev.sort((a,b)=>(b.at||0)-(a.at||0)).map(x=>`
+    <div class="sx-item"><div class="g"><b>${esc(x.baslik)}</b>
+      <div class="s">${x.sonTarih?"son tarih "+esc(x.sonTarih):""}${x.sinavKodu?" · kod "+esc(x.sinavKodu):""}</div></div>
+      <span class="sx-badge ${x.durum==="tamamlandi"?"ok":"wait"}">${x.durum==="tamamlandi"?"tamamlandı":"bekliyor"}</span></div>`).join("")
+    : `<div class="sx-empty">Bu derste ödev yok.</div>`}
+
+  <h3 style="margin:26px 0 12px">Bu dersteki sonuçlarım</h3>
+  ${sonuc.length? `<div class="sx-stats" style="grid-template-columns:repeat(3,1fr)">
+      <div class="sx-stat"><b>${sonuc.length}</b><span>sınav</span></div>
+      <div class="sx-stat"><b>${ort}%</b><span>ortalama</span></div>
+      <div class="sx-stat"><b>${bekleyen.length}</b><span>bekleyen ödev</span></div></div>`+
+    sonuc.sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,8).map(r=>`
+      <div class="sx-rank" style="cursor:default"><span class="nm">${esc(r.sinavAd||"Sınav")}
+        <div class="sx-bar"><i style="width:${Math.round(r.dogru/r.toplam*100)}%"></i></div></span>
+        <span class="sc">${r.dogru}/${r.toplam}</span></div>`).join("")
+    : `<div class="sx-empty">Bu derste henüz sınav çözmedin.</div>`}`
+  :`<div class="card pad" style="margin-top:20px"><p class="muted">Ödevlerini ve sonuçlarını görmek için giriş yap.</p>
+     <button class="btn" data-sx="girisIste" style="margin-top:12px">Giriş yap</button></div>`}`;
 }

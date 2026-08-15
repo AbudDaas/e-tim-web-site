@@ -1,63 +1,80 @@
 /* Sekme tanımları, yönlendirme, site etkileşimleri, açılış. */
 
 /* ---------------- sekmeler ---------------- */
-const SAYFALAR = [
-  {yol:"/",        ad:()=>t("anaSayfa"),      gor:vAna},
-  {yol:"/dersler", ad:()=>t("dersler2"),      gor:vDersler},
-  {yol:"/kesitler",ad:()=>t("dersKesitleri"), gor:vKesitler},
-  {yol:"/podcast", ad:()=>t("podcastler"),   gor:vPodcast},
-  {yol:"/yarisma", ad:()=>t("yarismalar"),   gor:vYarisma},
-  {yol:"/gurur",   ad:()=>t("gururTablosu"), gor:vGurur},
-  {yol:"/sinav",   ad:()=>t("sinav"),         gor:vSinav},
-  {yol:"/profil",  ad:()=>t("profil"),        gor:vProfil},
-  {yol:"/hakkinda",ad:()=>t("hakkimizda"),   gor:vHakkinda},
-  {yol:"/yonetim", ad:()=>"Yönetim", gor:vYonetim, gizli:()=>!(SX.user&&SX.user.yonetici)}
-];
+/* Menü: Ana sayfa · her ders bir sekme · Sınav · Profil · Hakkımızda (+Yönetim) */
+function dersSayfalari(){
+  return (DATA.dersler||[]).map(d=>({
+    yol:"/ders/"+d.id,
+    ad:()=>ceviri(d.ad),
+    ico:d.ico,
+    ders:d.id,
+    gor:vDers
+  }));
+}
+function sayfalar(){
+  return [{yol:"/", ad:()=>t("anaSayfa"), gor:vAna}]
+    .concat(dersSayfalari())
+    .concat([
+      {yol:"/sinav",   ad:()=>t("sinav"),      gor:vSinav},
+      {yol:"/profil",  ad:()=>t("profil"),     gor:vProfil},
+      {yol:"/hakkinda",ad:()=>t("hakkimizda"), gor:vHakkinda},
+      {yol:"/yonetim", ad:()=>"Yönetim", gor:vYonetim, gizli:()=>!(SX.user&&SX.user.yonetici)}
+    ]);
+}
 
 /* ---------------- yönlendirme ---------------- */
-function yol(){ const h=location.hash.replace(/^#/,"");
+function yol(){
+  const h=location.hash.replace(/^#/,"");
   if(h==="/gizlilik") return h;
-  return SAYFALAR.some(s=>s.yol===h)?h:"/" }
+  const s=sayfalar();
+  if(s.some(x=>x.yol===h)) return h;
+  return "/";
+}
 function ciz(){
   try{
-  const y=yol(), s=(y==="/gizlilik")?GIZLI_SAYFA:SAYFALAR.find(x=>x.yol===y);
-  $("nav").innerHTML=cevirHtml(SAYFALAR.filter(p=>!(p.gizli&&p.gizli())).map(p=>`<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${typeof p.ad==="function"?p.ad():p.ad}</a>`).join(""));
-  const mb=$("menuBtn");
-  $("nav").classList.remove("acik");
-  if(mb) mb.setAttribute("aria-expanded","false");
-  $("view").innerHTML=cevirHtml(s.gor());
-  const sad=typeof s.ad==="function"?s.ad():s.ad;
-  document.title=(y==="/"?"":sad+" · ")+ceviri(DATA.marka.ad);
-  const ab=$("authBtn");
-  if(ab){
-    const u=SX.user;
-    ab.textContent = cevirHtml(u ? (u.ad||"").split(" ")[0] : t("girisYap"));
-    ab.setAttribute("aria-label", u ? "Profilim" : "Öğretmen girişi");
-    ab.classList.toggle("ghost", !u);
-  }
-  if(y==="/yarisma") sayacBasla();
-  if(y==="/sinav"&&SX.ekran==="coz") soruBoya();
-  if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
-  if(y==="/profil"&&SX.pekran==="editor") notYenile();
-  if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();
-  $("brandName").textContent=ceviri(DATA.marka.ad);
-  $("brandSub").textContent=ceviri(DATA.marka.alt);
-  altBilgiCiz();
-  if(typeof menuOlc==="function") menuOlc();
+    const y=yol(), LISTE=sayfalar();
+    const s=(y==="/gizlilik")?GIZLI_SAYFA:LISTE.find(x=>x.yol===y);
+    SITE.ders = (s&&s.ders) ? s.ders : null;
+
+    $("nav").innerHTML=cevirHtml(LISTE.filter(p=>!(p.gizli&&p.gizli())).map(p=>{
+      const nokta = p.ders && typeof dersOdevVar==="function" && dersOdevVar(p.ders) ? '<span class="menu-nokta"></span>' : "";
+      const ad = typeof p.ad==="function" ? p.ad() : p.ad;
+      return `<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${p.ico?p.ico+" ":""}${ad}${nokta}</a>`;
+    }).join(""));
+    const mb=$("menuBtn");
+    $("nav").classList.remove("acik");
+    if(mb) mb.setAttribute("aria-expanded","false");
+
+    $("view").innerHTML=cevirHtml(s.gor());
+    const sad=typeof s.ad==="function"?s.ad():s.ad;
+    document.title=(y==="/"?"":sad+" · ")+ceviri(DATA.marka.ad);
+
+    const ab=$("authBtn");
+    if(ab){
+      const u=SX.user;
+      ab.textContent = cevirHtml(u ? (u.ad||"").split(" ")[0] : t("girisYap"));
+      ab.setAttribute("aria-label", u ? "Profilim" : "Öğretmen girişi");
+      ab.classList.toggle("ghost", !u);
+    }
+    if(SITE.ders && SITE.dersSekme==="yarisma") sayacBasla();
+    if(y==="/sinav"&&SX.ekran==="coz") soruBoya();
+    if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
+    if(y==="/profil"&&SX.pekran==="editor") notYenile();
+    if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();
+    $("brandName").textContent=ceviri(DATA.marka.ad);
+    $("brandSub").textContent=ceviri(DATA.marka.alt);
+    altBilgiCiz();
+    if(typeof menuOlc==="function") menuOlc();
   }catch(hata){
     console.error("çizim hatası:",hata);
-    if(aktifDil()!=="tr"){
-      /* çeviri kaynaklı bir sorunsa Türkçeye dönüp tekrar dene */
-      dilAyarla("tr");
-      try{ return ciz(); }catch(e2){}
-    }
-    $("view").innerHTML=`<section class="page"><div class="card pad">
-      <h2>Bir şeyler ters gitti</h2>
-      <p class="muted" style="margin-top:8px">Sayfa çizilirken hata oluştu. Sayfayı yenilemeyi dene.</p>
-      <button class="btn" style="margin-top:14px" onclick="location.reload()">Sayfayı yenile</button>
-      <div class="sx-note">${String(hata&&hata.message||hata)}</div></div></section>`;
+    $("view").innerHTML='<section class="page"><div class="card pad">'+
+      '<h2>Bu bölüm açılamadı</h2>'+
+      '<p class="muted" style="margin:8px 0 14px">Sayfayı yenilemeyi dene.</p>'+
+      '<button class="btn" onclick="location.reload()">Yenile</button></div></section>';
   }
 }
+
+
 window.addEventListener("hashchange",()=>{
   if(SX.ekran==="coz"&&yol()!=="/sinav"){ clearInterval(SX.tick); SX.ekran="giris"; }
   ciz(); window.scrollTo(0,0);
@@ -65,12 +82,14 @@ window.addEventListener("hashchange",()=>{
 
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{
-  const dd=e.target.closest("[data-ders]");
-  if(dd){ SITE.ders=dd.dataset.ders||null; ciz(); window.scrollTo(0,0); return; }
-  const kd=e.target.closest("[data-kders]");
-  if(kd){ SITE.kesitDers=kd.dataset.kders||null; filtre=0; ciz(); return; }
+  const ds=e.target.closest("[data-dsekme]");
+  if(ds){ SITE.dersSekme=ds.dataset.dsekme; filtre=0; ciz(); window.scrollTo(0,0); return; }
+  const dk=e.target.closest("[data-ders]");
+  if(dk && dk.dataset.ders){ SITE.dersSekme="hakkinda"; location.hash="#/ders/"+dk.dataset.ders; return; }
   const ky=e.target.closest("[data-kayit]");
-  if(ky){ acKayitliDers(ky.dataset.kayit, ky.dataset.dersId||SITE.ders); return; }
+  if(ky){ acKayitliDers(ky.dataset.kayit, ky.dataset.kders||SITE.ders); return; }
+  const al=e.target.closest("[data-alistir]");
+  if(al){ SX.taslak=yeniTaslak(); SX.taslak.ders=al.dataset.alistir; SX.ekran="ayar"; location.hash="#/sinav"; return; }
   const f=e.target.closest("[data-filtre]");
   if(f){ filtre=+f.dataset.filtre; ciz(); return; }
   const v=e.target.closest("[data-video]");

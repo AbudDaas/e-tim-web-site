@@ -32,29 +32,57 @@ const YON_BOLUM = [
       alanlar:[{k:"sayi",ad:"Sayı"},{k:"ad",ad:"Etiket"}], yeni:{sayi:"",ad:""}}
    ]},
 
+ { k:"branslar", ad:"Branşlar",
+   listeler:[
+     {y:"dersler", ad:"Dersler (menüdeki sekmeler)",
+      alanlar:[{k:"id",ad:"Kısa kod",ipucu:"benzersiz, boşluksuz — ör. ingilizce"},
+               {k:"ico",ad:"Simge",ipucu:"emoji"},
+               {k:"renk",ad:"Renk",ipucu:"#4338CA"},
+               {k:"tip",ad:"Sınav tipi",ipucu:"aritmetik · secmeli · yazili"},
+               {k:"ad",ad:"Ders adı"},
+               {k:"ozet",ad:"Kısa tanıtım",tip:"uzun"},
+               {k:"aciklama",ad:"Uzun açıklama (ders hakkında)",tip:"uzun"}],
+      yeni:{id:"yeni-ders",ico:"📘",renk:"#4338CA",tip:"secmeli",ad:"Yeni ders",ozet:"",aciklama:""}}
+   ]},
+
+ { k:"kayitli", ad:"Kayıtlı dersler",
+   listeler:[
+     {y:"kayitliDersler", ad:"Ders videoları",
+      alanlar:[{k:"ders",ad:"Branş kodu",ipucu:"aritmetik · ingilizce · arapca · kuran"},
+               {k:"sira",ad:"Sıra no",tip:"sayi"},
+               {k:"ad",ad:"Ders adı"},
+               {k:"sure",ad:"Süre"},
+               {k:"yt",ad:"YouTube kimliği"},
+               {k:"kapak",ad:"Kapak görseli"},
+               {k:"ozet",ad:"Özet",tip:"uzun"}],
+      yeni:{ders:"aritmetik",sira:1,ad:"Yeni ders",sure:"0:00",yt:"",kapak:"",ozet:""}}
+   ]},
+
  { k:"kesitler", ad:"Ders kesitleri",
    listeler:[
      {y:"kesitler.kategoriler", ad:"Kategoriler", duz:true, yeni:"Yeni kategori"},
      {y:"kesitler.liste", ad:"Video kesitleri",
-      alanlar:[{k:"baslik",ad:"Başlık"},{k:"kategori",ad:"Kategori"},{k:"sure",ad:"Süre"},
+      alanlar:[{k:"ders",ad:"Branş kodu",ipucu:"aritmetik · ingilizce · arapca · kuran"},
+               {k:"baslik",ad:"Başlık"},{k:"kategori",ad:"Kategori"},{k:"sure",ad:"Süre"},
                {k:"ders",ad:"Ders bilgisi"},{k:"yt",ad:"YouTube kimliği",ipucu:"watch?v=XXXX kısmı"},
                {k:"kapak",ad:"Kapak görseli",ipucu:"gorseller/kesit1.jpg  ya da  https://... .jpg — boş bırakırsan YouTube'un kapağı kullanılır"},
                {k:"ozet",ad:"Özet",tip:"uzun"}],
-      yeni:{baslik:"Yeni kesit",kategori:"Teknik",sure:"0:00",ders:"",yt:"",kapak:"",ozet:""}}
+      yeni:{ders:"aritmetik",baslik:"Yeni kesit",kategori:"Teknik",sure:"0:00",yt:"",kapak:"",ozet:""}}
    ]},
 
  { k:"podcast", ad:"Podcastler",
    alanlar:[{y:"podcast.aciklama", ad:"Bölüm açıklaması", tip:"uzun"}],
    listeler:[
      {y:"podcast.bolumler", ad:"Bölümler",
-      alanlar:[{k:"no",ad:"Bölüm no",tip:"sayi"},{k:"baslik",ad:"Başlık"},{k:"sure",ad:"Süre"},
+      alanlar:[{k:"ders",ad:"Branş kodu"},{k:"no",ad:"Bölüm no",tip:"sayi"},{k:"baslik",ad:"Başlık"},{k:"sure",ad:"Süre"},
                {k:"tarih",ad:"Tarih"},{k:"ozet",ad:"Özet",tip:"uzun"},
                {k:"mp3",ad:"Ses dosyası adresi",ipucu:"https://… .mp3"}],
-      yeni:{no:1,baslik:"Yeni bölüm",sure:"",tarih:"",ozet:"",mp3:""}}
+      yeni:{ders:"aritmetik",no:1,baslik:"Yeni bölüm",sure:"",tarih:"",ozet:"",mp3:""}}
    ]},
 
  { k:"yarisma", ad:"Yarışmalar",
    alanlar:[
+     {y:"yarismalar.aktif.ders", ad:"Branş kodu", ipucu:"hangi dersin yarışması"},
      {y:"yarismalar.aktif.ad", ad:"Yarışma adı"},
      {y:"yarismalar.aktif.tarih", ad:"Tarih ve saat", ipucu:"2026-08-30T10:00:00 biçiminde"},
      {y:"yarismalar.aktif.yer", ad:"Yer"},
@@ -70,6 +98,7 @@ const YON_BOLUM = [
 
  { k:"gurur", ad:"Gurur tablomuz", otomatik:true,
    alanlar:[
+     {y:"gurur.ders", ad:"Branş kodu", ipucu:"hangi dersin tablosu"},
      {y:"gurur.donem", ad:"Dönem", ipucu:"Temmuz 2026"},
      {y:"gurur.metin", ad:"Açıklama", tip:"uzun"}
    ],
@@ -100,7 +129,8 @@ const YON_BOLUM = [
  { k:"kurslar", ad:"Kurslar",
    listeler:[
      {y:"kurslar", ad:"Kurs / seviye listesi (sertifikalarda kullanılır)",
-      alanlar:[{k:"ad",ad:"Kurs adı"},{k:"not",ad:"Açıklama"}], yeni:{ad:"",not:""}}
+      alanlar:[{k:"ders",ad:"Branş kodu"},{k:"ad",ad:"Kurs adı"},{k:"not",ad:"Açıklama"}],
+      yeni:{ders:"aritmetik",ad:"",not:""}}
    ]}
 ];
 
@@ -271,7 +301,7 @@ async function yonKaydet(){
 }
 function yonIcerik(){
   const c={};
-  ["marka","ana","kesitler","podcast","yarismalar","gurur","hakkimizda","kurslar"].forEach(k=>{ c[k]=DATA[k]; });
+  ["marka","ana","dersler","kayitliDersler","kesitler","podcast","yarismalar","gurur","hakkimizda","kurslar"].forEach(k=>{ c[k]=DATA[k]; });
   return c;
 }
 function yonYedek(){

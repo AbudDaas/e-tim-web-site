@@ -558,3 +558,23 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 .ders-baslik::before{content:"";width:5px;align-self:stretch;border-radius:3px;background:var(--dr)}
 .ders-rozet{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
   padding:4px 9px;border-radius:999px;background:color-mix(in srgb,var(--dr) 14%,transparent);color:var(--dr)}
+
+/* --- ders alt sekmeleri ve menü noktası --- */
+.ders-sekme{display:flex;gap:4px;flex-wrap:wrap;margin:20px 0 6px;padding:5px;border-radius:999px;
+  background:var(--cam);border:1px solid var(--cam-kenar);box-shadow:var(--golge-yumusak)}
+.ders-sekme button{position:relative;font-family:var(--disp);font-weight:700;font-size:13.5px;
+  padding:9px 14px;border:0;border-radius:999px;background:transparent;color:var(--gece-2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.ders-sekme button:hover{color:var(--gece)}
+.ders-sekme button[aria-pressed="true"]{background:var(--dr);color:#fff}
+.sekme-sayi{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:999px;
+  background:rgba(20,26,51,.08);color:inherit}
+.ders-sekme button[aria-pressed="true"] .sekme-sayi{background:rgba(255,255,255,.25)}
+.sekme-nokta,.menu-nokta{width:8px;height:8px;border-radius:50%;background:#C0392B;display:inline-block;
+  box-shadow:0 0 0 3px rgba(192,57,43,.18)}
+.menu-nokta{margin-inline-start:6px;vertical-align:middle;animation:nabiz 1.8s infinite}
+.ders-baslik{margin-top:6px}
+@media(max-width:600px){
+  .ders-sekme{border-radius:16px}
+  .ders-sekme button{font-size:13px;padding:8px 11px}
+}

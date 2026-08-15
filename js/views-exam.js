@@ -575,7 +575,10 @@ function sxOgrenciDetay(){
       <div class="sx-stat"><b>${c.length}</b><span>sertifika</span></div></div>
 
     <h3 style="margin:20px 0 10px">Ödev ver</h3>
-    <div class="sx-field"><input class="sx-in" id="odBaslik" placeholder="Ödev başlığı — ör. 20 soruluk hız denemesi"></div>
+    <div class="sx-row" style="margin:0 0 10px">
+      <select class="sx-in" id="odDers" style="max-width:220px">
+        ${(DATA.dersler||[]).map(x=>`<option value="${esc(x.id)}">${x.ico} ${esc(ceviri(x.ad))}</option>`).join("")}</select>
+      <input class="sx-in" id="odBaslik" placeholder="Ödev başlığı — ör. 20 soruluk hız denemesi"></div>
     <div class="sx-field"><input class="sx-in" id="odAciklama" placeholder="Kısa açıklama (isteğe bağlı)"></div>
     <div class="sx-row" style="margin-bottom:14px">
       <input class="sx-in" id="odKod" maxlength="6" placeholder="sınav kodu" style="max-width:150px;text-transform:uppercase">
