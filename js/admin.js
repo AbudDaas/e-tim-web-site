@@ -45,6 +45,13 @@ const YON_BOLUM = [
       yeni:{id:"yeni-ders",ico:"📘",renk:"#4338CA",tip:"secmeli",ad:"Yeni ders",ozet:"",aciklama:""}}
    ]},
 
+ { k:"mufredat", ad:"Müfredat",
+   listeler:[
+     {y:"mufredat", ad:"Üniteler (konular satır satır yazılır)",
+      alanlar:[{k:"ders",ad:"Branş kodu"},{k:"ad",ad:"Ünite adı"}],
+      yeni:{ders:"aritmetik",ad:"Yeni ünite",konular:[]}}
+   ]},
+
  { k:"kartlar", ad:"Kelime kartları",
    listeler:[
      {y:"kartlar", ad:"Kartlar (kelime kartı aracı)",
@@ -309,7 +316,7 @@ async function yonKaydet(){
 }
 function yonIcerik(){
   const c={};
-  ["marka","ana","dersler","kayitliDersler","kesitler","podcast","yarismalar","gurur","hakkimizda","kurslar","kartlar"].forEach(k=>{ c[k]=DATA[k]; });
+  ["marka","ana","dersler","kayitliDersler","kesitler","podcast","yarismalar","gurur","hakkimizda","kurslar","kartlar","mufredat"].forEach(k=>{ c[k]=DATA[k]; });
   return c;
 }
 function yonYedek(){

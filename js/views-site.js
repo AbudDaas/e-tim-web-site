@@ -258,6 +258,7 @@ function dersSekmeleri(id){
   const d=dersBul2(id);
   const s=[
     {k:"hakkinda", ad:"Ders hakkında"},
+    {k:"mufredat", ad:"Müfredat"},
     {k:"kayit",    ad:"Kayıtlı dersler", sayi:c.kayit.length},
     {k:"kesit",    ad:"Ders kesitleri",  sayi:c.kesit.length},
     {k:"podcast",  ad:"Podcast",         sayi:c.bolum.length},
@@ -283,6 +284,7 @@ function vDers(){
     yarisma: ()=>bolumYarisma(id),
     gurur:   ()=>bolumGurur(id),
     arac:    ()=>aracBolumu(id),
+    mufredat:()=>bolumMufredat(id),
     sinav:   ()=>bolumSinav(id)
   }[sekme] || (()=>bolumHakkinda(id));
 

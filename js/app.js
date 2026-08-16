@@ -59,7 +59,8 @@ function ciz(){
       ab.classList.toggle("ghost", !u);
     }
     if(SITE.ders && SITE.dersSekme==="yarisma") sayacBasla();
-    if(y==="/sinav"&&SX.ekran==="coz") soruBoya();
+    if(y==="/sinav"&&SX.canli&&typeof cnlEkran==="function"){ $("view").innerHTML=cevirHtml(cnlEkran()); }
+    if(y==="/sinav"&&!SX.canli&&SX.ekran==="coz") soruBoya();
     if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
     if(y==="/profil"&&SX.pekran==="editor") notYenile();
     if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();

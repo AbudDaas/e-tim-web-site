@@ -55,6 +55,34 @@ const DATA = {
     {ders:"ingilizce", on:"morning", arka:{ar:"صباح", tr:"sabah", en:"morning"}, ipucu:"time"}
   ],
 
+  /* Müfredat: ders → ünite → konular. Konular sırayla açılır. */
+  mufredat:[
+    {ders:"aritmetik", ad:{ar:"الوحدة ١ — التعرّف", tr:"Ünite 1 — Tanışma", en:"Unit 1 — Getting started"},
+     konular:[
+       {ad:{ar:"أجزاء المعداد", tr:"Abaküsün parçaları", en:"Parts of the abacus"}},
+       {ad:{ar:"قراءة الأرقام ١-٩", tr:"1–9 arası sayıları okuma", en:"Reading 1–9"}},
+       {ad:{ar:"الجمع البسيط", tr:"Basit toplama", en:"Simple addition"}}
+     ]},
+    {ders:"aritmetik", ad:{ar:"الوحدة ٢ — المكمّلات", tr:"Ünite 2 — Tamamlayanlar", en:"Unit 2 — Complements"},
+     konular:[
+       {ad:{ar:"مكمّلات الخمسة", tr:"Beşin tamamlayanları", en:"Complements of five"}},
+       {ad:{ar:"مكمّلات العشرة", tr:"Onun tamamlayanları", en:"Complements of ten"}},
+       {ad:{ar:"الطرح", tr:"Çıkarma", en:"Subtraction"}}
+     ]},
+    {ders:"ingilizce", ad:{ar:"الوحدة ١ — التحية", tr:"Ünite 1 — Selamlaşma", en:"Unit 1 — Greetings"},
+     konular:[
+       {ad:{ar:"التحيات", tr:"Selamlaşma kalıpları", en:"Greeting phrases"}},
+       {ad:{ar:"التعريف بالنفس", tr:"Kendini tanıtma", en:"Introducing yourself"}},
+       {ad:{ar:"الأرقام ١-٢٠", tr:"1–20 sayılar", en:"Numbers 1–20"}}
+     ]},
+    {ders:"kuran", ad:{ar:"الوحدة ١ — مخارج الحروف", tr:"Ünite 1 — Mahreçler", en:"Unit 1 — Articulation"},
+     konular:[
+       {ad:{ar:"حروف الحلق", tr:"Boğaz harfleri", en:"Throat letters"}},
+       {ad:{ar:"حروف اللسان", tr:"Dil harfleri", en:"Tongue letters"}},
+       {ad:{ar:"حروف الشفتين", tr:"Dudak harfleri", en:"Lip letters"}}
+     ]}
+  ],
+
   kurslar:[
     {ders:"aritmetik", ad:{ar:"المستوى ١ — التعرّف على المعداد", tr:"Seviye 1 — Abaküsle tanışma", en:"Level 1 — Meeting the abacus"},
      not:{ar:"قراءة الخرز، الجمع بخانة واحدة", tr:"Boncuk okuma, tek basamaklı toplama", en:"Reading beads, single-digit addition"}},

@@ -235,6 +235,34 @@ const API={
    try{ return bulut()? await FB.get("schedule/"+uid) : await KV.get("sx:program:"+uid) }catch(e){ return null }
  },
 
+ /* --- müfredat ilerlemesi --- */
+ async mufredatYaz(uid,durum){
+   const d={durum,at:Date.now()};
+   bulut()? await FB.set("students/"+uid+"/curriculum/durum",d) : await KV.set("sx:mufredat:"+uid,d);
+ },
+ async mufredatAl(uid){
+   try{ const d= bulut()? await FB.get("students/"+uid+"/curriculum/durum") : await KV.get("sx:mufredat:"+uid);
+     return d ? (d.durum||{}) : {}; }catch(e){ return {}; }
+ },
+
+ /* --- canlı yarışma --- */
+ async canliYaz(oda){
+   bulut()? await FB.set("live/"+oda.kod,oda) : await KV.set("sx:canli:"+oda.kod,oda);
+ },
+ async canliAl(kod){
+   try{ return bulut()? await FB.get("live/"+kod) : await KV.get("sx:canli:"+kod); }catch(e){ return null; }
+ },
+ async canliOyuncuYaz(kod,o){
+   bulut()? await FB.set("live/"+kod+"/players/"+o.id,o) : await KV.set("sx:canliO:"+kod+":"+o.id,o);
+ },
+ async canliOyuncular(kod){
+   try{
+     if(bulut()) return await FB.list("live/"+kod+"/players");
+     const ks=await KV.list("sx:canliO:"+kod+":"); const o=[];
+     for(const k of ks){ const x=await KV.get(k); if(x) o.push(x); } return o;
+   }catch(e){ return []; }
+ },
+
  /* --- aralıklı tekrar --- */
  async srsYaz(uid,durum){
    const d={durum,at:Date.now()};

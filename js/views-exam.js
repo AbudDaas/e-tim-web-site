@@ -46,7 +46,18 @@ function sxForm(){
   <div class="sx-field"><div class="sx-label">Soruları yaz</div>
     <textarea class="sx-ta" data-sxbind="metin" spellcheck="false" placeholder="Pencil ne demek? | kitap | *kalem | masa&#10;Apple = elma = alma&#10;Kur'an 114 sure içerir = D">${esc(d.metin)}</textarea>
     <div class="sx-note" id="sxNot"></div>
-    <div class="chips" style="margin:10px 0 0">${sxChip("karistir",d.karistir?0:1,"Sırayı karıştır",d.karistir)}</div></div>`}
+    <div class="chips" style="margin:10px 0 0">${sxChip("karistir",d.karistir?0:1,"Sırayı karıştır",d.karistir)}</div>
+    ${(typeof yzVar==="function"&&yzVar())?`
+    <div class="yz-kutu">
+      <div class="sx-label">Yapay zekâ ile soru üret</div>
+      <textarea class="sx-ta" id="yzKonu" style="min-height:70px"
+        placeholder="Konu ya da metin — ör. 'Present continuous tense, günlük hayattan örneklerle'"></textarea>
+      <div class="sx-row" style="margin-top:8px">
+        <select class="sx-in" id="yzAdet" style="max-width:130px">
+          <option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+        <button class="btn" data-sx="yzUret">Soruları üret</button></div>
+      <div class="sx-note" id="yzNot">Üretilen sorular kutuya eklenir; yayınlamadan önce mutlaka gözden geçir.</div>
+    </div>`:""}</div>`}
   ${!arit?"":`
   <div class="sx-field"><div class="sx-label">Sorular</div><div class="chips" style="margin:0">
     ${sxChip("kaynak","oto","Otomatik üret",d.kaynak==="oto")}${sxChip("kaynak","elle","Kendim yazacağım",d.kaynak==="elle")}</div></div>`}
@@ -58,7 +69,18 @@ function sxForm(){
   <div class="sx-field"><div class="sx-label">Soruları yaz</div>
     <textarea class="sx-ta" data-sxbind="metin" spellcheck="false" placeholder="48 51 5 -3&#10;12 -7 8 8 -7&#10;17 7 57">${esc(d.metin)}</textarea>
     <div class="sx-note" id="sxNot"></div>
-    <div class="chips" style="margin:10px 0 0">${sxChip("karistir",d.karistir?0:1,"Sırayı karıştır",d.karistir)}</div></div>`}
+    <div class="chips" style="margin:10px 0 0">${sxChip("karistir",d.karistir?0:1,"Sırayı karıştır",d.karistir)}</div>
+    ${(typeof yzVar==="function"&&yzVar())?`
+    <div class="yz-kutu">
+      <div class="sx-label">Yapay zekâ ile soru üret</div>
+      <textarea class="sx-ta" id="yzKonu" style="min-height:70px"
+        placeholder="Konu ya da metin — ör. 'Present continuous tense, günlük hayattan örneklerle'"></textarea>
+      <div class="sx-row" style="margin-top:8px">
+        <select class="sx-in" id="yzAdet" style="max-width:130px">
+          <option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+        <button class="btn" data-sx="yzUret">Soruları üret</button></div>
+      <div class="sx-note" id="yzNot">Üretilen sorular kutuya eklenir; yayınlamadan önce mutlaka gözden geçir.</div>
+    </div>`:""}</div>`}
   <div class="sx-field"><div class="sx-label">Süre</div><div class="chips" style="margin:0">
     ${on.map(s=>sxChip("limit",s,s===0?"Süresiz":(s/60)+" dk",d.limit===s)).join("")}
     <input class="sx-mins" data-sxbind="limitDk" type="number" min="1" max="180" placeholder="özel" value="${ozel?d.limit/60:""}"></div></div>
@@ -106,13 +128,16 @@ function vSinav(){
         <button class="btn" data-sx="kodGir" style="width:100%;justify-content:center">Devam et</button>
         <div class="sx-note" id="sxKodNot"></div>
       </div>
+      ${typeof cnlKatilKutusu==="function"?"":""}
       <div class="card pad">
         <span class="tag teal">Kodsuz</span>
         <h3 style="margin:12px 0 8px">Serbest alıştırma</h3>
         <p class="muted" style="font-size:14px">Seviye seç, süre koy, kendi kendine çalış. Sonuç kimseye gitmez.</p>
         <button class="btn ghost sm" data-sx="alistirmaAyar" style="margin-top:16px">Alıştırmayı kur</button>
       </div>
-    </div></section>`;
+    </div>
+    ${typeof cnlKatilKutusu==="function"?cnlKatilKutusu():""}
+    </section>`;
 }
 function sxIsimEkran(){
   const e=SX.exam, lim=e.limit?Math.round(e.limit/60)+" dakika":"süresiz";
@@ -181,6 +206,7 @@ function sxSonucEkran(){
 function vProfil(){
   if(!SX.user) return sxGirisEkran();
   if(SX.user.durum!=="onayli") return sxBekleEkran();
+  if(SX.canli && typeof cnlEkran==="function") return cnlEkran();
   if(SX.tekrar && typeof srsEkran==="function") return srsEkran();
   if(SX.karne) return vKarne();
   if(SX.user.rol==="veli") return sxVeliProfil();

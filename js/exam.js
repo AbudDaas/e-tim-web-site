@@ -237,6 +237,7 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    yzUret:yzSorular,
     abakusAc:()=>{ ABK.goster=!ABK.goster; if(ABK.goster&&!ABK.durum.length) abkKur(ABK.cubuk); ciz(); },
     sikSec:()=>{ const q=SX.qs[SX.i]; cevapVer((q.tip==="dv") ? (Number(v)===0) : Number(v)); },
     duyuruEkle:async()=>{
@@ -520,6 +521,47 @@ document.addEventListener("keydown",e=>{
   else if(id==="sxMail"||id==="sxSifre"||id==="sxAd") (SX.pekran==="kayit"?kayitOl:girisYap)();
 });
 
+/* --- yapay zekâ ile soru üretimi --- */
+function yzVar(){ return !!(typeof GEMINI!=="undefined" && GEMINI.anahtar); }
+async function yzSorular(){
+  const n=$("yzNot"), b=document.querySelector('[data-sx="yzUret"]');
+  const konu=($("yzKonu").value||"").trim();
+  const adet=+($("yzAdet")?$("yzAdet").value:10)||10;
+  if(!konu){ if(n) n.innerHTML=`<span class="sx-warn">Önce konuyu ya da metni yaz.</span>`; return; }
+  const d=SX.taslak, ders=dersBul(d.ders);
+  const tip=ders.tip==="yazili"?"kısa cevap":"çoktan seçmeli";
+  const bicim = ders.tip==="yazili"
+    ? 'Her satır: Soru = cevap'
+    : 'Her satır: Soru | yanlış şık | *doğru şık | yanlış şık   (yıldız doğru şıkkı işaretler)';
+  const istem =
+`Sen bir öğretmensin. Aşağıdaki konu için ${adet} adet ${tip} sorusu yaz.
+Ders: ${ceviri(ders.ad)}
+Konu/metin: ${konu}
+Kurallar:
+- Cevabı ${aktifDil()==="ar"?"Arapça":aktifDil()==="en"?"İngilizce":"Türkçe"} yaz.
+- Yalnız soruları döndür, başlık, numara, açıklama, kod bloğu ekleme.
+- ${bicim}
+- Her soru tek satır olsun.`;
+  mesgul(b,true); if(n) n.textContent="Sorular üretiliyor…";
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI.model}:generateContent?key=${GEMINI.anahtar}`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{parts:[{text:istem}]}]})
+    });
+    const j=await r.json();
+    if(!r.ok) throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
+    let metin=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text||"").join("").trim();
+    metin=metin.replace(/^```[a-z]*|```$/gm,"").trim();
+    if(!metin) throw new Error("boş cevap");
+    d.metin = (d.metin?d.metin.trim()+"\n":"") + metin;
+    mesgul(b,false); ciz();
+    toast("Sorular eklendi, gözden geçir.");
+  }catch(err){
+    mesgul(b,false);
+    if(n) n.innerHTML=`<span class="sx-warn">Üretilemedi: ${esc(String(err.message||err)).slice(0,90)}</span>`;
+  }
+}
+
 /* --- işlemler --- */
 async function kodGir(){
   const kod=($("sxKod").value||"").trim().toUpperCase();
@@ -606,6 +648,7 @@ async function ogrenciVerileriYukle(uid){
   if(SX.user && SX.user.uid===uid) SX.bildirim=await API.bildirimler(uid);
   if(typeof ezberYukle==="function") await ezberYukle(uid);
   if(typeof srsYukle==="function") await srsYukle(uid);
+  if(typeof mufredatYukle==="function") await mufredatYukle(uid);
 }
 async function veliVerileriYukle(){
   if(!SX.user || !SX.user.cocuk) return;

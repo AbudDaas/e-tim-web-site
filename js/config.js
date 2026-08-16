@@ -21,7 +21,12 @@ const FIREBASE = {
    otomatik olarak onaylı yönetici olur.
    Firestore kurallarındaki ADMIN_EMAIL ile birebir aynı olmalı. */
 const ADMIN_EMAIL = "abdulrazakdaas01@gmail.com";
-
 /* Dosyaları her güncellediğinde index.html içindeki ?v= değerini değiştir,
    böylece kimse eski kopyayla kalmaz. */
-const SURUM = "20260814e";
+const SURUM="20260813a";
+ 
+/* İsteğe bağlı: yapay zekâ ile soru üretimi.
+   Google AI Studio'dan alınan anahtarı yaz; boşsa bu özellik gizli kalır.
+   Anahtar tarayıcıya iner, bu yüzden Google Cloud'dan mutlaka
+   "Websites" kısıtı ekle ve yalnız Generative Language API'ye izin ver. */
+const GEMINI = { anahtar:"", model:"gemini-2.0-flash" };
