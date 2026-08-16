@@ -8,13 +8,14 @@ function oynatmaDurdur(){
   try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
 }
 function seslendir(v){
+  const dil=(typeof aktifDil==="function")?aktifDil():"tr";
+  const kod = dil==="ar" ? "ar-SA" : dil==="en" ? "en-US" : "tr-TR";
+  const on  = v<0 ? (dil==="ar"?"ناقص ":dil==="en"?"minus ":"eksi ") : "";
+  if(typeof sesle==="function") return sesle(on+Math.abs(v), kod, null);
   try{
     if(!window.speechSynthesis) return false;
-    const dil=(typeof aktifDil==="function")?aktifDil():"tr";
-    const on = v<0 ? (dil==="ar"?"ناقص ":dil==="en"?"minus ":"eksi ") : "";
     const u=new SpeechSynthesisUtterance(on+Math.abs(v));
-    u.lang = dil==="ar" ? "ar-SA" : dil==="en" ? "en-US" : "tr-TR";
-    u.rate=1.05;
+    u.lang=kod; u.rate=1.05;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
     return true;
   }catch(e){ return false; }

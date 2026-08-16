@@ -18,6 +18,53 @@ function aracBolumu(id){
   return a ? a.ciz(id) : `<div class="card pad muted" style="margin-top:18px">Bu derse araç tanımlanmamış.</div>`;
 }
 
+
+/* ===================== SESLENDİRME =====================
+   Cihazda o dilin ses paketi yoksa tarayıcı sessizce hiçbir şey yapar.
+   Burada sesi arıyoruz, bulamazsak kullanıcıya sebebini yazıyoruz. */
+let SESLER=[];
+function sesleriYukle(){
+  try{ SESLER = (window.speechSynthesis && speechSynthesis.getVoices()) || []; }catch(e){ SESLER=[]; }
+}
+if(typeof window!=="undefined" && window.speechSynthesis){
+  sesleriYukle();
+  try{ speechSynthesis.onvoiceschanged = sesleriYukle; }catch(e){}
+}
+function sesBul(dil){
+  if(!SESLER.length) sesleriYukle();
+  const k=String(dil||"").slice(0,2).toLowerCase();
+  return SESLER.find(v=>v.lang && v.lang.toLowerCase().startsWith(k)) || null;
+}
+function sesDurumu(dil){
+  if(typeof window==="undefined" || !window.speechSynthesis) return "yok-tarayici";
+  return sesBul(dil) ? "var" : "yok-dil";
+}
+function sesle(metin, dil, notId){
+  const not = notId ? $(notId) : null;
+  const yaz = (m,tur)=>{ if(not) not.innerHTML = `<span class="${tur||"sx-warn"}">${m}</span>`; };
+  if(typeof window==="undefined" || !window.speechSynthesis){
+    yaz("Bu tarayıcı sesli okumayı desteklemiyor."); return false;
+  }
+  const v=sesBul(dil);
+  try{
+    const u=new SpeechSynthesisUtterance(String(metin));
+    u.lang = dil; if(v) u.voice=v;
+    u.rate = .85; u.pitch = 1;
+    u.onerror = ()=> yaz("Ses çalınamadı, tekrar dene.");
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+    try{ speechSynthesis.resume(); }catch(e){}
+  }catch(e){ yaz("Ses çalınamadı."); return false; }
+  if(!v){
+    yaz(dil.startsWith("ar")
+      ? "Cihazında Arapça ses paketi kurulu değil. Android: Ayarlar → Sistem → Diller → Metin okuma → Google konuşma sentezleyici → Arapça'yı indir. iPhone: Ayarlar → Erişilebilirlik → Konuşulan İçerik → Sesler → Arapça."
+      : "Cihazında bu dilin ses paketi kurulu değil.");
+    return false;
+  }
+  yaz("", "sx-good");
+  return true;
+}
+
 /* ===================== KELİME KARTLARI ===================== */
 const KRT = { i:0, acik:false, karisik:false, bilmiyorum:[] };
 
@@ -58,38 +105,32 @@ function bolumKartlar(id){
       <button class="btn ghost sm" data-krt="zor">Bilemedim</button>
       <button class="btn sm" data-krt="ileri">Sonraki →</button>
     </div>
+    <div class="sx-note" id="krtSesNot" style="text-align:center"></div>
     <div class="sx-row" style="justify-content:center;margin-top:8px">
       <button class="chip" data-krt="karisik" aria-pressed="${KRT.karisik}">Karışık sıra</button>
       ${KRT.bilmiyorum.length?`<button class="chip" data-krt="zorlari">Zor kelimeleri çalış</button>`:""}
     </div>
   </div>`;
 }
-function kartSeslendir(metin,dil){
-  try{
-    if(!window.speechSynthesis) return;
-    const u=new SpeechSynthesisUtterance(String(metin));
-    u.lang = dil || "en-US"; u.rate=.95;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
-  }catch(e){}
-}
+function kartSeslendir(metin,dil,notId){ return sesle(metin, dil||"en-US", notId); }
 
 /* ===================== ARAP HARF TAHTASI ===================== */
 const HRF = { secili:null };
 const HARFLER = [
-  {h:"ا", ad:"elif",  b:"ـا", o:"ـا", s:"ا"},   {h:"ب", ad:"be",   b:"بـ", o:"ـبـ", s:"ـب"},
-  {h:"ت", ad:"te",    b:"تـ", o:"ـتـ", s:"ـت"}, {h:"ث", ad:"se",   b:"ثـ", o:"ـثـ", s:"ـث"},
-  {h:"ج", ad:"cim",   b:"جـ", o:"ـجـ", s:"ـج"}, {h:"ح", ad:"ha",   b:"حـ", o:"ـحـ", s:"ـح"},
-  {h:"خ", ad:"hı",    b:"خـ", o:"ـخـ", s:"ـخ"}, {h:"د", ad:"dal",  b:"ـد", o:"ـد", s:"د"},
-  {h:"ذ", ad:"zel",   b:"ـذ", o:"ـذ", s:"ذ"},   {h:"ر", ad:"ra",   b:"ـر", o:"ـر", s:"ر"},
-  {h:"ز", ad:"ze",    b:"ـز", o:"ـز", s:"ز"},   {h:"س", ad:"sin",  b:"سـ", o:"ـسـ", s:"ـس"},
-  {h:"ش", ad:"şın",   b:"شـ", o:"ـشـ", s:"ـش"}, {h:"ص", ad:"sad",  b:"صـ", o:"ـصـ", s:"ـص"},
-  {h:"ض", ad:"dad",   b:"ضـ", o:"ـضـ", s:"ـض"}, {h:"ط", ad:"tı",   b:"طـ", o:"ـطـ", s:"ـط"},
-  {h:"ظ", ad:"zı",    b:"ظـ", o:"ـظـ", s:"ـظ"}, {h:"ع", ad:"ayn",  b:"عـ", o:"ـعـ", s:"ـع"},
-  {h:"غ", ad:"gayn",  b:"غـ", o:"ـغـ", s:"ـغ"}, {h:"ف", ad:"fe",   b:"فـ", o:"ـفـ", s:"ـف"},
-  {h:"ق", ad:"kaf",   b:"قـ", o:"ـقـ", s:"ـق"}, {h:"ك", ad:"kef",  b:"كـ", o:"ـكـ", s:"ـك"},
-  {h:"ل", ad:"lam",   b:"لـ", o:"ـلـ", s:"ـل"}, {h:"م", ad:"mim",  b:"مـ", o:"ـمـ", s:"ـم"},
-  {h:"ن", ad:"nun",   b:"نـ", o:"ـنـ", s:"ـن"}, {h:"ه", ad:"he",   b:"هـ", o:"ـهـ", s:"ـه"},
-  {h:"و", ad:"vav",   b:"ـو", o:"ـو", s:"و"},   {h:"ي", ad:"ye",   b:"يـ", o:"ـيـ", s:"ـي"}
+  {h:"ا", ad:"elif", arAd:"أَلِف", b:"ـا", o:"ـا", s:"ا"},   {h:"ب", ad:"be", arAd:"بَاء", b:"بـ", o:"ـبـ", s:"ـب"},
+  {h:"ت", ad:"te", arAd:"تَاء",    b:"تـ", o:"ـتـ", s:"ـت"}, {h:"ث", ad:"se", arAd:"ثَاء",   b:"ثـ", o:"ـثـ", s:"ـث"},
+  {h:"ج", ad:"cim", arAd:"جِيم",   b:"جـ", o:"ـجـ", s:"ـج"}, {h:"ح", ad:"ha", arAd:"حَاء",   b:"حـ", o:"ـحـ", s:"ـح"},
+  {h:"خ", ad:"hı", arAd:"خَاء",    b:"خـ", o:"ـخـ", s:"ـخ"}, {h:"د", ad:"dal", arAd:"دَال",  b:"ـد", o:"ـد", s:"د"},
+  {h:"ذ", ad:"zel", arAd:"ذَال",   b:"ـذ", o:"ـذ", s:"ذ"},   {h:"ر", ad:"ra", arAd:"رَاء",   b:"ـر", o:"ـر", s:"ر"},
+  {h:"ز", ad:"ze", arAd:"زَاي",    b:"ـز", o:"ـز", s:"ز"},   {h:"س", ad:"sin", arAd:"سِين",  b:"سـ", o:"ـسـ", s:"ـس"},
+  {h:"ش", ad:"şın", arAd:"شِين",   b:"شـ", o:"ـشـ", s:"ـش"}, {h:"ص", ad:"sad", arAd:"صَاد",  b:"صـ", o:"ـصـ", s:"ـص"},
+  {h:"ض", ad:"dad", arAd:"ضَاد",   b:"ضـ", o:"ـضـ", s:"ـض"}, {h:"ط", ad:"tı", arAd:"طَاء",   b:"طـ", o:"ـطـ", s:"ـط"},
+  {h:"ظ", ad:"zı", arAd:"ظَاء",    b:"ظـ", o:"ـظـ", s:"ـظ"}, {h:"ع", ad:"ayn", arAd:"عَين",  b:"عـ", o:"ـعـ", s:"ـع"},
+  {h:"غ", ad:"gayn", arAd:"غَين",  b:"غـ", o:"ـغـ", s:"ـغ"}, {h:"ف", ad:"fe", arAd:"فَاء",   b:"فـ", o:"ـفـ", s:"ـف"},
+  {h:"ق", ad:"kaf", arAd:"قَاف",   b:"قـ", o:"ـقـ", s:"ـق"}, {h:"ك", ad:"kef", arAd:"كَاف",  b:"كـ", o:"ـكـ", s:"ـك"},
+  {h:"ل", ad:"lam", arAd:"لَام",   b:"لـ", o:"ـلـ", s:"ـل"}, {h:"م", ad:"mim", arAd:"مِيم",  b:"مـ", o:"ـمـ", s:"ـم"},
+  {h:"ن", ad:"nun", arAd:"نُون",   b:"نـ", o:"ـنـ", s:"ـن"}, {h:"ه", ad:"he", arAd:"هَاء",   b:"هـ", o:"ـهـ", s:"ـه"},
+  {h:"و", ad:"vav", arAd:"وَاو",   b:"ـو", o:"ـو", s:"و"},   {h:"ي", ad:"ye", arAd:"يَاء",   b:"يـ", o:"ـيـ", s:"ـي"}
 ];
 const HAREKE = [
   {i:"َ", ad:"üstün / fetha", ses:"a"},
@@ -116,8 +157,10 @@ function bolumHarfler(id){
           <div><span>sonda</span><b>${s.s}</b></div>
         </div>
         <div class="sx-row" style="margin-top:12px">
-          <button class="btn ghost sm" data-hrf-ses="${s.h}">🔊 Sesini dinle</button>
+          <button class="btn ghost sm" data-hrf-ses="${esc(s.arAd||s.h)}">🔊 Sesini dinle</button>
+          <button class="btn ghost sm" data-hrf-ses="${esc((s.h)+"َ "+(s.h)+"ِ "+(s.h)+"ُ")}">🔊 Harekeli oku</button>
         </div>
+        <div class="sx-note" id="hrfSesNot">${sesDurumu("ar")==="var"?"":"Cihazında Arapça ses paketi kurulu değilse ses çıkmaz — düğmeye basınca ne yapman gerektiği burada yazar."}</div>
       </div></div>`:""}
     <div class="sx-label" style="margin-top:20px">Harekeler</div>
     <div class="hrf-hareke">
@@ -197,7 +240,7 @@ document.addEventListener("click", async e=>{
     if(eylem==="ileri"){ KRT.i=(KRT.i+1)%l.length; KRT.acik=false; }
     if(eylem==="geri"){  KRT.i=(KRT.i-1+l.length)%l.length; KRT.acik=false; }
     if(eylem==="karisik"){ KRT.karisik=!KRT.karisik; KRT.i=0; KRT.acik=false; }
-    if(eylem==="seslendir" && kart) kartSeslendir(ceviri(kart.on),"en-US");
+    if(eylem==="seslendir" && kart){ sesle(ceviri(kart.on),"en-US","krtSesNot"); return; }
     if(eylem==="zor" && kart){
       const ad=ceviri(kart.on);
       if(!KRT.bilmiyorum.includes(ad)) KRT.bilmiyorum.push(ad);
@@ -212,7 +255,7 @@ document.addEventListener("click", async e=>{
   const h=e.target.closest("[data-hrf]");
   if(h){ HRF.secili=+h.dataset.hrf; ciz(); return; }
   const hs=e.target.closest("[data-hrf-ses]");
-  if(hs){ kartSeslendir(hs.dataset.hrfSes,"ar-SA"); return; }
+  if(hs){ sesle(hs.dataset.hrfSes,"ar-SA","hrfSesNot"); return; }
 
   /* ezber */
   const z=e.target.closest("[data-ezb]");

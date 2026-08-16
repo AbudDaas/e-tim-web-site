@@ -138,6 +138,8 @@ function sxCozEkran(){
         <input id="sxCevap" type="text" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="cevap">
         <button class="btn" data-sx="kontrol">Kontrol</button></div>
       <div class="sx-verdict" id="sxHukum"></div>
+      ${(SX.exam && SX.exam.kip==="sesli" && typeof sesDurumu==="function" && sesDurumu(aktifDil()==="ar"?"ar":"tr")!=="var")
+        ? `<div class="sx-note" style="text-align:center">Cihazında bu dilin ses paketi yok; sayılar yazıyla gösterilecek.</div>`:""}
       ${(SX.alistirma && (SX.exam&&(SX.exam.ders||"aritmetik")==="aritmetik"))?`
         <div style="text-align:center;margin-top:10px">
           <button class="btn ghost sm" data-sx="abakusAc">${ABK.goster?"Abaküsü gizle":"Abaküsü göster"}</button></div>
