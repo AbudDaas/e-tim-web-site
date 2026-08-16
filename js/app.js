@@ -26,6 +26,7 @@ function sayfalar(){
 function yol(){
   const h=location.hash.replace(/^#/,"");
   if(h==="/gizlilik") return h;
+  if(h.indexOf("/dogrula")===0) return "/dogrula";
   const s=sayfalar();
   if(s.some(x=>x.yol===h)) return h;
   return "/";
@@ -33,7 +34,8 @@ function yol(){
 function ciz(){
   try{
     const y=yol(), LISTE=sayfalar();
-    const s=(y==="/gizlilik")?GIZLI_SAYFA:LISTE.find(x=>x.yol===y);
+    const s=(y==="/gizlilik")?GIZLI_SAYFA:(y==="/dogrula")?DOGRULA_SAYFA:LISTE.find(x=>x.yol===y);
+    if(y==="/dogrula") belgeDogrula();
     SITE.ders = (s&&s.ders) ? s.ders : null;
 
     $("nav").innerHTML=cevirHtml(LISTE.filter(p=>!(p.gizli&&p.gizli())).map(p=>{
@@ -79,6 +81,26 @@ window.addEventListener("hashchange",()=>{
   if(SX.ekran==="coz"&&yol()!=="/sinav"){ clearInterval(SX.tick); SX.ekran="giris"; }
   ciz(); window.scrollTo(0,0);
 });
+
+/* --- sertifika doğrulama --- */
+let _dogrulaSon=null;
+async function belgeDogrula(){
+  const m=location.hash.match(/[?&]b=([^&]+)/);
+  const anahtar=m?decodeURIComponent(m[1]):"";
+  if(!anahtar || anahtar===_dogrulaSon) return;
+  _dogrulaSon=anahtar;
+  SX.dogrulama="araniyor";
+  const [uid,id]=anahtar.split(":");
+  try{
+    const s=await API.sertifikaAl(uid,id);
+    if(s){
+      let ad="";
+      try{ const o=await API.ogrenciAl(uid); ad=o?o.ad:""; }catch(e){}
+      SX.dogrulama=Object.assign({ogrenciAd:ad}, s);
+    } else SX.dogrulama="yok";
+  }catch(e){ SX.dogrulama="yok"; }
+  ciz();
+}
 
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{

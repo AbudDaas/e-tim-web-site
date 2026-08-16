@@ -235,6 +235,21 @@ const API={
    try{ return bulut()? await FB.get("schedule/"+uid) : await KV.get("sx:program:"+uid) }catch(e){ return null }
  },
 
+ /* --- aralıklı tekrar --- */
+ async srsYaz(uid,durum){
+   const d={durum,at:Date.now()};
+   bulut()? await FB.set("students/"+uid+"/srs/durum",d) : await KV.set("sx:srs:"+uid,d);
+ },
+ async srsAl(uid){
+   try{ const d= bulut()? await FB.get("students/"+uid+"/srs/durum") : await KV.get("sx:srs:"+uid);
+     return d ? (d.durum||{}) : {}; }catch(e){ return {}; }
+ },
+ /* --- sertifika doğrulama --- */
+ async sertifikaAl(uid,id){
+   try{ return bulut()? await FB.get("students/"+uid+"/certs/"+id) : await KV.get("sx:sert:"+uid+":"+id); }
+   catch(e){ return null; }
+ },
+
  /* --- ezber takibi --- */
  async ezberYaz(uid,durum){
    const d={durum,at:Date.now()};

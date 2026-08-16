@@ -605,6 +605,7 @@ async function ogrenciVerileriYukle(uid){
   SX.ogrSonuc=s; SX.ogrOdev=o; SX.ogrSertifika=c; SX.ogrYoklama=y;
   if(SX.user && SX.user.uid===uid) SX.bildirim=await API.bildirimler(uid);
   if(typeof ezberYukle==="function") await ezberYukle(uid);
+  if(typeof srsYukle==="function") await srsYukle(uid);
 }
 async function veliVerileriYukle(){
   if(!SX.user || !SX.user.cocuk) return;

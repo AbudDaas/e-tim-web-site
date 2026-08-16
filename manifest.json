@@ -1,0 +1,17 @@
+{
+  "name": "Zihin Akademi",
+  "short_name": "Zihin",
+  "description": "Zihinsel aritmetik, İngilizce, Arapça ve Kur'an dersleri",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F5FC",
+  "theme_color": "#4338CA",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

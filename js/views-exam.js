@@ -181,6 +181,7 @@ function sxSonucEkran(){
 function vProfil(){
   if(!SX.user) return sxGirisEkran();
   if(SX.user.durum!=="onayli") return sxBekleEkran();
+  if(SX.tekrar && typeof srsEkran==="function") return srsEkran();
   if(SX.karne) return vKarne();
   if(SX.user.rol==="veli") return sxVeliProfil();
   if(SX.user.rol==="ogrenci") return sxOgrenciProfil();
@@ -460,6 +461,7 @@ function sxOgrenciProfil(){
     </div>
 
     ${bildirimKutusu()}
+    ${typeof srsOzetKutusu==="function"?srsOzetKutusu():""}
     ${duyuruKutusu(false)}
     ${programKutusu(false)}
     ${oyunKutusu(s,o,c)}
@@ -526,6 +528,10 @@ function sertifikaKarti(x,u){
     <div class="ser-metin">${esc(x.kurs)} programını başarıyla tamamlamıştır.</div>
     ${x.not?`<div class="ser-not">${esc(x.not)}</div>`:""}
     <div class="ser-alt"><span>${tarihKisa(x.at)}</span><span>${esc(x.verenAd||"")}</span></div>
+    ${(()=>{ const adres=location.href.split("#")[0]+"#/dogrula?b="+encodeURIComponent((u.uid||"")+":"+x.id);
+       return `<div class="ser-qr">
+         <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent(adres)}" alt="doğrulama karekodu" loading="lazy">
+         <span>Karekodu okutarak belgenin gerçekliğini doğrulayabilirsiniz.</span></div>`; })()}
     <button class="btn ghost sm ser-yazdir" data-sx="sertYazdir" data-v="${x.id}">Yazdır / PDF</button>
   </div>`;
 }
@@ -965,4 +971,25 @@ function programKutusu(duzenlenebilir){
       </div>`).join("")}</div>`
       : `<div class="sx-empty">Program girilmemiş.</div>`}
   </div>`;
+}
+
+/* ======================= SERTİFİKA DOĞRULAMA ======================= */
+function vDogrula(){
+  const s=SX.dogrulama;
+  if(s==="araniyor") return `<section class="page"><div class="card pad" style="max-width:520px;margin-inline:auto;text-align:center">
+    <p class="muted">Belge doğrulanıyor…</p></div></section>`;
+  if(!s || s==="yok") return `<section class="page"><div class="card pad" style="max-width:520px;margin-inline:auto;text-align:center">
+    <div class="dgr-ikon no">✕</div>
+    <h2 style="margin:12px 0 6px">Belge bulunamadı</h2>
+    <p class="muted">Karekod hatalı olabilir ya da belge kaldırılmış olabilir.</p>
+    <a class="btn ghost" href="#/" style="margin-top:16px">Ana sayfaya dön</a></div></section>`;
+  return `<section class="page"><div class="card pad" style="max-width:560px;margin-inline:auto;text-align:center">
+    <div class="dgr-ikon ok">✓</div>
+    <h2 style="margin:12px 0 4px">Belge geçerli</h2>
+    <p class="muted" style="margin-bottom:18px">${esc(ceviri(DATA.marka.ad))} kayıtlarında bu belge doğrulanmıştır.</p>
+    <div class="dgr-satir"><span>Öğrenci</span><b>${esc(s.ogrenciAd||"—")}</b></div>
+    <div class="dgr-satir"><span>Program</span><b>${esc(ceviri(s.kurs)||"—")}</b></div>
+    <div class="dgr-satir"><span>Veren</span><b>${esc(s.verenAd||"—")}</b></div>
+    <div class="dgr-satir"><span>Tarih</span><b>${s.at?tarihKisa(s.at):"—"}</b></div>
+    <a class="btn" href="#/" style="margin-top:18px">Ana sayfaya dön</a></div></section>`;
 }
