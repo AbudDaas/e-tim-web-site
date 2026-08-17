@@ -316,6 +316,7 @@ function sxSinavListe(){
         <span class="sx-badge">${dersBul(x.ders).ico} ${esc(ceviri(dersBul(x.ders).ad))}</span>
         <span class="sx-pill">${x.kod}</span></div>
       <div class="sx-row" style="margin:-6px 0 14px">
+        <button class="btn sm" data-cnl="odaAc" data-v="${x.kod}">Canlı başlat</button>
         <button class="btn ghost sm" data-sx="sonucAc" data-v="${x.kod}">Sonuçlar</button>
         <button class="btn ghost sm" data-sx="duzenle" data-v="${x.kod}">Düzenle</button>
         <button class="btn ghost sm" data-sx="acKapa" data-v="${x.kod}">Aç / kapat</button>
@@ -429,7 +430,12 @@ function vGizlilik(){
     <h3>İletişim</h3>
     <p>${esc(ceviri(DATA.marka.ad))} · ${esc(ceviri(i.adres))} · ${esc(ceviri(i.telefon))}</p>
     <a class="btn ghost sm" href="#/" style="margin-top:14px">Ana sayfaya dön</a>
-  </div></section>`;
+  </div>
+    <p class="muted" style="font-size:12px;margin-top:24px;border-top:1px solid rgba(20,26,51,.1);padding-top:12px">
+      Uygulama simgesi <a href="https://fontawesome.com" target="_blank" rel="noopener">Font Awesome Free</a>
+      simgesinden türetilmiştir · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+    </p>
+  </section>`;
 }
 const GIZLI_SAYFA={yol:"/gizlilik",ad:"Gizlilik",gor:vGizlilik};
 
