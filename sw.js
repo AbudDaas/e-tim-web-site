@@ -1,11 +1,11 @@
 /* Çevrimdışı çalışma.
    Dosyalar ilk açılışta önbelleğe alınır; sonraki açılışlarda internet
    olmasa da site açılır. Firestore istekleri her zaman ağdan gider. */
-const SURUM = "zihin-20260815k";
+const SURUM = "zihin-20260815l";
 const DOSYALAR = [
   "./", "./index.html", "./manifest.json", "./favicon.svg", "./favicon.png", "./favicon-32.png", "./apple-touch-icon.png", "./ikon-192.png", "./ikon-512.png",
   "./css/style.css",
-  "./js/config.js", "./js/i18n.js", "./js/data.js", "./js/util.js", "./js/state.js",
+  "./js/config.js", "./js/ikonlar.js", "./js/i18n.js", "./js/data.js", "./js/util.js", "./js/state.js",
   "./js/store.js", "./js/engine.js", "./js/abakus.js", "./js/araclar.js", "./js/tekrar.js",
   "./js/mufredat.js", "./js/canli.js", "./js/views-site.js", "./js/views-exam.js", "./js/admin.js", "./js/exam.js", "./js/app.js"
 ];

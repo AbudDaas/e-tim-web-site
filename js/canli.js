@@ -123,7 +123,7 @@ function cnlEkran(){
       <div class="cnl-sayi">${CNL.oyuncular.length} katılımcı</div>
       ${tablo}
       <div class="sx-row" style="margin-top:16px">
-        ${CNL.rol==="sunucu"?`<button class="btn" data-cnl="sonraki">Yarışmayı başlat</button>`:`<span class="muted">Öğretmenin başlatması bekleniyor…</span>`}
+        ${CNL.rol==="sunucu"?`<button class="btn" data-cnl="sonraki"><i class="fa-solid fa-play"></i> Yarışmayı başlat</button>`:`<span class="muted">Öğretmenin başlatması bekleniyor…</span>`}
         <button class="btn ghost" data-cnl="kapat">${CNL.rol==="sunucu"?"İptal":"Çık"}</button>
       </div>
     </div></section>`;
@@ -176,7 +176,7 @@ function cnlCevapAlani(q,tip){
   }
   return `<div class="sx-answer" style="margin-top:12px">
     <input id="cnlCevap" type="text" inputmode="${tip==="aritmetik"?"numeric":"text"}" autocomplete="off" placeholder="?">
-    <button class="btn" data-cnl="gonder">Gönder</button></div>`;
+    <button class="btn" data-cnl="gonder"><i class="fa-solid fa-paper-plane"></i> Gönder</button></div>`;
 }
 
 /* ---------------- olaylar ---------------- */
@@ -219,7 +219,7 @@ function cnlKatilKutusu(){
     <div class="sx-row" style="margin-top:12px">
       <input class="sx-in" id="cnlKod" maxlength="5" placeholder="ABC12" style="max-width:150px;text-transform:uppercase">
       ${SX.user?"":`<input class="sx-in" id="cnlAd" placeholder="Adın" style="max-width:200px">`}
-      <button class="btn" data-cnl="katil">Katıl</button></div>
+      <button class="btn" data-cnl="katil"><i class="fa-solid fa-bolt"></i> Katıl</button></div>
     <div class="sx-note" id="cnlNot"></div>
   </div>`;
 }

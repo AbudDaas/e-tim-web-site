@@ -34,8 +34,8 @@ function vAna(){
         <h1>${ceviri(a.baslik)}</h1>
         <p class="lede">${esc(ceviri(a.metin))}</p>
         <div class="acts">
-          <a class="btn" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
-          <a class="btn ghost" href="#/sinav">Sınava gir</a>
+          <a class="btn" href="https://wa.me/${String(ceviri(DATA.hakkimizda.iletisim.telefon)).replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Merhaba, deneme dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Deneme dersi al</a>
+          <a class="btn ghost" href="#/sinav"><i class="fa-solid fa-file-pen"></i> Sınava gir</a>
         </div>
       </div>
       <div class="card abacus">
@@ -256,6 +256,8 @@ function dersOdevVar(id){
 function dersSekmeleri(id){
   const c=dersIcerik(id);
   const d=dersBul2(id);
+  const IK={hakkinda:"circle-info",arac:"layer-group",mufredat:"list-ol",kayit:"play",
+            kesit:"youtube",podcast:"podcast",yarisma:"trophy",gurur:"medal",sinav:"file-pen"};
   const s=[
     {k:"hakkinda", ad:"Ders hakkında"},
     {k:"mufredat", ad:"Müfredat"},
@@ -268,6 +270,7 @@ function dersSekmeleri(id){
   ];
   const arac=aracTanim(d&&d.arac);
   if(arac) s.splice(1,0,{k:"arac", ad:arac.ad});
+  s.forEach(x=>{ x.ico=IK[x.k]||null; });
   return s;
 }
 
@@ -296,7 +299,7 @@ function vDers(){
     </div>
     <div class="ders-sekme" style="--dr:${d.renk||"#4338CA"}">
       ${dersSekmeleri(id).map(s=>`<button data-dsekme="${s.k}" aria-pressed="${sekme===s.k}">
-        ${esc(s.ad)}${s.sayi?`<span class="sekme-sayi">${s.sayi}</span>`:""}${s.nokta?`<span class="sekme-nokta"></span>`:""}</button>`).join("")}
+        ${s.ico?`<i class="${s.ico==="youtube"?"fa-brands":"fa-solid"} fa-${s.ico}"></i>`:""}${esc(s.ad)}${s.sayi?`<span class="sekme-sayi">${s.sayi}</span>`:""}${s.nokta?`<span class="sekme-nokta"></span>`:""}</button>`).join("")}
     </div>
     ${govde()}
   </section>`;
@@ -313,7 +316,7 @@ function bolumHakkinda(id){
       <h3 style="margin:10px 0 8px">${esc(ceviri(d.ad))} programı</h3>
       <p class="muted" style="font-size:15px;line-height:1.6">${esc(ceviri(d.aciklama)||ceviri(d.ozet)||"")}</p>
       <div class="sx-row" style="margin-top:18px">
-        <a class="btn" href="https://wa.me/${tel}?text=${encodeURIComponent(ceviri(d.ad)+" dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener">Deneme dersi al</a>
+        <a class="btn" href="https://wa.me/${tel}?text=${encodeURIComponent(ceviri(d.ad)+" dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Deneme dersi al</a>
         <button class="btn ghost" data-dsekme="kayit">Kayıtlı dersleri gör</button>
       </div>
     </div>
@@ -433,13 +436,13 @@ function bolumSinav(id){
       <div class="eyebrow">Sınav</div>
       <h3 style="margin:10px 0 8px">Kodla sınava gir</h3>
       <p class="muted" style="font-size:14px">Öğretmeninin verdiği altı haneli kodu yaz.</p>
-      <a class="btn" href="#/sinav" style="margin-top:14px">Sınav ekranına git</a>
+      <a class="btn" href="#/sinav" style="margin-top:14px"><i class="fa-solid fa-file-pen"></i> Sınav ekranına git</a>
     </div>
     <div class="card pad">
       <span class="tag teal">Kodsuz</span>
       <h3 style="margin:12px 0 8px">Serbest alıştırma</h3>
       <p class="muted" style="font-size:14px">Bu dersten kendine soru üret, sonuç kimseye gitmez.</p>
-      <button class="btn ghost" data-alistir="${esc(id)}" style="margin-top:14px">Alıştırmayı kur</button>
+      <button class="btn ghost" data-alistir="${esc(id)}" style="margin-top:14px"><i class="fa-solid fa-calculator"></i> Alıştırmayı kur</button>
     </div>
   </div>
   ${girisliMi()?`

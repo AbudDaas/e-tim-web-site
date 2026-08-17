@@ -734,3 +734,12 @@ h1,h2,h3,p,li,td,th,summary,label,figcaption,
 /* --- yapay zekâ kutusu --- */
 .yz-kutu{margin-top:14px;padding:14px;border-radius:14px;
   border:1px dashed rgba(124,58,237,.45);background:rgba(124,58,237,.06)}
+
+/* --- Font Awesome simgeleri (yerel, ikonlar.js) --- */
+i[class*="fa-"]{display:inline-flex;align-items:center;justify-content:center;vertical-align:-.08em}
+svg.fa{width:1em;height:1em;fill:currentColor;display:block}
+.btn i[class*="fa-"]{margin-inline-end:.05em;font-size:.95em;opacity:.95}
+.chip i[class*="fa-"]{margin-inline-end:.3em;font-size:.9em}
+nav a i[class*="fa-"]{margin-inline-end:.35em}
+.sx-tabs button i[class*="fa-"],.ders-sekme button i[class*="fa-"]{margin-inline-end:.35em;font-size:.92em}
+.sx-item i[class*="fa-"]{color:var(--gece-2)}

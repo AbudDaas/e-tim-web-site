@@ -164,7 +164,7 @@ function vYonetim(){
         <span class="sx-badge ok">${t("yonetici")}</span>
         <span style="margin-inline-start:auto"></span>
         ${SX.yonKirli?`<span class="sx-badge wait">kaydedilmedi</span>`:""}
-        <button class="btn sm" data-sx="yonKaydet">Yayınla</button></div>
+        <button class="btn sm" data-sx="yonKaydet"><i class="fa-solid fa-floppy-disk"></i> Yayınla</button></div>
 
       <div class="sx-tabs" style="flex-wrap:wrap">
         ${YON_BOLUM.map(x=>`<button data-sx="yonTab" data-v="${x.k}" aria-pressed="${b.k===x.k}">${x.ad}</button>`).join("")}
@@ -185,9 +185,9 @@ function vYonetim(){
       ${(b.listeler||[]).map(l=>yonListe(l)).join("")}
 
       <div class="sx-row" style="margin-top:22px;border-top:1px solid rgba(20,26,51,.1);padding-top:16px">
-        <button class="btn" data-sx="yonKaydet">Değişiklikleri yayınla</button>
-        <button class="btn ghost" data-sx="yonYedek">JSON yedeği indir</button>
-        <button class="btn ghost" data-sx="yonSifirla">Dosyadaki varsayılana dön</button>
+        <button class="btn" data-sx="yonKaydet"><i class="fa-solid fa-floppy-disk"></i> Değişiklikleri yayınla</button>
+        <button class="btn ghost" data-sx="yonYedek"><i class="fa-solid fa-download"></i> JSON yedeği indir</button>
+        <button class="btn ghost" data-sx="yonSifirla"><i class="fa-solid fa-rotate"></i> Dosyadaki varsayılana dön</button>
       </div>
       <div class="sx-note" id="yonNot">Şu an <b>${DILLER[aktifDil()].ad}</b> içeriğini düzenliyorsun. Başka bir dilin metnini düzenlemek için Profil → Ayarlar bölümünden dili değiştir. Yayınla dediğin an site herkeste güncellenir.</div>
     </div></section>`;

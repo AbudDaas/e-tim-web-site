@@ -54,7 +54,8 @@ function ciz(){
     const ab=$("authBtn");
     if(ab){
       const u=SX.user;
-      ab.textContent = cevirHtml(u ? (u.ad||"").split(" ")[0] : t("girisYap"));
+      const etiket = u ? (u.ad||"").split(" ")[0] : t("girisYap");
+      ab.innerHTML = (u ? '<i class="fa-solid fa-user"></i> ' : '<i class="fa-solid fa-arrow-right-to-bracket"></i> ') + cevirHtml(etiket);
       ab.setAttribute("aria-label", u ? "Profilim" : "Öğretmen girişi");
       ab.classList.toggle("ghost", !u);
     }
@@ -67,6 +68,7 @@ function ciz(){
     $("brandName").textContent=ceviri(DATA.marka.ad);
     $("brandSub").textContent=ceviri(DATA.marka.alt);
     altBilgiCiz();
+    if(typeof ikonlariCiz==="function") ikonlariCiz();
     if(typeof menuOlc==="function") menuOlc();
   }catch(hata){
     console.error("çizim hatası:",hata);

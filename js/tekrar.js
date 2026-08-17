@@ -76,7 +76,7 @@ function srsOzetKutusu(){
       <div class="srs-etiketler">${Object.keys(dersler).map(d=>
         `<span class="ders-rozet" style="--dr:${dersRenk(d)}">${dersIco(d)} ${dersAd(d)} · ${dersler[d]}</span>`).join("")}</div>
     </div>
-    <button class="btn" data-srs="basla">Tekrara başla</button>
+    <button class="btn" data-srs="basla"><i class="fa-solid fa-rotate"></i> Tekrara başla</button>
   </div>`;
 }
 
@@ -107,7 +107,7 @@ function srsEkran(){
         <button class="btn ghost" data-srs="puan" data-v="2">Normal<span>birkaç gün</span></button>
         <button class="btn" data-srs="puan" data-v="3">Kolay<span>daha seyrek</span></button>
       </div>`
-      : `<button class="btn" data-srs="goster" style="margin-top:14px">Cevabı göster</button>`}
+      : `<button class="btn" data-srs="goster" style="margin-top:14px"><i class="fa-solid fa-eye"></i> Cevabı göster</button>`}
   </section>`;
 }
 
