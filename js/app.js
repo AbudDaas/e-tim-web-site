@@ -69,6 +69,7 @@ function ciz(){
     $("brandSub").textContent=ceviri(DATA.marka.alt);
     altBilgiCiz();
     if(typeof ikonlariCiz==="function") ikonlariCiz();
+    if(typeof cnlOdakKoru==="function") cnlOdakKoru();
     if(typeof menuOlc==="function") menuOlc();
   }catch(hata){
     console.error("çizim hatası:",hata);

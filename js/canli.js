@@ -8,7 +8,8 @@
 const CNL = {
   kod:null, oda:null, oyuncular:[], benim:null,
   rol:null,               /* "sunucu" | "oyuncu" */
-  zaman:null, sonIndex:-1, cevapladi:false, kalan:0, secim:null
+  zaman:null, sonIndex:-1, cevapladi:false, kalan:0, secim:null,
+  girdi:"", sonImza:null, saniye:null
 };
 const CNL_SURE = 20;      /* soru başına saniye */
 
@@ -42,6 +43,7 @@ async function cnlSonraki(){
 async function cnlKapat(){
   if(CNL.rol==="sunucu" && CNL.oda){ CNL.oda.durum="bitti"; try{ await API.canliYaz(CNL.oda); }catch(e){} }
   clearInterval(CNL.zaman); CNL.zaman=null;
+  clearInterval(CNL.saniye); CNL.saniye=null;
   CNL.kod=null; CNL.oda=null; CNL.rol=null; CNL.oyuncular=[]; CNL.benim=null;
   SX.canli=false; ciz();
 }
@@ -61,7 +63,7 @@ async function cnlKatil(kod, ad){
 }
 async function cnlCevapla(deger){
   if(CNL.cevapladi || !CNL.oda) return;
-  CNL.cevapladi=true; CNL.secim=deger;
+  CNL.cevapladi=true; CNL.secim=deger; CNL.girdi="";
   const q=CNL.oda.qs[CNL.oda.soruIndex];
   const dogru=cevapDogruMu(q,deger);
   if(dogru){
@@ -73,8 +75,35 @@ async function cnlCevapla(deger){
 }
 
 /* ---------------- yoklama ---------------- */
+/* Ekranın tamamı yalnız durum ya da soru değişince çizilir.
+   Diğer zamanlarda sadece sayaç, çubuk ve skor tablosu tazelenir —
+   böylece yazılan cevap silinmez ve odak kaybolmaz. */
+function cnlImza(){
+  const o=CNL.oda||{};
+  return [o.durum, o.soruIndex, CNL.cevapladi?1:0, CNL.rol].join("|");
+}
+function cnlKismiGuncelle(){
+  const k=$("cnlKalan");
+  if(k){ k.textContent=CNL.kalan; k.classList.toggle("az", CNL.kalan<=5); }
+  const b=$("cnlBar");
+  if(b && CNL.oda) b.style.width=Math.round(CNL.kalan/(CNL.oda.sure||CNL_SURE)*100)+"%";
+  const t=$("cnlTablo");
+  if(t) t.innerHTML=cevirHtml(cnlTabloIc());
+  const s=$("cnlSayi");
+  if(s) s.textContent=CNL.oyuncular.length+" katılımcı";
+}
+function cnlSaniyeBaslat(){
+  clearInterval(CNL.saniye);
+  CNL.saniye=setInterval(()=>{
+    if(!CNL.oda || CNL.oda.durum!=="basladi") return;
+    const gecen=(Date.now()-(CNL.oda.soruAt||Date.now()))/1000;
+    CNL.kalan=Math.max(0, Math.round((CNL.oda.sure||CNL_SURE)-gecen));
+    cnlKismiGuncelle();
+  },1000);
+}
 function cnlYoklamaBaslat(){
   clearInterval(CNL.zaman);
+  cnlSaniyeBaslat();
   CNL.zaman=setInterval(async ()=>{
     if(!CNL.kod){ clearInterval(CNL.zaman); return; }
     try{
@@ -83,7 +112,7 @@ function cnlYoklamaBaslat(){
         if(o){
           const yeniSoru = o.soruIndex!==CNL.sonIndex;
           CNL.oda=o;
-          if(yeniSoru){ CNL.sonIndex=o.soruIndex; CNL.cevapladi=false; CNL.secim=null; }
+          if(yeniSoru){ CNL.sonIndex=o.soruIndex; CNL.cevapladi=false; CNL.secim=null; CNL.girdi=""; }
         }
       }
       CNL.oyuncular=await API.canliOyuncular(CNL.kod);
@@ -92,25 +121,28 @@ function cnlYoklamaBaslat(){
         const gecen=(Date.now()-(CNL.oda.soruAt||Date.now()))/1000;
         CNL.kalan=Math.max(0, Math.round((CNL.oda.sure||CNL_SURE)-gecen));
       }
-      ciz();
+      const imza=cnlImza();
+      if(imza!==CNL.sonImza){ CNL.sonImza=imza; ciz(); }   /* yeni soru ya da durum değişti */
+      else cnlKismiGuncelle();                              /* sadece sayaç ve tablo */
     }catch(e){}
   }, 2000);
 }
 
 /* ---------------- görünümler ---------------- */
+function cnlTabloIc(){
+  if(!CNL.oyuncular.length) return `<div class="sx-empty">Henüz kimse katılmadı.</div>`;
+  return CNL.oyuncular.slice(0,10).map((p,i)=>`
+    <div class="cnl-satir ${CNL.benim&&p.id===CNL.benim.id?"ben":""}">
+      <span class="cnl-sira">${i+1}</span>
+      <span class="cnl-ad">${esc(p.ad)}</span>
+      <span class="cnl-puan">${(p.puan||0).toLocaleString("tr-TR")}</span></div>`).join("");
+}
 function cnlEkran(){
   if(!CNL.oda) return `<section class="page"><div class="card pad">Oda kapandı.</div></section>`;
   const o=CNL.oda;
   const q=(o.soruIndex>=0 && o.durum==="basladi") ? o.qs[o.soruIndex] : null;
 
-  const tablo=`<div class="cnl-tablo">
-    ${CNL.oyuncular.length? CNL.oyuncular.slice(0,10).map((p,i)=>`
-      <div class="cnl-satir ${CNL.benim&&p.id===CNL.benim.id?"ben":""}">
-        <span class="cnl-sira">${i+1}</span>
-        <span class="cnl-ad">${esc(p.ad)}</span>
-        <span class="cnl-puan">${(p.puan||0).toLocaleString("tr-TR")}</span></div>`).join("")
-      : `<div class="sx-empty">Henüz kimse katılmadı.</div>`}
-  </div>`;
+  const tablo=`<div class="cnl-tablo" id="cnlTablo">${cnlTabloIc()}</div>`;
 
   /* bekleme odası */
   if(o.durum==="bekliyor") return `<section class="page">
@@ -120,7 +152,7 @@ function cnlEkran(){
       <p class="muted">${o.qs.length} soru · soru başına ${o.sure||CNL_SURE} saniye</p>
       <div class="cnl-kod">${o.kod}</div>
       <p class="muted" style="font-size:13.5px">Öğrenciler Sınav sekmesinden bu kodu girerek katılır.</p>
-      <div class="cnl-sayi">${CNL.oyuncular.length} katılımcı</div>
+      <div class="cnl-sayi" id="cnlSayi">${CNL.oyuncular.length} katılımcı</div>
       ${tablo}
       <div class="sx-row" style="margin-top:16px">
         ${CNL.rol==="sunucu"?`<button class="btn" data-cnl="sonraki"><i class="fa-solid fa-play"></i> Yarışmayı başlat</button>`:`<span class="muted">Öğretmenin başlatması bekleniyor…</span>`}
@@ -147,10 +179,10 @@ function cnlEkran(){
   return `<section class="page">
     <div class="cnl-ust">
       <span class="cnl-mini">${o.soruIndex+1} / ${o.qs.length}</span>
-      <span class="cnl-kalan ${CNL.kalan<=5?"az":""}">${CNL.kalan}</span>
+      <span class="cnl-kalan ${CNL.kalan<=5?"az":""}" id="cnlKalan">${CNL.kalan}</span>
       <span class="cnl-mini">${CNL.oyuncular.length} kişi</span>
     </div>
-    <div class="cnl-bar"><i style="width:${Math.round(CNL.kalan/(o.sure||CNL_SURE)*100)}%"></i></div>
+    <div class="cnl-bar"><i id="cnlBar" style="width:${Math.round(CNL.kalan/(o.sure||CNL_SURE)*100)}%"></i></div>
 
     <div class="card pad cnl-soru">
       ${tip==="aritmetik"
@@ -175,11 +207,32 @@ function cnlCevapAlani(q,tip){
         <span class="sik-harf">${String.fromCharCode(65+i)}</span>${esc(x)}</button>`).join("")}</div>`;
   }
   return `<div class="sx-answer" style="margin-top:12px">
-    <input id="cnlCevap" type="text" inputmode="${tip==="aritmetik"?"numeric":"text"}" autocomplete="off" placeholder="?">
+    <input id="cnlCevap" type="text" inputmode="${tip==="aritmetik"?"numeric":"text"}" autocomplete="off"
+      placeholder="?" value="${esc(CNL.girdi||"")}">
     <button class="btn" data-cnl="gonder"><i class="fa-solid fa-paper-plane"></i> Gönder</button></div>`;
 }
 
+/* Tam çizimden sonra cevap kutusuna odağı ve imleci geri koy. */
+function cnlOdakKoru(){
+  if(!SX.canli || CNL.rol!=="oyuncu" || CNL.cevapladi) return;
+  const g=$("cnlCevap"); if(!g) return;
+  if(CNL.girdi && g.value!==CNL.girdi) g.value=CNL.girdi;
+  if(document.activeElement!==g && window.innerWidth>760){
+    try{ g.focus(); g.setSelectionRange(g.value.length,g.value.length); }catch(e){}
+  }
+}
+
 /* ---------------- olaylar ---------------- */
+/* yazılanı hafızada tut: kısmi güncelleme sırasında kaybolmasın */
+document.addEventListener("input", e=>{
+  if(e.target && e.target.id==="cnlCevap") CNL.girdi=e.target.value;
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter" && e.target && e.target.id==="cnlCevap"){
+    const d=document.querySelector('[data-cnl="gonder"]');
+    if(d) d.click();
+  }
+});
 document.addEventListener("click", async e=>{
   const b=e.target.closest("[data-cnl]"); if(!b) return;
   const a=b.dataset.cnl;
