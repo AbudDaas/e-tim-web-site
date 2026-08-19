@@ -286,7 +286,7 @@ function sxPanel(){
     <div class="card pad">
       <div class="sx-user"><b>${esc(u.ad)}</b><span>${esc(u.mail)}</span>
         ${yon?`<span class="sx-badge ok">yönetici</span>`:`<span class="sx-badge ok">öğretmen</span>`}
-        ${u.sinifKodu?`<span class="sx-badge">sınıf kodu ${esc(u.sinifKodu)}</span>`:""}
+        ${u.sinifKodu?`<span class="sx-badge">${t("sinifKodu2")} ${esc(u.sinifKodu)}</span>`:""}
         <span style="margin-inline-start:auto"></span>
         <button class="btn ghost sm" data-sx="cikis"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış yap</button></div>
       ${(yon&&bekleyen)?`<div class="uyari" data-sx="ptab" data-v="hesaplar" role="button" tabindex="0">
@@ -312,7 +312,7 @@ function sxSinavListe(){
     <button class="btn" data-sx="yeniSinav" style="margin-bottom:18px"><i class="fa-solid fa-plus"></i> Yeni sınav oluştur</button>
     ${l.length?l.map(x=>`
       <div class="sx-item"><div class="g"><b>${esc(x.ad)}</b>
-        <div class="s">${x.qs.length} soru · ${x.limit?Math.round(x.limit/60)+" dk":"süresiz"} · ${x.acik===false?"kapalı":"açık"}</div></div>
+        <div class="s">${x.qs.length} ${t("soru")} · ${x.limit?Math.round(x.limit/60)+" "+t("dakika"):t("suresiz")} · ${x.acik===false?t("kapaliDurum"):t("acikDurum")}</div></div>
         <span class="sx-badge">${dersBul(x.ders).ico} ${esc(ceviri(dersBul(x.ders).ad))}</span>
         <span class="sx-pill">${x.kod}</span></div>
       <div class="sx-row" style="margin:-6px 0 14px">
@@ -572,7 +572,7 @@ function sertifikaKarti(x,u){
 function sxOgrenciListe(){
   const l=SX.ogrenciler||[], u=SX.user;
   return `<h3 style="margin:6px 0 6px">Öğrencilerim</h3>
-    <p class="muted" style="font-size:13.5px;margin-bottom:14px">Öğrencilerin kayıt olurken bu kodu girer, hesapları sana bağlanır.</p>
+    <p class="muted" style="font-size:13.5px;margin-bottom:14px">${t("sinifKoduAcik")}</p>
     <div class="sx-item" style="border:0;padding-top:0">
       <div class="g"><b>Sınıf kodun</b><div class="s">Öğrencilerine bu kodu ver</div></div>
       <span class="sx-pill">${esc(u.sinifKodu||"—")}</span></div>
@@ -590,7 +590,7 @@ function sxOgrenciListe(){
       const say=(SX.ogrOzet&&SX.ogrOzet[o.uid])||{sinav:0,ort:0,odev:0};
       return `<div class="sx-item"><div class="g"><b>${esc(o.ad)}</b>
         <div class="s">${esc(o.mail)} · son giriş ${o.sonGiris?tarihSaat(o.sonGiris):"—"}</div></div>
-        <span class="sx-badge ok">${say.sinav} sınav</span></div>
+        <span class="sx-badge ok">${say.sinav} ${t("sinavAdet")}</span></div>
       <div class="sx-row" style="margin:-6px 0 14px">
         <button class="btn ghost sm" data-sx="ogrenciAc" data-v="${o.uid}"><i class="fa-solid fa-user"></i> Detay ve ödev</button></div>`;
     }).join("") : `<div class="sx-empty">Henüz öğrenci bağlı değil. Sınıf kodunu paylaş, öğrencilerin kayıt olurken girsin.</div>`}

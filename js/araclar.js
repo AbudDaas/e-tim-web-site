@@ -145,12 +145,12 @@ function bolumHarfler(id){
     <p class="muted" style="font-size:13.5px;margin-bottom:14px">Harfe dokun: adını, sesini ve kelimenin başında, ortasında, sonunda nasıl yazıldığını gösterir.</p>
     <div class="hrf-izgara">
       ${HARFLER.map((x,i)=>`<button class="hrf ${HRF.secili===i?"secili":""}" data-hrf="${i}">
-        <span class="hrf-harf">${x.h}</span><span class="hrf-ad">${esc(x.ad)}</span></button>`).join("")}
+        <span class="hrf-harf">${x.h}</span><span class="hrf-ad">${esc(aktifDil()==="ar"?(x.arAd||x.ad):x.ad)}</span></button>`).join("")}
     </div>
     ${s?`<div class="hrf-detay">
       <div class="hrf-buyuk">${s.h}</div>
       <div style="flex:1">
-        <b style="font-family:var(--disp);font-size:18px">${esc(s.ad)}</b>
+        <b style="font-family:var(--disp);font-size:18px">${esc(aktifDil()==="ar"?(s.arAd||s.ad):s.ad)}</b>
         <div class="hrf-bicim">
           <div><span>başta</span><b>${s.b}</b></div>
           <div><span>ortada</span><b>${s.o}</b></div>
@@ -221,7 +221,7 @@ function bolumEzber(id){
         return `<button class="ezb ${du}" data-ezb="${s.n}" title="${esc(EZB_DURUM[du])}">
           <span class="ezb-no">${s.n}</span>
           <span class="ezb-ar">${s.ar}</span>
-          <span class="ezb-ad">${esc(s.ad)}</span>
+          ${aktifDil()==="ar" ? "" : `<span class="ezb-ad">${esc(s.ad)}</span>`}
           <span class="ezb-ayet">${s.ayet} ayet</span></button>`;
       }).join("")}
     </div>

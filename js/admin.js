@@ -189,7 +189,7 @@ function vYonetim(){
         <button class="btn ghost" data-sx="yonYedek"><i class="fa-solid fa-download"></i> JSON yedeği indir</button>
         <button class="btn ghost" data-sx="yonSifirla"><i class="fa-solid fa-rotate"></i> Dosyadaki varsayılana dön</button>
       </div>
-      <div class="sx-note" id="yonNot">Şu an <b>${DILLER[aktifDil()].ad}</b> içeriğini düzenliyorsun. Başka bir dilin metnini düzenlemek için Profil → Ayarlar bölümünden dili değiştir. Yayınla dediğin an site herkeste güncellenir.</div>
+      <div class="sx-note" id="yonNot">${t("yonDilNot1")} <b>${DILLER[aktifDil()].ad}</b> ${t("yonDilNot2")}</div>
     </div></section>`;
 }
 

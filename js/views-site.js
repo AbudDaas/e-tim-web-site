@@ -313,7 +313,7 @@ function bolumHakkinda(id){
   <div class="grid g2" style="margin-top:18px">
     <div class="card pad">
       <div class="eyebrow">Ders hakkında</div>
-      <h3 style="margin:10px 0 8px">${esc(ceviri(d.ad))} programı</h3>
+      <h3 style="margin:10px 0 8px">${esc(ceviri(d.ad))} — ${t("program2")}</h3>
       <p class="muted" style="font-size:15px;line-height:1.6">${esc(ceviri(d.aciklama)||ceviri(d.ozet)||"")}</p>
       <div class="sx-row" style="margin-top:18px">
         <a class="btn" href="https://wa.me/${tel}?text=${encodeURIComponent(ceviri(d.ad)+" dersi için bilgi almak istiyorum.")}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Deneme dersi al</a>
