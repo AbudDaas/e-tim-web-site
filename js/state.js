@@ -1,6 +1,6 @@
 /* Uygulama durumu — sınav ve profil sekmelerinin canlı hâli. */
 
-const SX={ ekran:"giris", pekran:"giris", ptab:"sinavlar",
+const SX={ ekran:"giris", pekran:"giris", ptab:"sinavlar", otab:"ozet",
   user:null, exam:null, ogrenci:"", taslak:null, sinavlar:[], hesaplar:[], sonuclar:[],
   resCode:null, acikSonuc:null, alistirma:false,
   kayitRol:"ogrenci", geriYol:null, yonTab:"genel", yonKirli:false, karne:false, tekrar:false, canli:false, dogrulama:null, ogrenciler:[], ogrOzet:{}, acikOgrenci:null,

@@ -743,3 +743,10 @@ svg.fa{width:1em;height:1em;fill:currentColor;display:block}
 nav a i[class*="fa-"]{margin-inline-end:.35em}
 .sx-tabs button i[class*="fa-"],.ders-sekme button i[class*="fa-"]{margin-inline-end:.35em;font-size:.92em}
 .sx-item i[class*="fa-"]{color:var(--gece-2)}
+
+/* sekme şeritleri: dar ekranda yatay kayar, taşmaz */
+.sx-tabs,.ders-sekme{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.sx-tabs::-webkit-scrollbar,.ders-sekme::-webkit-scrollbar{display:none}
+.sx-tabs button,.ders-sekme button{white-space:nowrap;position:relative}
+.sx-tabs button .sekme-nokta{margin-inline-start:6px}
+@media(min-width:900px){ .sx-tabs,.ders-sekme{flex-wrap:wrap;overflow:visible} }

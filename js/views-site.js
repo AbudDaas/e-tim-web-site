@@ -254,42 +254,27 @@ function dersOdevVar(id){
   return (SX.ogrOdev||[]).some(x=>x.durum!=="tamamlandi" && (x.ders===id));
 }
 function dersSekmeleri(id){
-  const c=dersIcerik(id);
-  const d=dersBul2(id);
-  const IK={hakkinda:"circle-info",arac:"layer-group",mufredat:"list-ol",kayit:"play",
-            kesit:"youtube",podcast:"podcast",yarisma:"trophy",gurur:"medal",sinav:"file-pen"};
-  const s=[
-    {k:"hakkinda", ad:"Ders hakkında"},
-    {k:"mufredat", ad:"Müfredat"},
-    {k:"kayit",    ad:"Kayıtlı dersler", sayi:c.kayit.length},
-    {k:"kesit",    ad:"Ders kesitleri",  sayi:c.kesit.length},
-    {k:"podcast",  ad:"Podcast",         sayi:c.bolum.length},
-    {k:"yarisma",  ad:"Yarışmalar",      sayi:(c.yarisma?1:0)+c.gecmis.length},
-    {k:"gurur",    ad:"Gurur tablosu"},
-    {k:"sinav",    ad:"Sınav ve ödev",   nokta:dersOdevVar(id)}
-  ];
+  const c=dersIcerik(id), d=dersBul2(id);
   const arac=aracTanim(d&&d.arac);
-  if(arac) s.splice(1,0,{k:"arac", ad:arac.ad});
-  s.forEach(x=>{ x.ico=IK[x.k]||null; });
-  return s;
+  return [
+    {k:"ogren",   ad:"Öğren",       ico:"graduation-cap", sayi:c.kayit.length},
+    {k:"alistir", ad:arac?arac.ad:"Alıştır", ico:"layer-group"},
+    {k:"izle",    ad:"İzle ve dinle", ico:"play", sayi:c.kesit.length+c.bolum.length},
+    {k:"yaris",   ad:"Yarış",       ico:"trophy", sayi:(c.yarisma?1:0)+c.gecmis.length}
+  ];
 }
 
 function vDers(){
   const id=SITE.ders || (dersListe()[0]||{}).id;
   const d=dersBul2(id);
   if(!d) return `<section class="page"><div class="card pad">Ders bulunamadı.</div></section>`;
-  const sekme=SITE.dersSekme||"hakkinda";
+  const sekme=SITE.dersSekme||"ogren";
   const govde={
-    hakkinda:()=>bolumHakkinda(id),
-    kayit:   ()=>bolumKayitli(id),
-    kesit:   ()=>bolumKesit(id),
-    podcast: ()=>bolumPodcast(id),
-    yarisma: ()=>bolumYarisma(id),
-    gurur:   ()=>bolumGurur(id),
-    arac:    ()=>aracBolumu(id),
-    mufredat:()=>bolumMufredat(id),
-    sinav:   ()=>bolumSinav(id)
-  }[sekme] || (()=>bolumHakkinda(id));
+    ogren:   ()=>bolumHakkinda(id)+bolumMufredat(id)+bolumKayitli(id),
+    alistir: ()=>aracBolumu(id)+bolumAlistirma(id),
+    izle:    ()=>bolumKesit(id)+bolumPodcast(id),
+    yaris:   ()=>bolumYarisma(id)+bolumGurur(id)
+  }[sekme] || (()=>bolumHakkinda(id)+bolumMufredat(id)+bolumKayitli(id));
 
   return `<section class="page">
     <div class="ders-baslik" style="--dr:${d.renk||"#4338CA"}">
@@ -465,4 +450,32 @@ function bolumSinav(id){
     : `<div class="sx-empty">Bu derste henüz sınav çözmedin.</div>`}`
   :`<div class="card pad" style="margin-top:20px"><p class="muted">Ödevlerini ve sonuçlarını görmek için giriş yap.</p>
      <button class="btn" data-sx="girisIste" style="margin-top:12px">Giriş yap</button></div>`}`;
+}
+
+/* ---- alıştırma: serbest çalışma ve o dersin günlük tekrarı ---- */
+function bolumAlistirma(id){
+  const bekleyen = (typeof srsBugun==="function" && girisliMi()) ? srsBugun(id) : [];
+  return `
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card pad">
+      <span class="tag teal">Kodsuz</span>
+      <h3 style="margin:12px 0 8px">Serbest alıştırma</h3>
+      <p class="muted" style="font-size:14px">Bu dersten kendine soru üret, sonuç kimseye gitmez.</p>
+      <button class="btn ghost" data-alistir="${esc(id)}" style="margin-top:14px">
+        <i class="fa-solid fa-calculator"></i> Alıştırmayı kur</button>
+    </div>
+    <div class="card pad">
+      <span class="tag">Tekrar</span>
+      <h3 style="margin:12px 0 8px">Günlük tekrar</h3>
+      ${bekleyen.length
+        ? `<p class="muted" style="font-size:14px">Bu derste hatırlaman gereken <b>${bekleyen.length}</b> şey var.</p>
+           <button class="btn" data-srs="basla" data-v="${esc(id)}" style="margin-top:14px">
+             <i class="fa-solid fa-rotate"></i> Tekrara başla</button>`
+        : girisliMi()
+          ? `<p class="muted" style="font-size:14px">Bugünlük tekrar edilecek bir şey yok. Yarın yeniden bak.</p>`
+          : `<p class="muted" style="font-size:14px">Tekrar listesini görmek için giriş yap.</p>
+             <button class="btn ghost" data-sx="girisIste" style="margin-top:14px">
+               <i class="fa-solid fa-arrow-right-to-bracket"></i> Giriş yap</button>`}
+    </div>
+  </div>`;
 }

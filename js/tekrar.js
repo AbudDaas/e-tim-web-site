@@ -116,7 +116,7 @@ document.addEventListener("click", async e=>{
   const b=e.target.closest("[data-srs]"); if(!b) return;
   const eylem=b.dataset.srs;
   if(eylem==="basla"){
-    SRS.kuyruk=srsBugun(); SRS.i=0; SRS.acik=false;
+    SRS.kuyruk=srsBugun(b.dataset.v||null); SRS.i=0; SRS.acik=false;
     for(let i=SRS.kuyruk.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [SRS.kuyruk[i],SRS.kuyruk[j]]=[SRS.kuyruk[j],SRS.kuyruk[i]]; }
     SX.tekrar=true; ciz(); window.scrollTo(0,0); return;
   }

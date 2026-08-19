@@ -459,6 +459,7 @@ document.addEventListener("click",async e=>{
     tekrar:()=>{ SX.sureBitti=false; cozBasla(sinavListesi()); },
     yanlislar:()=>{ if(SX._yanlis&&SX._yanlis.length){ SX.sureBitti=false; cozBasla(SX._yanlis.slice()); } },
     ptab2:()=>{ SX.pekran=v; ciz(); },
+    otab:()=>{ SX.otab=v; ciz(); window.scrollTo(0,0); },
     ptab:async()=>{ SX.ptab=v; ciz(); if(v==="ogrenciler"){ await yoklamaGunuYukle(); ciz(); } },
     girisYap:girisYap, kayitOl:kayitOl,
     cikis:()=>{ Oturum.sil(); SX.user=null; SX.sinavlar=[]; SX.hesaplar=[]; FB.token=null; SX.pekran="giris"; ciz(); toast("Çıkış yapıldı."); },

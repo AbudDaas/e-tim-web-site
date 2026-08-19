@@ -39,7 +39,7 @@ function ciz(){
     SITE.ders = (s&&s.ders) ? s.ders : null;
 
     $("nav").innerHTML=cevirHtml(LISTE.filter(p=>!(p.gizli&&p.gizli())).map(p=>{
-      const nokta = p.ders && typeof dersOdevVar==="function" && dersOdevVar(p.ders) ? '<span class="menu-nokta"></span>' : "";
+      const nokta = p.ders && typeof dersOdevVar==="function" && dersOdevVar(p.ders) ? '<span class="menu-nokta" title="bekleyen ödev"></span>' : "";
       const ad = typeof p.ad==="function" ? p.ad() : p.ad;
       return `<a href="#${p.yol}" ${p.yol===y?'aria-current="page"':""}>${p.ico?p.ico+" ":""}${ad}${nokta}</a>`;
     }).join(""));
@@ -108,6 +108,10 @@ async function belgeDogrula(){
 
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{
+  const on=e.target.closest("[data-odev]");
+  if(on){ SX.otab="odev"; SX.pekran="panel"; location.hash="#/profil"; return; }
+  const ot=e.target.closest("[data-otab]");
+  if(ot){ SX.otab=ot.dataset.otab; ciz(); window.scrollTo(0,0); return; }
   const ds=e.target.closest("[data-dsekme]");
   if(ds){ SITE.dersSekme=ds.dataset.dsekme; filtre=0; ciz(); window.scrollTo(0,0); return; }
   const dk=e.target.closest("[data-ders]");
