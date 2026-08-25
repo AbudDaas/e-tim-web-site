@@ -5,6 +5,9 @@
    Gerçek zamanlı bağlantı yerine 2 saniyede bir yoklama yapılır; küçük
    sınıflar için yeterli ve ek altyapı gerektirmez. */
 
+const CNL_SURUM = "v3";   /* ekranda görünür: doğru dosyanın yüklendiğini doğrular */
+let CNL_CIZIM = 0;       /* tam çizim sayısı — 2 saniyede bir artıyorsa sorun var */
+
 const CNL = {
   kod:null, oda:null, oyuncular:[], benim:null,
   rol:null,               /* "sunucu" | "oyuncu" */
@@ -75,6 +78,8 @@ async function cnlCevapla(deger){
 }
 
 /* ---------------- yoklama ---------------- */
+function cnlTamCiz(){ CNL_CIZIM++; ciz(); }
+
 /* Ekranın tamamı yalnız durum ya da soru değişince çizilir.
    Diğer zamanlarda sadece sayaç, çubuk ve skor tablosu tazelenir —
    böylece yazılan cevap silinmez ve odak kaybolmaz. */
@@ -90,7 +95,10 @@ function cnlKismiGuncelle(){
   const t=$("cnlTablo");
   if(t) t.innerHTML=cevirHtml(cnlTabloIc());
   const s=$("cnlSayi");
-  if(s) s.textContent=CNL.oyuncular.length+" katılımcı";
+  if(s) s.textContent=cevirHtml(CNL.oyuncular.length+" katılımcı");
+  const d=$("cnlDurum");
+  if(d) d.textContent=CNL_SURUM+" · "+CNL_CIZIM;
+  if(typeof cnlOdakKoru==="function") cnlOdakKoru();
 }
 function cnlSaniyeBaslat(){
   clearInterval(CNL.saniye);
@@ -122,8 +130,8 @@ function cnlYoklamaBaslat(){
         CNL.kalan=Math.max(0, Math.round((CNL.oda.sure||CNL_SURE)-gecen));
       }
       const imza=cnlImza();
-      if(imza!==CNL.sonImza){ CNL.sonImza=imza; ciz(); }   /* yeni soru ya da durum değişti */
-      else cnlKismiGuncelle();                              /* sadece sayaç ve tablo */
+      if(imza!==CNL.sonImza){ CNL.sonImza=imza; cnlTamCiz(); }  /* yeni soru ya da durum değişti */
+      else cnlKismiGuncelle();                                   /* sadece sayaç ve tablo */
     }catch(e){}
   }, 2000);
 }
@@ -153,6 +161,7 @@ function cnlEkran(){
       <div class="cnl-kod">${o.kod}</div>
       <p class="muted" style="font-size:13.5px">Öğrenciler Sınav sekmesinden bu kodu girerek katılır.</p>
       <div class="cnl-sayi" id="cnlSayi">${CNL.oyuncular.length} katılımcı</div>
+      <div class="cnl-mini"><span class="cnl-tani" id="cnlDurum">${CNL_SURUM} · ${CNL_CIZIM}</span></div>
       ${tablo}
       <div class="sx-row" style="margin-top:16px">
         ${CNL.rol==="sunucu"?`<button class="btn" data-cnl="sonraki"><i class="fa-solid fa-play"></i> Yarışmayı başlat</button>`:`<span class="muted">Öğretmenin başlatması bekleniyor…</span>`}
@@ -178,7 +187,7 @@ function cnlEkran(){
   const tip=(q&&q.tip)||"aritmetik";
   return `<section class="page">
     <div class="cnl-ust">
-      <span class="cnl-mini">${o.soruIndex+1} / ${o.qs.length}</span>
+      <span class="cnl-mini">${o.soruIndex+1} / ${o.qs.length} <span class="cnl-tani" id="cnlDurum" title="sürüm · tam çizim sayısı">${CNL_SURUM} · ${CNL_CIZIM}</span></span>
       <span class="cnl-kalan ${CNL.kalan<=5?"az":""}" id="cnlKalan">${CNL.kalan}</span>
       <span class="cnl-mini">${CNL.oyuncular.length} kişi</span>
     </div>

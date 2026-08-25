@@ -62,6 +62,7 @@ function ciz(){
     if(SITE.ders && SITE.dersSekme==="yarisma") sayacBasla();
     if(y==="/sinav"&&SX.canli&&typeof cnlEkran==="function"){ $("view").innerHTML=cevirHtml(cnlEkran()); }
     if(y==="/sinav"&&!SX.canli&&SX.ekran==="coz") soruBoya();
+    if(SX.canli&&typeof cnlOdakKoru==="function") cnlOdakKoru();
     if(y==="/sinav"&&SX.ekran==="ayar") notYenile();
     if(y==="/profil"&&SX.pekran==="editor") notYenile();
     if(y==="/profil"&&SX.pekran==="sonuclar") sonuclariYukle();

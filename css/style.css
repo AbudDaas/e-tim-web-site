@@ -750,3 +750,4 @@ nav a i[class*="fa-"]{margin-inline-end:.35em}
 .sx-tabs button,.ders-sekme button{white-space:nowrap;position:relative}
 .sx-tabs button .sekme-nokta{margin-inline-start:6px}
 @media(min-width:900px){ .sx-tabs,.ders-sekme{flex-wrap:wrap;overflow:visible} }
+.cnl-tani{font-family:var(--mono);font-size:10px;opacity:.45;margin-inline-start:6px}
