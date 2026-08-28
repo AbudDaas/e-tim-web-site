@@ -95,6 +95,7 @@ async function belgeDogrula(){
   if(!anahtar || anahtar===_dogrulaSon) return;
   _dogrulaSon=anahtar;
   SX.dogrulama="araniyor";
+  try{ await API.anonim(); }catch(e){}      /* belgeyi okumak kimlik ister */
   const [uid,id]=anahtar.split(":");
   try{
     const s=await API.sertifikaAl(uid,id);

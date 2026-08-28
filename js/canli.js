@@ -54,6 +54,7 @@ async function cnlKapat(){
 /* ---------------- öğrenci: odaya gir ---------------- */
 async function cnlKatil(kod, ad){
   kod=String(kod||"").trim().toUpperCase();
+  try{ await API.anonim(); }catch(e){}      /* misafir katılımcı için kimlik */
   const oda=await API.canliAl(kod);
   if(!oda){ return "yok"; }
   if(oda.durum==="bitti"){ return "bitti"; }

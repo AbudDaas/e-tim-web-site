@@ -616,14 +616,31 @@ async function kayitOl(){
   const b=document.querySelector('[data-sx="kayitOl"]'); mesgul(b,true); n.textContent="Hesap oluşturuluyor…";
   try{
     const u=await API.kayit(mail,sifre,ad,rol,sinifKodu);
+    if(u.kodUyarisi){
+      const uyari = u.kodUyarisi==="SINIF_YOK"
+        ? "Hesabın açıldı ama öğretmen kodu bulunamadı. Profil → Ayarlar bölümünden bağlanabilirsin."
+        : u.kodUyarisi==="VELI_KOD_YOK"
+        ? "Hesabın açıldı ama veli kodu bulunamadı. Profilinden çocuğunu bağlayabilirsin."
+        : "Hesabın açıldı ama koda bağlanılamadı. Profil → Ayarlar bölümünden tekrar dene.";
+      toast(uyari);
+    }
     if(u.durum==="onayli") await girisSonrasi(u);
     else { SX.user=u; toast("Kaydın alındı. Yönetici onayı bekleniyor."); ciz(); }
   }catch(err){
     mesgul(b,false);
-    const m=/MAIL_VAR/.test(err.message) ? "Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene."
-      : /VELI_KOD_YOK/.test(err.message) ? "Bu veli kodu bulunamadı. Çocuğun profilindeki kodu kontrol et."
-      : /SINIF_YOK/.test(err.message) ? "Bu öğretmen kodu bulunamadı. Boş bırakıp sonra da ekleyebilirsin."
-      : "Bağlantı kurulamadı, internetini kontrol et.";
+    const k=String(err.message||"");
+    let m;
+    if(/MAIL_VAR/.test(k))           m="Bu e-posta zaten kayıtlı. Giriş yap sekmesini dene.";
+    else if(/VELI_KOD_YOK/.test(k))  m="Bu veli kodu bulunamadı. Çocuğun profilindeki kodu kontrol et.";
+    else if(/SINIF_YOK/.test(k))     m="Bu öğretmen kodu bulunamadı. Boş bırakıp sonra da ekleyebilirsin.";
+    else if(/KAPALI/.test(k))        m="Firebase'de e-posta ile kayıt kapalı. Authentication → Sign-in method → Email/Password açılmalı.";
+    else if(/ZAYIF/.test(k))         m="Şifre çok zayıf, en az 6 karakter olmalı.";
+    else if(/GECERSIZ_MAIL/.test(k)) m="E-posta adresi geçersiz görünüyor.";
+    else if(/COK_DENEME/.test(k))    m="Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.";
+    else if(/ANAHTAR/.test(k))       m="API anahtarı bu adresten kullanılamıyor. Google Cloud → Credentials → Websites kısıtına site adresini ekle.";
+    else if(/KURAL_YAZ/.test(k))     m="Hesap açıldı ama bilgiler veritabanına yazılamadı. Firestore kurallarını yeniden yayınla, sonra giriş yap.";
+    else if(/INTERNET/.test(k))      m="İnternete ulaşılamadı. Bağlantını kontrol et.";
+    else                             m="Kayıt tamamlanamadı. ("+k.slice(0,70)+")";
     n.innerHTML=cevirHtml(`<span class="sx-warn">${m}</span>`);
   }
 }

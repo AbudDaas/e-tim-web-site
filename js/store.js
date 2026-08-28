@@ -75,38 +75,71 @@ async function sinifGarantile(u){
 const API={
  async kayit(mail,sifre,ad,rol,ogretmenKodu){
    mail=mail.trim().toLowerCase(); rol=rol||"ogretmen";
-   let yonetici=!!(ADMIN_EMAIL&&mail===ADMIN_EMAIL.trim().toLowerCase());
-   if(!ADMIN_EMAIL&&rol==="ogretmen"){ try{ yonetici=(await this.hesaplar()).length===0 }catch(e){} }
-   // öğrenci hesapları doğrudan açılır, öğretmen hesapları yönetici onayı bekler
+   ogretmenKodu=(ogretmenKodu||"").trim().toUpperCase();
+   let yonetici=!!(ADMIN_EMAIL && mail===ADMIN_EMAIL.trim().toLowerCase());
+   if(!ADMIN_EMAIL && rol==="ogretmen"){ try{ yonetici=(await this.hesaplar()).length===0 }catch(e){} }
+
    const k={ mail, ad:ad.trim(), rol,
      durum:(rol==="ogrenci"||rol==="veli"||yonetici)?"onayli":"bekliyor",
      yonetici, at:Date.now(), sonGiris:Date.now() };
    if(rol==="ogretmen") k.sinifKodu=yeniKod();
-   if(rol==="veli"&&ogretmenKodu){
-     const bag=await this.veliBagAl(ogretmenKodu.trim().toUpperCase());
-     if(!bag) throw new Error("VELI_KOD_YOK");
-     k.cocuk=bag.ogrenci; k.cocukAd=bag.ogrenciAd;
-   }
-   if(rol==="ogrenci"&&ogretmenKodu){
-     const sinif=await this.sinifAl(ogretmenKodu.trim().toUpperCase());
-     if(!sinif) throw new Error("SINIF_YOK");
-     k.ogretmen=sinif.ogretmen; k.ogretmenAd=sinif.ogretmenAd;
-   }
+
    if(bulut()){
-     let j; try{ j=await FB.id("signUp",{email:mail,password:sifre,returnSecureToken:true}) }
-     catch(e){ throw new Error(/EMAIL_EXISTS/.test(e.message)?"MAIL_VAR":"AG") }
+     /* Önce hesabı aç: kod sorgusu kimlik gerektirir, jeton olmadan reddedilir. */
+     let j;
+     try{ j=await FB.id("signUp",{email:mail,password:sifre,returnSecureToken:true}); }
+     catch(e){
+       const m=String(e.message||"");
+       if(/EMAIL_EXISTS/.test(m)) throw new Error("MAIL_VAR");
+       if(/OPERATION_NOT_ALLOWED/.test(m)) throw new Error("KAPALI");
+       if(/WEAK_PASSWORD/.test(m)) throw new Error("ZAYIF");
+       if(/INVALID_EMAIL/.test(m)) throw new Error("GECERSIZ_MAIL");
+       if(/TOO_MANY|QUOTA/.test(m)) throw new Error("COK_DENEME");
+       if(/blocked|referer|API key|PERMISSION/i.test(m)) throw new Error("ANAHTAR:"+m.slice(0,80));
+       throw new Error("AG:"+m.slice(0,80));
+     }
      FB.token=j.idToken; FB.uid=j.localId; k.uid=j.localId;
-     await FB.set("users/"+j.localId,k);
-     if(k.sinifKodu) await FB.set("classes/"+k.sinifKodu,{kod:k.sinifKodu,ogretmen:k.uid,ogretmenAd:k.ad});
+
+     /* Kod çözümlemesi hesap açıldıktan sonra; başarısız olursa kayıt iptal edilmez. */
+     k.kodUyarisi = await this.koduBagla(k, rol, ogretmenKodu);
+
+     try{ await FB.set("users/"+j.localId,k); }
+     catch(e){ throw new Error("KURAL_YAZ"); }
+     if(k.sinifKodu){ try{ await FB.set("classes/"+k.sinifKodu,{kod:k.sinifKodu,ogretmen:k.uid,ogretmenAd:k.ad}); }catch(e){} }
      return k;
    }
+
+   /* yerel mod */
    if(await KV.get("sx:mail:"+mail)) throw new Error("MAIL_VAR");
    k.uid="u_"+(await sha(mail)).slice(0,12);
    k.ph=await sha(mail+"::"+sifre);
+   k.kodUyarisi = await this.koduBagla(k, rol, ogretmenKodu);
    await KV.set("sx:user:"+k.uid,k); await KV.set("sx:mail:"+mail,k.uid);
    if(k.sinifKodu) await KV.set("sx:sinif:"+k.sinifKodu,{kod:k.sinifKodu,ogretmen:k.uid,ogretmenAd:k.ad});
    return k;
  },
+
+ /* Öğrenci → öğretmen, veli → çocuk bağını kurar.
+    Kod yanlışsa ya da okunamazsa hesap yine açılır; uyarı döner. */
+ async koduBagla(k, rol, kod){
+   if(!kod) return null;
+   if(rol==="ogrenci"){
+     let sinif=null;
+     try{ sinif=await this.sinifAl(kod); }catch(e){ return "OKUNAMADI"; }
+     if(!sinif) return "SINIF_YOK";
+     k.ogretmen=sinif.ogretmen; k.ogretmenAd=sinif.ogretmenAd;
+     return null;
+   }
+   if(rol==="veli"){
+     let bag=null;
+     try{ bag=await this.veliBagAl(kod); }catch(e){ return "OKUNAMADI"; }
+     if(!bag) return "VELI_KOD_YOK";
+     k.cocuk=bag.ogrenci; k.cocukAd=bag.ogrenciAd;
+     return null;
+   }
+   return null;
+ },
+
  async giris(mail,sifre){
    mail=mail.trim().toLowerCase();
    if(bulut()){
@@ -170,7 +203,7 @@ const API={
 
  async sinifYaz(k,uid,ad){ const d={kod:k,ogretmen:uid,ogretmenAd:ad};
    bulut()? await FB.set("classes/"+k,d) : await KV.set("sx:sinif:"+k,d) },
- async sinifAl(k){ return bulut()? await FB.get("classes/"+k) : await KV.get("sx:sinif:"+k) },
+ async sinifAl(k){ try{ return bulut()? await FB.get("classes/"+k) : await KV.get("sx:sinif:"+k) }catch(e){ return null } },
 
  /* --- öğrenciler --- */
  async ogrenciler(ogretmenUid){
@@ -199,7 +232,7 @@ const API={
    bulut()? await FB.set("parents/"+kod,d) : await KV.set("sx:veli:"+kod,d);
    return d;
  },
- async veliBagAl(kod){ return bulut()? await FB.get("parents/"+kod) : await KV.get("sx:veli:"+kod) },
+ async veliBagAl(kod){ try{ return bulut()? await FB.get("parents/"+kod) : await KV.get("sx:veli:"+kod) }catch(e){ return null } },
  async veliKoduGarantile(u){
    if(!u || u.rol!=="ogrenci") return u;
    if(!u.veliKodu){ u.veliKodu=yeniKod(); try{ await this.hesapYaz(u) }catch(e){} }
