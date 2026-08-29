@@ -3,7 +3,7 @@
    olmasa da site açılır. Firestore istekleri her zaman ağdan gider. */
 const SURUM = "zihin-20260815r";
 const DOSYALAR = [
-  "./", "./index.html", "./manifest.json", "./favicon.svg", "./favicon.png", "./favicon-32.png", "./apple-touch-icon.png", "./ikon-192.png", "./ikon-512.png",
+  "./", "./index.html", "./manifest.json", "./images/favicon.svg", "./images/favicon.png", "./images/favicon-32.png", "./images/apple-touch-icon.png", "./images/ikon-192.png", "./images/ikon-512.png",
   "./css/style.css",
   "./js/config.js", "./js/ikonlar.js", "./js/i18n.js", "./js/data.js", "./js/util.js", "./js/state.js",
   "./js/store.js", "./js/engine.js", "./js/abakus.js", "./js/araclar.js", "./js/tekrar.js",
