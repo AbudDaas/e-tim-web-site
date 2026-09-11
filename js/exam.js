@@ -147,7 +147,8 @@ function cevapVer(deger){
   if(SX.exam.geriBildirim!==false){
     $("sxHukum").textContent=cevirHtml(dogru?"Doğru":"Yanlış — doğrusu "+dogruMetni(q));
     $("sxHukum").className="sx-verdict "+(dogru?"ok":"no");
-    bip(dogru?880:165, dogru? 0.09 : 0.16, dogru?"triangle":"square");
+    if(dogru) sesDogru(); else sesYanlis();
+    yuzGoster(dogru);
   } else { $("sxHukum").textContent=cevirHtml("Cevap alındı"); bip(660,.07,"triangle"); }
   railBoya();
   const bekle=SX.exam.geriBildirim===false?300:(dogru?600:1300);
@@ -172,7 +173,8 @@ function cevapla(){
   if(SX.exam.geriBildirim!==false){
     $("sxHukum").textContent=cevirHtml(dogru?"Doğru":`Yanlış — doğrusu ${q.c}`);
     $("sxHukum").className="sx-verdict "+(dogru?"ok":"no");
-    bip(dogru?880:165, dogru? 0.09 : 0.16, dogru?"triangle":"square");
+    if(dogru) sesDogru(); else sesYanlis();
+    yuzGoster(dogru);
     if(!dogru){ kutu.classList.remove("shake"); void kutu.offsetWidth; kutu.classList.add("shake"); }
   } else { $("sxHukum").textContent="Cevap alındı"; bip(660,.07,"triangle"); }
   railBoya();
@@ -182,6 +184,7 @@ function cevapla(){
 }
 async function bitir(){
   clearInterval(SX.tick); oynatmaDurdur();
+  if(SX.ekran!=="sonuc" && typeof sesBitti==="function") setTimeout(sesBitti,150);
   if(SX.ekran==="sonuc") return;
   SX._sure=(SX.bitis&&SX.sureBitti)?SX.exam.limit*1000:Date.now()-SX.t0;
   SX._cevap=SX.answers.filter(a=>a!==null).length;
@@ -192,8 +195,9 @@ async function bitir(){
     try{
       await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:"", sinavAd:"Serbest alıştırma",
         dogru:SX._dogru, toplam:SX.qs.length, sure:SX._sure, at:Date.now(), ogretmenAd:"",
-        ders:SX.exam.ders||"aritmetik",
-        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]), c:dogruMetni(q)})) });
+        ders:SX.exam.ders||"aritmetik", suresiz:!SX.exam.limit,
+        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]),
+          c:dogruMetni(q), sn:Math.round((SX.times[i]||0)/100)/10 })) });
       await ogrenciVerileriYukle(SX.user.uid);
     }catch(err){}
   }
@@ -202,8 +206,9 @@ async function bitir(){
       await API.sonucYaz(SX.exam.kod,{ ad:SX.ogrenci, dogru:SX._dogru, toplam:SX.qs.length,
         cevaplanan:SX._cevap, sure:SX._sure, at:Date.now(), sureBitti:SX.sureBitti, sahip:SX.exam.sahip||"",
         ogrenciUid:(SX.user&&SX.user.rol==="ogrenci")?SX.user.uid:"",
-        ders:SX.exam.ders||"aritmetik",
-        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]), c:dogruMetni(q)})) });
+        ders:SX.exam.ders||"aritmetik", suresiz:!SX.exam.limit,
+        dokum:SX.qs.map((q,i)=>({q:soruMetni(q,SX.exam.eksiSag), a:cevapMetni(q,SX.answers[i]),
+          c:dogruMetni(q), sn:Math.round((SX.times[i]||0)/100)/10 })) });
       const oturumluOgrenci = SX.user && SX.user.rol==="ogrenci";
       if(oturumluOgrenci){
         await API.ogrenciSonucYaz(SX.user.uid,{ sinavKod:SX.exam.kod, sinavAd:SX.exam.ad,
@@ -237,6 +242,14 @@ document.addEventListener("click",async e=>{
       SX.alistirma=true; SX.ogrenci=""; cozBasla(sinavListesi());
     },
     rolSec:()=>{ SX.kayitRol=v; ciz(); },
+    sinavTasi:async()=>{
+      const l=SX.sinavlar.slice(), i=l.findIndex(x=>x.kod===v), j=i+(+b.dataset.d);
+      if(i<0||j<0||j>=l.length) return;
+      [l[i],l[j]]=[l[j],l[i]];
+      l.forEach((x,k)=>{ x.sira=k; });
+      SX.sinavlar=l; ciz();
+      for(const x of l){ try{ await API.sinavYaz(x); }catch(err){} }
+    },
     yzUret:yzSorular,
     abakusAc:()=>{ ABK.goster=!ABK.goster; if(ABK.goster&&!ABK.durum.length) abkKur(ABK.cubuk); ciz(); },
     sikSec:()=>{ const q=SX.qs[SX.i]; cevapVer((q.tip==="dv") ? (Number(v)===0) : Number(v)); },
@@ -524,42 +537,86 @@ document.addEventListener("keydown",e=>{
 
 /* --- yapay zekâ ile soru üretimi --- */
 function yzVar(){ return !!(typeof GEMINI!=="undefined" && GEMINI.anahtar); }
+let YZ_PDF=null;   /* seçilen PDF: {ad, veri(base64)} */
+
+/* Dosya seçilince belleğe al (base64). PDF doğrudan Gemini'ye gönderilir,
+   ek kütüphaneye gerek yoktur. */
+document.addEventListener("change", async e=>{
+  const g=e.target;
+  if(!g || g.id!=="yzPdf") return;
+  const d=g.files && g.files[0];
+  const ad=$("yzPdfAd");
+  if(!d){ YZ_PDF=null; if(ad) ad.textContent=""; return; }
+  if(d.size > 8*1024*1024){
+    YZ_PDF=null;
+    if(ad) ad.innerHTML=`<span class="sx-warn">Dosya 8 MB'ı geçiyor, daha küçük bir PDF seç.</span>`;
+    return;
+  }
+  if(ad) ad.textContent="okunuyor…";
+  try{
+    const veri=await new Promise((c,r)=>{
+      const o=new FileReader();
+      o.onload=()=>c(String(o.result).split(",")[1]);
+      o.onerror=()=>r(new Error("okunamadı"));
+      o.readAsDataURL(d);
+    });
+    YZ_PDF={ad:d.name, veri};
+    if(ad) ad.innerHTML=`<span class="sx-good">${esc(d.name)} hazır</span>`;
+  }catch(err){
+    YZ_PDF=null;
+    if(ad) ad.innerHTML=`<span class="sx-warn">Dosya okunamadı.</span>`;
+  }
+});
+
+function yzVar(){ return !!(typeof GEMINI!=="undefined" && GEMINI.anahtar); }
+
 async function yzSorular(){
   const n=$("yzNot"), b=document.querySelector('[data-sx="yzUret"]');
   const konu=($("yzKonu").value||"").trim();
   const adet=+($("yzAdet")?$("yzAdet").value:10)||10;
-  if(!konu){ if(n) n.innerHTML=`<span class="sx-warn">Önce konuyu ya da metni yaz.</span>`; return; }
+  if(!konu && !YZ_PDF){
+    if(n) n.innerHTML=`<span class="sx-warn">Önce konuyu yaz ya da bir PDF seç.</span>`;
+    return;
+  }
   const d=SX.taslak, ders=dersBul(d.ders);
-  const tip=ders.tip==="yazili"?"kısa cevap":"çoktan seçmeli";
+  const tip = ders.tip==="yazili" ? "kısa cevap" : "çoktan seçmeli";
   const bicim = ders.tip==="yazili"
-    ? 'Her satır: Soru = cevap'
-    : 'Her satır: Soru | yanlış şık | *doğru şık | yanlış şık   (yıldız doğru şıkkı işaretler)';
+    ? "Her satır: Soru = cevap"
+    : "Her satır: Soru | yanlış şık | *doğru şık | yanlış şık   (yıldız doğru şıkkı işaretler)";
+  const dilAd = aktifDil()==="ar" ? "Arapça" : aktifDil()==="en" ? "İngilizce" : "Türkçe";
   const istem =
-`Sen bir öğretmensin. Aşağıdaki konu için ${adet} adet ${tip} sorusu yaz.
+`Sen bir öğretmensin. ${adet} adet ${tip} sorusu yaz.
 Ders: ${ceviri(ders.ad)}
-Konu/metin: ${konu}
+${YZ_PDF ? "Kaynak: ekteki PDF dosyasının içeriği. Yalnız bu içerikten soru üret." : ""}
+${konu ? "Konu/metin: "+konu : ""}
 Kurallar:
-- Cevabı ${aktifDil()==="ar"?"Arapça":aktifDil()==="en"?"İngilizce":"Türkçe"} yaz.
-- Yalnız soruları döndür, başlık, numara, açıklama, kod bloğu ekleme.
+- Cevapları ${dilAd} yaz.
+- Yalnız soruları döndür; başlık, numara, açıklama, kod bloğu ekleme.
 - ${bicim}
 - Her soru tek satır olsun.`;
-  mesgul(b,true); if(n) n.textContent="Sorular üretiliyor…";
+
+  const parcalar=[{text:istem}];
+  if(YZ_PDF) parcalar.push({inline_data:{mime_type:"application/pdf", data:YZ_PDF.veri}});
+
+  mesgul(b,true);
+  if(n) n.textContent = YZ_PDF ? "PDF okunuyor ve sorular üretiliyor…" : "Sorular üretiliyor…";
   try{
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI.model}:generateContent?key=${GEMINI.anahtar}`,{
       method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({contents:[{parts:[{text:istem}]}]})
+      body:JSON.stringify({contents:[{parts:parcalar}]})
     });
     const j=await r.json();
     if(!r.ok) throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
     let metin=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text||"").join("").trim();
     metin=metin.replace(/^```[a-z]*|```$/gm,"").trim();
     if(!metin) throw new Error("boş cevap");
-    d.metin = (d.metin?d.metin.trim()+"\n":"") + metin;
+    d.metin=(d.metin?d.metin.trim()+"\n":"")+metin;
     mesgul(b,false); ciz();
     toast("Sorular eklendi, gözden geçir.");
   }catch(err){
     mesgul(b,false);
-    if(n) n.innerHTML=`<span class="sx-warn">Üretilemedi: ${esc(String(err.message||err)).slice(0,90)}</span>`;
+    const m=String(err.message||err);
+    if(n) n.innerHTML=`<span class="sx-warn">Üretilemedi: ${esc(m).slice(0,110)}</span>`;
   }
 }
 
@@ -703,7 +760,12 @@ async function ogrencileriYukle(){
 }
 async function hesaplariYukle(){ SX.hesaplar=(await API.hesaplar()).sort((a,b)=>(b.at||0)-(a.at||0)); }
 async function sinavlariYukle(){ if(!SX.user) return;
-  SX.sinavlar=(await API.sinavlar(SX.user.uid)).sort((a,b)=>(b.at||0)-(a.at||0)); }
+  SX.sinavlar=(await API.sinavlar(SX.user.uid)).sort(sinavSirala); }
+/* Öğretmenin verdiği sıra önce; sıra yoksa yeni sınav üstte. */
+function sinavSirala(a,b){
+  const sa=(a.sira==null)?9999:+a.sira, sb=(b.sira==null)?9999:+b.sira;
+  return sa!==sb ? sa-sb : (b.at||0)-(a.at||0);
+}
 async function sinavKaydet(){
   const d=SX.taslak;
   if(!d.ad.trim()){ toast("Sınav adı gerekli."); return; }

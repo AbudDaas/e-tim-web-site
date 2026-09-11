@@ -53,10 +53,16 @@ function sxForm(){
       <textarea class="sx-ta" id="yzKonu" style="min-height:70px"
         placeholder="Konu ya da metin — ör. 'Present continuous tense, günlük hayattan örneklerle'"></textarea>
       <div class="sx-row" style="margin-top:8px">
+        <label class="btn ghost sm" for="yzPdf" style="cursor:pointer">
+          <i class="fa-solid fa-file-csv"></i> PDF seç</label>
+        <input type="file" id="yzPdf" accept="application/pdf" style="display:none">
+        <span class="sx-note" id="yzPdfAd" style="margin:0"></span>
+      </div>
+      <div class="sx-row" style="margin-top:8px">
         <select class="sx-in" id="yzAdet" style="max-width:130px">
           <option>5</option><option selected>10</option><option>15</option><option>20</option></select>
         <button class="btn" data-sx="yzUret"><i class="fa-solid fa-bolt"></i> Soruları üret</button></div>
-      <div class="sx-note" id="yzNot">Üretilen sorular kutuya eklenir; yayınlamadan önce mutlaka gözden geçir.</div>
+      <div class="sx-note" id="yzNot">Konu yaz ya da bir PDF seç (ders notu, çalışma kâğıdı). Üretilen sorular kutuya eklenir; yayınlamadan önce gözden geçir.</div>
     </div>`:""}</div>`}
   ${!arit?"":`
   <div class="sx-field"><div class="sx-label">Sorular</div><div class="chips" style="margin:0">
@@ -76,10 +82,16 @@ function sxForm(){
       <textarea class="sx-ta" id="yzKonu" style="min-height:70px"
         placeholder="Konu ya da metin — ör. 'Present continuous tense, günlük hayattan örneklerle'"></textarea>
       <div class="sx-row" style="margin-top:8px">
+        <label class="btn ghost sm" for="yzPdf" style="cursor:pointer">
+          <i class="fa-solid fa-file-csv"></i> PDF seç</label>
+        <input type="file" id="yzPdf" accept="application/pdf" style="display:none">
+        <span class="sx-note" id="yzPdfAd" style="margin:0"></span>
+      </div>
+      <div class="sx-row" style="margin-top:8px">
         <select class="sx-in" id="yzAdet" style="max-width:130px">
           <option>5</option><option selected>10</option><option>15</option><option>20</option></select>
         <button class="btn" data-sx="yzUret"><i class="fa-solid fa-bolt"></i> Soruları üret</button></div>
-      <div class="sx-note" id="yzNot">Üretilen sorular kutuya eklenir; yayınlamadan önce mutlaka gözden geçir.</div>
+      <div class="sx-note" id="yzNot">Konu yaz ya da bir PDF seç (ders notu, çalışma kâğıdı). Üretilen sorular kutuya eklenir; yayınlamadan önce gözden geçir.</div>
     </div>`:""}</div>`}
   <div class="sx-field"><div class="sx-label">Süre</div><div class="chips" style="margin:0">
     ${on.map(s=>sxChip("limit",s,s===0?"Süresiz":(s/60)+" dk",d.limit===s)).join("")}
@@ -162,6 +174,7 @@ function sxCozEkran(){
       <div class="sx-answer" id="sxCevapKutu">
         <input id="sxCevap" type="text" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="cevap">
         <button class="btn" data-sx="kontrol"><i class="fa-solid fa-check"></i> Kontrol</button></div>
+      <div class="sx-yuz" id="sxYuz" aria-hidden="true"></div>
       <div class="sx-verdict" id="sxHukum"></div>
       ${(SX.exam && SX.exam.kip==="sesli" && typeof sesDurumu==="function" && sesDurumu(aktifDil()==="ar"?"ar":"tr")!=="var")
         ? `<div class="sx-note" style="text-align:center">Cihazında bu dilin ses paketi yok; sayılar yazıyla gösterilecek.</div>`:""}
@@ -192,7 +205,7 @@ function sxSonucEkran(){
     <div class="sx-score">${SX._dogru}<small>/${SX.qs.length}</small></div>
     <div class="sx-stats">
       <div class="sx-stat"><b>${SX._cevap?Math.round(SX._dogru/SX._cevap*100):0}%</b><span>isabet</span></div>
-      <div class="sx-stat"><b>${sure(SX._sure)}</b><span>süre</span></div>
+      <div class="sx-stat ${SX.exam&&!SX.exam.limit?"one-cikar":""}"><b>${sure(SX._sure)}</b><span>${SX.exam&&!SX.exam.limit?"toplam süren":"süre"}</span></div>
       <div class="sx-stat"><b>${SX._cevap?(SX._sure/SX._cevap/1000).toFixed(1)+"s":"—"}</b><span>soru başına</span></div></div>
     ${SX.alistirma?"":`<p class="muted" style="text-align:center;font-size:13px">${SX._kaydedildi?"Sonucun öğretmene iletildi.":"Sonuç kaydedilemedi, öğretmenine haber ver."}</p>`}
     <div class="sx-row" style="margin-top:16px">
@@ -330,6 +343,8 @@ function sxSinavListe(){
         <span class="sx-badge">${dersBul(x.ders).ico} ${esc(ceviri(dersBul(x.ders).ad))}</span>
         <span class="sx-pill">${x.kod}</span></div>
       <div class="sx-row" style="margin:-6px 0 14px">
+        <button class="btn ghost sm" data-sx="sinavTasi" data-v="${x.kod}" data-d="-1" aria-label="yukarı taşı"><i class="fa-solid fa-chevron-left" style="transform:rotate(90deg)"></i></button>
+        <button class="btn ghost sm" data-sx="sinavTasi" data-v="${x.kod}" data-d="1" aria-label="aşağı taşı"><i class="fa-solid fa-chevron-right" style="transform:rotate(90deg)"></i></button>
         <button class="btn sm" data-cnl="odaAc" data-v="${x.kod}"><i class="fa-solid fa-bolt"></i> Canlı başlat</button>
         <button class="btn ghost sm" data-sx="sonucAc" data-v="${x.kod}"><i class="fa-solid fa-chart-simple"></i> Sonuçlar</button>
         <button class="btn ghost sm" data-sx="duzenle" data-v="${x.kod}"><i class="fa-solid fa-pen"></i> Düzenle</button>
@@ -421,7 +436,7 @@ function sonucBoya(){
         <span class="n">${i+1}</span>
         <span class="nm">${esc(r.ad)}<div class="sx-bar"><i style="width:${y}%"></i></div></span>
         <span class="sc">${r.dogru}/${r.toplam}</span>
-        <span class="tm">${sure(r.sure)}</span></div>${det}`;
+        <span class="tm">${sure(r.sure)}${r.suresiz?" ⏱":""}</span></div>${det}`;
    }).join("");
 }
 

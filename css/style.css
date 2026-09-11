@@ -758,3 +758,19 @@ nav a i[class*="fa-"]{margin-inline-end:.35em}
   .card{border-color:rgba(20,26,51,.35)}
   .chip{border-color:rgba(20,26,51,.4)}
 }
+
+/* --- cevap sonrası yüz ifadesi --- */
+.sx-yuz{height:44px;display:flex;align-items:center;justify-content:center;font-size:34px;line-height:1;
+  user-select:none;pointer-events:none}
+.sx-yuz.iyi{animation:yuzIyi .5s cubic-bezier(.2,.9,.3,1)}
+.sx-yuz.kotu{animation:yuzKotu .5s ease}
+@keyframes yuzIyi{0%{transform:scale(.4) rotate(-12deg);opacity:0}60%{transform:scale(1.15) rotate(4deg)}100%{transform:none;opacity:1}}
+@keyframes yuzKotu{0%{transform:translateY(-8px);opacity:0}40%{transform:translateY(2px)}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sx-yuz.iyi,.sx-yuz.kotu{animation:none}}
+
+/* süresiz sınavda süre kutusu öne çıksın */
+.sx-stat.one-cikar{background:linear-gradient(150deg,rgba(67,56,202,.12),rgba(13,148,136,.1));
+  border-color:rgba(67,56,202,.35)}
+.sx-stat.one-cikar b{color:var(--murekkep)}
+/* soru başına süre etiketi */
+.sx-sure{font-family:var(--mono);font-size:11px;color:var(--gece-2);min-width:34px;text-align:end}

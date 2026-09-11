@@ -35,13 +35,30 @@ function sorulariYaz(qs){ return (qs||[]).map(q=>{const s=q.t.reduce((a,b)=>a+b,
   return q.t.join(" ")+(q.c!==s?" = "+q.c:"")}).join("\n"); }
 let actx=null;
 function bip(f,d,tip){
-  if(!SX.exam||SX.exam.ses===false) return;
+  if(SX.exam && SX.exam.ses===false) return;
   try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==="suspended") actx.resume();
     const o=actx.createOscillator(),g=actx.createGain();
     o.type=tip;o.frequency.value=f;g.gain.setValueAtTime(.09,actx.currentTime);
     g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);
     o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);
   }catch(e){}
+}
+
+/* Doğru cevap: yükselen üç nota. */
+function sesDogru(){ [[784,0],[988,90],[1319,180]].forEach(([f,g])=>setTimeout(()=>bip(f,.12,"triangle"),g)); }
+/* Yanlış cevap: alçalan iki nota — sert değil, yumuşak. */
+function sesYanlis(){ [[330,0],[247,110]].forEach(([f,g])=>setTimeout(()=>bip(f,.16,"sine"),g)); }
+/* Sınav bitti: kısa kutlama. */
+function sesBitti(){ [[523,0],[659,110],[784,220],[1047,330]].forEach(([f,g])=>setTimeout(()=>bip(f,.16,"triangle"),g)); }
+/* Cevaptan sonra kısa bir yüz ifadesi. */
+function yuzGoster(dogru){
+  const k=$("sxYuz"); if(!k) return;
+  const iyi=["🎉","👏","💪","⭐","🔥"], kotu=["😕","😔","🙁"];
+  k.textContent = dogru ? iyi[Math.floor(Math.random()*iyi.length)] : kotu[Math.floor(Math.random()*kotu.length)];
+  k.className = "sx-yuz "+(dogru?"iyi":"kotu");
+  clearTimeout(k._z);
+  k._z=setTimeout(()=>{ const y=$("sxYuz"); if(y){ y.textContent=""; y.className="sx-yuz"; } },1200);
 }
 
 /* ===================================================================
