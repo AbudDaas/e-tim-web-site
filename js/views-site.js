@@ -326,8 +326,8 @@ function bolumKayitli(id){
   const c=dersIcerik(id);
   if(!c.kayit.length) return `<div class="card pad muted" style="margin-top:18px">Bu derste henüz kayıtlı ders yok.</div>`;
   return `<div class="grid g3" style="margin-top:18px">${c.kayit.map((k,idx)=>`
-    <button class="clip" data-kayit="${idx}" data-kders="${esc(id)}">
-      <div class="thumb">${gorselEtiketi(k)}<span class="play"></span><span class="dur">${esc(ceviri(k.sure)||"")}</span></div>
+    <button class="clip" data-kayit="${idx}" data-kders="${esc(id)}" aria-label="${esc(ceviri(k.ad))} — dersi aç">
+      <div class="thumb">${gorselEtiketi(k)}<span class="play" aria-hidden="true"></span><span class="dur">${esc(ceviri(k.sure)||"")}</span></div>
       <div class="body"><span class="tag">Ders ${k.sira||idx+1}</span>
         <h3 style="margin:10px 0 5px">${esc(ceviri(k.ad))}</h3>
         <p class="muted" style="font-size:13.5px">${esc(ceviri(k.ozet)||"")}</p></div>
@@ -335,8 +335,8 @@ function bolumKayitli(id){
 }
 function gorselEtiketi(k){
   const kp=ceviri(k.kapak);
-  if(kp) return `<img loading="lazy" src="${esc(kp)}" alt="">`;
-  if(k.yt) return `<img loading="lazy" src="https://img.youtube.com/vi/${esc(k.yt)}/hqdefault.jpg" alt="">`;
+  if(kp) return `<img loading="lazy" decoding="async" src="${esc(kp)}" alt="${esc(ceviri(k.ad||k.baslik)||"kapak görseli")}">`;
+  if(k.yt) return `<img loading="lazy" decoding="async" src="https://img.youtube.com/vi/${esc(k.yt)}/hqdefault.jpg" alt="${esc(ceviri(k.ad||k.baslik)||"video kapağı")}">`;
   return "";
 }
 
@@ -351,8 +351,8 @@ function bolumKesit(id){
   return `<div class="chips" style="margin:18px 0">${kats.map((k,i)=>
       `<button class="chip" data-filtre="${i}" aria-pressed="${i===filtre}">${esc(ceviri(k))}</button>`).join("")}</div>
     <div class="grid g3">${liste.length?liste.map(v=>`
-      <button class="clip" data-video="${DATA.kesitler.liste.indexOf(v)}">
-        <div class="thumb">${gorselEtiketi(v)}<span class="play"></span><span class="dur">${esc(ceviri(v.sure))}</span></div>
+      <button class="clip" data-video="${DATA.kesitler.liste.indexOf(v)}" aria-label="${esc(ceviri(v.baslik))} — videoyu aç">
+        <div class="thumb">${gorselEtiketi(v)}<span class="play" aria-hidden="true"></span><span class="dur">${esc(ceviri(v.sure))}</span></div>
         <div class="body"><span class="tag">${esc(ceviri(v.kategori))}</span>
           <h3 style="margin:10px 0 5px">${esc(ceviri(v.baslik))}</h3>
           <p class="muted" style="font-size:13.5px">${esc(ceviri(v.ozet))}</p>

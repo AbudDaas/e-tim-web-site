@@ -108,6 +108,13 @@ async function belgeDogrula(){
   ciz();
 }
 
+/* Klavye ile tıklama: role="button" taşıyan öğeler Enter ve boşlukla çalışsın. */
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Enter" && e.key!==" ") return;
+  const h=e.target.closest('[role="button"]');
+  if(h){ e.preventDefault(); h.click(); }
+});
+
 /* --- site etkileşimleri --- */
 document.addEventListener("click",e=>{
   const on=e.target.closest("[data-odev]");

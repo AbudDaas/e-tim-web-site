@@ -1,7 +1,7 @@
 /* Zihin Akademi — tasarım sistemi, site ve sınav stilleri */
 
 :root{
-  --gece:#141A33; --gece-2:#4A5170;
+  --gece:#141A33; --gece-2:#454C6B;   /* WCAG AA için biraz koyulaştırıldı */
   --murekkep:#4338CA; --menekse:#7C3AED; --turkuaz:#0D9488; --kehribar:#E0A020;
   --bulut:#F4F5FC; --cam:rgba(255,255,255,.72); --cam-kenar:rgba(255,255,255,.75);
   --golge:0 18px 40px -24px rgba(20,26,51,.45);
@@ -750,4 +750,11 @@ nav a i[class*="fa-"]{margin-inline-end:.35em}
 .sx-tabs button,.ders-sekme button{white-space:nowrap;position:relative}
 .sx-tabs button .sekme-nokta{margin-inline-start:6px}
 @media(min-width:900px){ .sx-tabs,.ders-sekme{flex-wrap:wrap;overflow:visible} }
-.cnl-tani{font-family:var(--mono);font-size:10px;opacity:.45;margin-inline-start:6px}
+.cnl-tani{font-family:var(--mono);font-size:10px;opacity:.6;margin-inline-start:6px}
+
+/* yüksek kontrast tercih eden kullanıcılar */
+@media (prefers-contrast:more){
+  .muted,.s,.sx-note{color:#2C3350}
+  .card{border-color:rgba(20,26,51,.35)}
+  .chip{border-color:rgba(20,26,51,.4)}
+}

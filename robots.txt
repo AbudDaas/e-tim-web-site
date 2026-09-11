@@ -1,0 +1,10 @@
+# Arama motorları için yönergeler
+User-agent: *
+Allow: /
+
+# Kişisel veri içeren ekranlar dizine girmesin
+Disallow: /#/profil
+Disallow: /#/yonetim
+Disallow: /#/dogrula
+
+Sitemap: https://SITE-ADRESIN/sitemap.xml

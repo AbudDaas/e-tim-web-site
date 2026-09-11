@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tek sayfa uygulama olduğu için adresler # ile ayrılır.
+     SITE-ADRESIN yazan yerleri kendi alan adınla değiştir. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://SITE-ADRESIN/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://SITE-ADRESIN/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://SITE-ADRESIN/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://SITE-ADRESIN/"/>
+  </url>
+  <url><loc>https://SITE-ADRESIN/#/ders/aritmetik</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/ders/ingilizce</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/ders/arapca</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/ders/kuran</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/sinav</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/hakkinda</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://SITE-ADRESIN/#/gizlilik</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

@@ -219,7 +219,7 @@ function yonListe(l){
         <button class="btn ghost sm" data-sx="yonSil" data-y="${l.y}" data-i="${i}">${t("sil")}</button>
       </div>
       ${(function(){ const k=x.kapak?ceviri(x.kapak):""; const y=x.yt?`https://img.youtube.com/vi/${x.yt}/mqdefault.jpg`:"";
-          const src=k||y; return src?`<img class="yon-onizleme" src="${esc(src)}" alt="">`:""; })()}
+          const src=k||y; return src?`<img class="yon-onizleme" src="${esc(src)}" alt="${esc(ceviri(x.baslik||x.ad)||"önizleme")}" loading="lazy">`:""; })()}
       ${l.alanlar.map(a=>{
         const dd = ceviri(x[a.k]); const d = (dd===0?0:(dd||""));
         const yol=`${l.y}.${i}.${a.k}`;

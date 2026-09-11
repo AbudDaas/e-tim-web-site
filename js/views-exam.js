@@ -290,7 +290,7 @@ function sxPanel(){
         ${u.sinifKodu?`<span class="sx-badge">${t("sinifKodu2")} ${esc(u.sinifKodu)}</span>`:""}
         <span style="margin-inline-start:auto"></span>
         <button class="btn ghost sm" data-sx="cikis"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış yap</button></div>
-      ${(yon&&bekleyen)?`<div class="uyari" data-sx="ptab" data-v="hesaplar" role="button" tabindex="0">
+      ${(yon&&bekleyen)?`<div class="uyari" data-sx="ptab" data-v="hesaplar" role="button" tabindex="0" aria-label="onay bekleyen hesaplar">
         <span class="uyari-nokta"></span>
         <div><b>${bekleyen} hesap onayını bekliyor</b>
         <div class="s">Onaylamadığın öğretmenler panele giremez. Görmek için dokun.</div></div>
@@ -417,7 +417,7 @@ function sonucBoya(){
             return `<div class="sx-miss"><span class="i">${qi+1}</span><span class="q">${esc(x.q)}</span>${ben}<span class="real">${x.c}</span></div>`}).join("")+
           `<button class="btn ghost sm" data-sx="sonucSil" data-v="${r._k}" style="margin-top:10px">Bu sonucu sil</button></div>`;
       }
-      return `<div class="sx-rank" data-sx="sonucAcKapa" data-v="${r._k}">
+      return `<div class="sx-rank" data-sx="sonucAcKapa" data-v="${r._k}" role="button" tabindex="0" aria-label="${esc(r.ad)} — cevap dökümünü aç">
         <span class="n">${i+1}</span>
         <span class="nm">${esc(r.ad)}<div class="sx-bar"><i style="width:${y}%"></i></div></span>
         <span class="sc">${r.dogru}/${r.toplam}</span>
