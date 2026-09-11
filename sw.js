@@ -1,7 +1,7 @@
 /* Çevrimdışı çalışma.
    Dosyalar ilk açılışta önbelleğe alınır; sonraki açılışlarda internet
    olmasa da site açılır. Firestore istekleri her zaman ağdan gider. */
-const SURUM = "zihin-20260911b";
+const SURUM = "zihin-20260911c";
 const DOSYALAR = [
   "./", "./index.html", "./manifest.json", "./404.html", "./images/favicon.svg", "./images/favicon.png", "./images/favicon-32.png", "./images/apple-touch-icon.png", "./images/ikon-192.png", "./images/ikon-512.png",
   "./css/style.css",

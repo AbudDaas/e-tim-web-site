@@ -237,6 +237,22 @@ function menuOlc(){
   menuOlc();
 })();
 
+/* Oturum bekçisi: jeton süresi dolmadan sessizce tazelenir.
+   Sekme arka planda uyuduğunda zamanlayıcı durur, geri dönünce kontrol edilir. */
+function jetonBekcisi(){
+  if(typeof FB==="undefined" || !bulut()) return;
+  const kontrol=async()=>{
+    if(!SX.user || !FB.yenile) return;
+    if(FB.jetonEskiMi()){
+      const ok=await FB.jetonTazele();
+      if(!ok){ toast("Oturumun sona erdi, tekrar giriş yap."); SX.user=null; Oturum.sil(); ciz(); }
+    }
+  };
+  setInterval(kontrol, 10*60*1000);                 /* 10 dakikada bir */
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) kontrol(); });
+  window.addEventListener("online", kontrol);
+}
+
 /* ---------------- açılış ---------------- */
 $("brandName").textContent=ceviri(DATA.marka.ad);
 $("brandSub").textContent=ceviri(DATA.marka.alt);
@@ -251,6 +267,7 @@ function altBilgiCiz(){
 altBilgiCiz();
 KV.init();
 (async function ac(){
+  if(typeof jetonBekcisi==="function") jetonBekcisi();
   /* Yönetim panelinden yayınlanan içerik dosyadakinin yerine geçer.
      Adrese ?icerik=dosya eklenirse kayıtlı içerik yok sayılır. */
   const dosyaModu = /[?&]icerik=dosya/.test(location.search);

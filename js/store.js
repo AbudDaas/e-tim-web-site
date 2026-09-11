@@ -10,7 +10,29 @@ const KV={ mod:"local",
   async list(p){try{ if(this.mod==="shared"){const r=await window.storage.list(p,true);return r?r.keys:[]}
     return Object.keys(localStorage).filter(k=>k.startsWith(p)) }catch(e){return []}}
 };
-const FB={ token:null, uid:null,
+const FB={ token:null, uid:null, yenile:null, jetonAt:0,
+
+ /* Firebase kimlik jetonu bir saat geçerlidir. Süresi dolmadan
+    yenileme jetonuyla sessizce tazelenir; kullanıcı dışarı atılmaz. */
+ async jetonTazele(){
+   if(!this.yenile) return false;
+   try{
+     const r=await fetch("https://securetoken.googleapis.com/v1/token?key="+FIREBASE.apiKey,{
+       method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+       body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(this.yenile)
+     });
+     const j=await r.json();
+     if(!r.ok || !j.id_token) return false;
+     this.token=j.id_token;
+     this.yenile=j.refresh_token||this.yenile;
+     this.uid=j.user_id||this.uid;
+     this.jetonAt=Date.now();
+     if(typeof Oturum!=="undefined") Oturum.tazele();
+     return true;
+   }catch(e){ return false; }
+ },
+ jetonEskiMi(){ return this.jetonAt && (Date.now()-this.jetonAt > 50*60*1000); },
+
   idUrl(m){return `https://identitytoolkit.googleapis.com/v1/accounts:${m}?key=${FIREBASE.apiKey}`},
   docUrl(p){return `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/${p}`},
   hdr(){const h={"Content-Type":"application/json"};if(this.token)h.Authorization="Bearer "+this.token;return h},
@@ -29,20 +51,47 @@ const FB={ token:null, uid:null,
     else if("nullValue" in v)o[k]=null;
     else {const s=v.stringValue;try{o[k]=(s[0]==="["||s[0]==="{")?JSON.parse(s):s}catch(e){o[k]=s}}}
     o._id=d.name.split("/").pop();return o},
-  async get(p){const r=await fetch(this.docUrl(p),{headers:this.hdr()});if(r.status===404)return null;
-    if(!r.ok)throw new Error("GET");return this.dec(await r.json())},
-  async set(p,o){const r=await fetch(this.docUrl(p),{method:"PATCH",headers:this.hdr(),body:JSON.stringify(this.enc(o))});
-    if(!r.ok)throw new Error("SET");return true},
-  async del(p){await fetch(this.docUrl(p),{method:"DELETE",headers:this.hdr()})},
-  async list(c){const r=await fetch(this.docUrl(c)+"?pageSize=300",{headers:this.hdr()});
-    if(!r.ok)return [];const j=await r.json();return (j.documents||[]).map(d=>this.dec(d))}
+  /* Her istekten önce jeton eskiyse tazelenir; 401/403 gelirse
+     bir kez daha tazeleyip tek sefer yeniden denenir. */
+  async istek(url, ayar){
+    if(this.jetonEskiMi()) await this.jetonTazele();
+    let r=await fetch(url, Object.assign({}, ayar, {headers:this.hdr()}));
+    if(r.status===401 || r.status===403){
+      if(await this.jetonTazele()) r=await fetch(url, Object.assign({}, ayar, {headers:this.hdr()}));
+    }
+    return r;
+  },
+  async get(p){
+    const r=await this.istek(this.docUrl(p));
+    if(r.status===404) return null;
+    if(!r.ok) throw new Error("GET "+r.status);
+    return this.dec(await r.json());
+  },
+  async set(p,o){
+    const r=await this.istek(this.docUrl(p),{method:"PATCH",body:JSON.stringify(this.enc(o))});
+    if(!r.ok) throw new Error("SET "+r.status);
+    return true;
+  },
+  async del(p){ await this.istek(this.docUrl(p),{method:"DELETE"}); },
+  async list(c){
+    const r=await this.istek(this.docUrl(c)+"?pageSize=300");
+    if(!r.ok) return [];
+    const j=await r.json();
+    return (j.documents||[]).map(d=>this.dec(d));
+  }
 };
 const bulut=()=>!!(FIREBASE.projectId&&FIREBASE.apiKey);
 function mesgul(btn,on){ if(!btn)return; btn.dataset.busy=on?"1":"0"; if(!on) btn.removeAttribute("data-busy"); }
 const Oturum={
-  yaz(u){ Yerel.set("zx:oturum",JSON.stringify({uid:u.uid,mail:u.mail,token:FB.token,at:Date.now()})); },
+  yaz(u){ Yerel.set("zx:oturum",JSON.stringify({
+    uid:u.uid, mail:u.mail, token:FB.token, yenile:FB.yenile, at:Date.now()
+  })); },
   oku(){ try{ return JSON.parse(Yerel.get("zx:oturum")||"null") }catch(e){ return null } },
-  sil(){ Yerel.del("zx:oturum"); }
+  sil(){ Yerel.del("zx:oturum"); },
+  /* jeton tazelendiğinde kaydı güncelle */
+  tazele(){ const o=this.oku(); if(!o) return;
+    o.token=FB.token; o.yenile=FB.yenile; o.at=Date.now();
+    Yerel.set("zx:oturum",JSON.stringify(o)); }
 };
 /* ADMIN_EMAIL adresiyle giren hesap her durumda yönetici olur —
    yanlış rolle kayıt olunsa ya da onay beklemede kalsa bile. */
@@ -98,7 +147,7 @@ const API={
        if(/blocked|referer|API key|PERMISSION/i.test(m)) throw new Error("ANAHTAR:"+m.slice(0,80));
        throw new Error("AG:"+m.slice(0,80));
      }
-     FB.token=j.idToken; FB.uid=j.localId; k.uid=j.localId;
+     FB.token=j.idToken; FB.yenile=j.refreshToken; FB.jetonAt=Date.now(); FB.uid=j.localId; k.uid=j.localId;
 
      /* Kod çözümlemesi hesap açıldıktan sonra; başarısız olursa kayıt iptal edilmez. */
      k.kodUyarisi = await this.koduBagla(k, rol, ogretmenKodu);
@@ -151,7 +200,7 @@ const API={
        if(/TOO_MANY_ATTEMPTS/.test(m)) throw new Error("COK_DENEME");
        throw new Error("AG:"+m.slice(0,60));
      }
-     FB.token=j.idToken; FB.uid=j.localId;
+     FB.token=j.idToken; FB.yenile=j.refreshToken; FB.jetonAt=Date.now(); FB.uid=j.localId;
      let u=null;
      try{ u=await FB.get("users/"+j.localId); }
      catch(e){ throw new Error("KURAL:"+String(e.message||"").slice(0,40)); }
@@ -170,14 +219,29 @@ const API={
  async oturumTazele(){
    const o=Oturum.oku(); if(!o) return null;
    if(bulut()){
-     if(!o.token||Date.now()-o.at>50*60*1000){ Oturum.sil(); return null; }
-     FB.token=o.token; FB.uid=o.uid;
-     try{ const u=await FB.get("users/"+o.uid); if(!u){Oturum.sil();return null} return await sinifGarantile(await yoneticiKontrol(u)) }
-     catch(e){ Oturum.sil(); return null }
+     FB.token=o.token; FB.yenile=o.yenile||null; FB.uid=o.uid; FB.jetonAt=o.at||0;
+     /* jeton eskiyse at ma — yenile */
+     if(!o.token || FB.jetonEskiMi()){
+       const ok=await FB.jetonTazele();
+       if(!ok){ Oturum.sil(); return null; }
+     }
+     /* not: jeton tazelendiyse FB.token güncel kalmalı, eskisini geri yazma */
+     try{
+       const u=await FB.get("users/"+o.uid);
+       if(!u){ Oturum.sil(); return null; }
+       const son=await sinifGarantile(await yoneticiKontrol(u));
+       Oturum.yaz(son);          /* tazelenen jetonu kaydet */
+       return son;
+     }catch(e){
+       console.warn("oturum tazelenemedi:", e && e.message);
+       /* ağ hatasında oturumu silme; kullanıcı çevrimdışı olabilir */
+       if(String(e&&e.message||"").indexOf("401")<0 && String(e&&e.message||"").indexOf("403")<0) return null;
+       Oturum.sil(); return null;
+     }
    }
    return await sinifGarantile(await yoneticiKontrol(await KV.get("sx:user:"+o.uid)));
  },
- async anonim(){ if(bulut()&&!FB.token){try{const j=await FB.id("signUp",{returnSecureToken:true});FB.token=j.idToken;FB.uid=j.localId}catch(e){}} },
+ async anonim(){ if(bulut()&&!FB.token){try{const j=await FB.id("signUp",{returnSecureToken:true});FB.token=j.idToken; FB.yenile=j.refreshToken||FB.yenile; FB.jetonAt=Date.now();FB.uid=j.localId}catch(e){}} },
  async hesaplar(){ if(bulut()) return await FB.list("users");
    const ks=await KV.list("sx:user:");const o=[];for(const k of ks){const u=await KV.get(k);if(u)o.push(u)}return o },
  async hesapYaz(u){ bulut()? await FB.set("users/"+u.uid,u) : await KV.set("sx:user:"+u.uid,u) },
